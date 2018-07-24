@@ -1188,6 +1188,18 @@
     <group>
         <name>Application</name>
         <file>
+            <name>$PROJ_DIR$\display_SSD1306.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\display_SSD1306.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\i2c.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\i2c.h</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\main.c</name>
         </file>
         <file>
@@ -1255,6 +1267,9 @@
         </file>
         <file>
             <name>$PROJ_DIR$\components\drivers_nrf\gpiote\nrf_drv_gpiote.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\components\drivers_nrf\twi_master\nrf_drv_twi.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\components\drivers_nrf\uart\nrf_drv_uart.c</name>
