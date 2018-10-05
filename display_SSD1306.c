@@ -7,10 +7,60 @@
 #include "app_util_platform.h"
 #include "app_error.h"
 
-#define NRF_LOG_MODULE_NAME "DISP"
+#define NRF_LOG_MODULE_NAME "DSP"
 
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
+
+#define SSD1306_I2C_ADDRESS 0x3C
+
+#define SSD1306_LCDWIDTH 128
+#define SSD1306_LCDHEIGHT 32
+
+#define SSD1306_SETCONTRAST 0x81
+#define SSD1306_DISPLAYALLON_RESUME 0xA4
+#define SSD1306_DISPLAYALLON 0xA5
+#define SSD1306_NORMALDISPLAY 0xA6
+#define SSD1306_INVERTDISPLAY 0xA7
+#define SSD1306_DISPLAYOFF 0xAE
+#define SSD1306_DISPLAYON 0xAF
+
+#define SSD1306_SETDISPLAYOFFSET 0xD3
+#define SSD1306_SETCOMPINS 0xDA
+
+#define SSD1306_SETVCOMDETECT 0xDB
+
+#define SSD1306_SETDISPLAYCLOCKDIV 0xD5
+#define SSD1306_SETPRECHARGE 0xD9
+
+#define SSD1306_SETMULTIPLEX 0xA8
+
+#define SSD1306_SETLOWCOLUMN 0x00
+#define SSD1306_SETHIGHCOLUMN 0x10
+
+#define SSD1306_SETSTARTLINE 0x40
+
+#define SSD1306_MEMORYMODE 0x20
+#define SSD1306_COLUMNADDR 0x21
+#define SSD1306_PAGEADDR 0x22
+
+#define SSD1306_COMSCANINC 0xC0
+#define SSD1306_COMSCANDEC 0xC8
+
+#define SSD1306_SEGREMAP 0xA0
+
+#define SSD1306_CHARGEPUMP 0x8D
+
+#define SSD1306_EXTERNALVCC 0x1
+#define SSD1306_SWITCHCAPVCC 0x2
+
+#define SSD1306_ACTIVATE_SCROLL 0x2F
+#define SSD1306_DEACTIVATE_SCROLL 0x2E
+#define SSD1306_SET_VERTICAL_SCROLL_AREA 0xA3
+#define SSD1306_RIGHT_HORIZONTAL_SCROLL 0x26
+#define SSD1306_LEFT_HORIZONTAL_SCROLL 0x27
+#define SSD1306_VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL 0x29
+#define SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL 0x2A
 
 // the memory buffer for the LCD
 
@@ -69,15 +119,50 @@ static uint8_t buffer[SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8] = {
 0x00, 0x00
 };
 
+static volatile uint8_t* m_done_flag;         /**< Bandera que indica que la pantalla fue actualizada. */
+static uint32_t m_buffer_index;
+static uint8_t m_show_req;
+static uint8_t m_process_begin;
+static uint8_t m_display_off;
 static volatile uint8_t i2c_tx_flag;
 
+static void ssd1306_command(uint8_t command) {
+    i2c_tx_flag = 0;                              // Reset flag
+    i2c_write(0x80);                              // Set OLED command mode
+    while(!i2c_tx_flag){};                        // Wait...
+    i2c_tx_flag = 0;                              // Reset flag
+    i2c_write(command);                           // Send command
+    while(!i2c_tx_flag){};                        // Wait...
+    i2c_end_transmission();                       // End I2C communication
+}
+
+static void ssd1306_data(uint8_t data) {
+    i2c_tx_flag = 0;                              // Reset flag
+    i2c_write(0x40);                              // Set OLED data mode
+    while(!i2c_tx_flag){};                        // Wait...
+    i2c_tx_flag = 0;                              // Reset flag
+    i2c_write(data);                              // Send data
+    while(!i2c_tx_flag){};                        // Wait...
+    i2c_end_transmission();                       // End I2C communication
+}
+
+void display_done_set_flag(volatile uint8_t* main_done_flag)
+{
+    m_done_flag = main_done_flag;
+}
+
 void display_init(void) {
-    NRF_LOG_INFO("Display init.\r\n");
+    NRF_LOG_INFO("Module init.\r\n");
+    
+    m_display_off = 0;
+    m_buffer_index = 0;
+    m_show_req = 0;
     
     // I2C Init
     i2c_tx_set_flag(&i2c_tx_flag);                  // Initialize I2C
     i2c_tx_flag = 0;
     i2c_init();
+    i2c_begin_transmission(SSD1306_I2C_ADDRESS);    // Begin I2C communication
     
     // Init sequence
     ssd1306_command(SSD1306_DISPLAYOFF);            // 0xAE
@@ -99,11 +184,11 @@ void display_init(void) {
         
     ssd1306_command(SSD1306_SETCOMPINS);            // 0xDA
     ssd1306_command(0x02);  
-    ssd1306_command(SSD1306_SETCONTRAST);           // 0x81
-    ssd1306_command(0x8F);  
+    ssd1306_command(SSD1306_SETCONTRAST);
+    ssd1306_command(0xFF);
         
     ssd1306_command(SSD1306_SETPRECHARGE);          // 0xd9
-    ssd1306_command(0xF1);  
+    ssd1306_command(0xF1);
     ssd1306_command(SSD1306_SETVCOMDETECT);         // 0xDB
     ssd1306_command(0x40);  
         
@@ -114,44 +199,59 @@ void display_init(void) {
     
     ssd1306_command(SSD1306_DISPLAYON);
     
-    NRF_LOG_INFO("Init done.\r\n");
+    NRF_LOG_INFO("Module init done.\r\n");
     NRF_LOG_FLUSH();
 }
 
-void ssd1306_command(uint8_t command) {
-    i2c_begin_transmission(SSD1306_I2C_ADDRESS);  // Begin I2C communication
-    i2c_tx_flag = 0;                              // Reset flag
-    i2c_write(0x80);                              // Set OLED command mode
-    while(!i2c_tx_flag){};                        // Wait...
-    i2c_tx_flag = 0;                              // Reset flag
-    i2c_write(command);                           // Send command
-    while(!i2c_tx_flag){};                        // Wait...
-    i2c_end_transmission();                       // End I2C communication
+void display_off(void) {
+    if (!m_display_off) {
+      m_display_off = 1;
+      ssd1306_command(SSD1306_DISPLAYOFF);
+    }
 }
 
-void ssd1306_data(uint8_t data) {
-    i2c_begin_transmission(SSD1306_I2C_ADDRESS);  // Begin I2C communication
-    i2c_tx_flag = 0;                              // Reset flag
-    i2c_write(0x40);                              // Set OLED command mode
-    while(!i2c_tx_flag){};                        // Wait...
-    i2c_tx_flag = 0;                              // Reset flag
-    i2c_write(data);                              // Send data
-    while(!i2c_tx_flag){};                        // Wait...
-    i2c_end_transmission();                       // End I2C communication
+void display_on(void) {
+    if (m_display_off) {
+      m_display_off = 0;
+      ssd1306_command(SSD1306_DISPLAYON);
+    }
+}
+
+void display_process(void) {
+    if (!*m_done_flag) {
+        if (m_process_begin) {
+            m_process_begin = 0;
+            m_show_req = 0;
+            
+            ssd1306_command(SSD1306_COLUMNADDR);
+            ssd1306_command(0);                         // Column start address (0 = reset)
+            ssd1306_command(SSD1306_LCDWIDTH-1);        // Column end address (127 = reset)
+            
+            ssd1306_command(SSD1306_PAGEADDR);
+            ssd1306_command(0);                         // Page start address (0 = reset)
+            ssd1306_command(3);                         // Page end address
+            
+            m_buffer_index = 0;
+        }
+        if (m_buffer_index < (SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8)) {
+            ssd1306_data(buffer[m_buffer_index]);
+            m_buffer_index++;
+        } else {
+            if (m_show_req) {
+                m_process_begin = 1;
+            } else {
+                *m_done_flag = 1;
+            }
+        }
+    } else {
+        if (m_show_req) {
+            *m_done_flag = 0;
+        }
+    }
 }
 
 void display_show(void) {
-    ssd1306_command(SSD1306_COLUMNADDR);
-    ssd1306_command(0);   // Column start address (0 = reset)
-    ssd1306_command(SSD1306_LCDWIDTH-1); // Column end address (127 = reset)
-    
-    ssd1306_command(SSD1306_PAGEADDR);
-    ssd1306_command(0); // Page start address (0 = reset)
-    ssd1306_command(3); // Page end address
-    
-    for (uint32_t i=0; i<(SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8); i++) {
-        ssd1306_data(buffer[i]);
-    }
+    m_show_req = 1;
 }
 
 void display_clear(void) {

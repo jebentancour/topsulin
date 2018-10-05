@@ -1,40 +1,80 @@
-/** @file
- * @defgroup tw_scanner main.c
- * @{
- * @ingroup nrf_twi_example
- * @brief TWI Sensor Example main file.
- *
- * This file contains the source code for a sample application using TWI.
- *
- */
-
 #include <stdio.h>
-#include "app_util_platform.h"
-#include "app_error.h"
 
-#include "display_SSD1306.h"
+#include "nrf_gpio.h"
+#include "nrf_delay.h"
+#include "softdevice_handler.h"
+#include "app_util_platform.h"
 
 #define NRF_LOG_MODULE_NAME "MAIN"
 
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 
-/**
- * @brief Function for main application entry.
- */
+#include "display_SSD1306.h"
+#include "clock.h"
+#include "gpio.h"
+
+#define IDLE_S          20
+#define IDLE_TICKS      (IDLE_S * 1000)/CLOCK_TICK_MS 
+
+volatile uint8_t display_done_flag;
+volatile uint8_t clock_tick_flag;
+volatile uint8_t button_flag;
+
+uint8_t old_in;
+uint8_t idle_timer;
+
 int main(void)
 {
-    APP_ERROR_CHECK(NRF_LOG_INIT(NULL));
-    NRF_LOG_INFO("Display test.\r\n");
+    NRF_LOG_INIT(clock_get_timestamp);
+    NRF_LOG_INFO("Init.\r\n");
     NRF_LOG_FLUSH();
     
+    ble_gs_init();
+    
+    clock_tick_flag = 0;
+    clock_tick_set_flag(&clock_tick_flag);
+    clock_init();
+    
+    idle_timer = 0;
+    
+    button_flag = 0;
+    gpio_button_set_flag(&button_flag);
+    gpio_init();
+    
+    display_done_set_flag(&display_done_flag);
     display_init();
     display_show();
+    
+    sd_power_mode_set(NRF_POWER_MODE_LOWPWR);
 
     while (true)
     {
-        /* Empty loop. */
+        if (!display_done_flag) {
+            display_process();
+        }
+        
+        if(clock_tick_flag) {
+            clock_tick_flag = 0;
+            idle_timer++;
+        }
+        
+        uint8_t new_in = (((NRF_GPIO->IN) >> 9) & 0x01);
+        if (old_in && !new_in) {
+            button_flag = 1;
+        }
+        old_in = new_in;
+               
+        if(button_flag) {
+            button_flag = 0;
+            display_on();
+            idle_timer = 0;
+        }
+        
+        if((idle_timer >= IDLE_TICKS)&&(!clock_tick_flag)&&(display_done_flag)&&(!button_flag)) {            
+            display_off();
+            sd_app_evt_wait();            
+            idle_timer = IDLE_TICKS;
+        }
     }
 }
-
-/** @} */
