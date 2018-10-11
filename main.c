@@ -15,7 +15,7 @@
 #include "gpio.h"
 
 #define IDLE_S          20
-#define IDLE_TICKS      (IDLE_S * 1000)/CLOCK_TICK_MS 
+#define IDLE_TICKS      (IDLE_S * 1000)/CLOCK_TICK_MS
 
 volatile uint8_t display_done_flag;
 volatile uint8_t clock_tick_flag;
@@ -29,23 +29,23 @@ int main(void)
     NRF_LOG_INIT(clock_get_timestamp);
     NRF_LOG_INFO("Init.\r\n");
     NRF_LOG_FLUSH();
-    
+
     ble_gs_init();
-    
+
     clock_tick_flag = 0;
     clock_tick_set_flag(&clock_tick_flag);
     clock_init();
-    
+
     idle_timer = 0;
-    
+
     button_flag = 0;
     gpio_button_set_flag(&button_flag);
     gpio_init();
-    
+
     display_done_set_flag(&display_done_flag);
     display_init();
     display_show();
-    
+
     sd_power_mode_set(NRF_POWER_MODE_LOWPWR);
 
     while (true)
@@ -53,27 +53,27 @@ int main(void)
         if (!display_done_flag) {
             display_process();
         }
-        
+
         if(clock_tick_flag) {
             clock_tick_flag = 0;
             idle_timer++;
         }
-        
+
         uint8_t new_in = (((NRF_GPIO->IN) >> 9) & 0x01);
         if (old_in && !new_in) {
             button_flag = 1;
         }
         old_in = new_in;
-               
+
         if(button_flag) {
             button_flag = 0;
             display_on();
             idle_timer = 0;
         }
-        
-        if((idle_timer >= IDLE_TICKS)&&(!clock_tick_flag)&&(display_done_flag)&&(!button_flag)) {            
+
+        if((idle_timer >= IDLE_TICKS)&&(!clock_tick_flag)&&(display_done_flag)&&(!button_flag)) {
             display_off();
-            sd_app_evt_wait();            
+            sd_app_evt_wait();
             idle_timer = IDLE_TICKS;
         }
     }
