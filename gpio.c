@@ -5,16 +5,16 @@
 #include "nrf.h"
 #include "nrf_nvic.h"
 
-#define NRF_LOG_MODULE_NAME "GIO"
+#define NRF_LOG_MODULE_NAME "GPIO"
 
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
-  
-#define GPIOTE_PRIORITY 1
 
 #define BTN_PIN 9
 
-//static volatile uint8_t* m_gpio_button_flag;
+static uint8_t old_in;
+static uint8_t new_in;
+static volatile uint8_t* m_gpio_button_flag;
 
 void gpio_init() {
     NRF_LOG_INFO("Module init.\r\n");
@@ -25,9 +25,13 @@ void gpio_init() {
 
 void gpio_button_set_flag(volatile uint8_t* main_button_flag)
 {
-    //m_gpio_button_flag = main_button_flag;
+    m_gpio_button_flag = main_button_flag;
 }
 
 void gpio_read(void) {
-    
+    new_in = (((NRF_GPIO->IN) >> BTN_PIN) & 0x01);
+    if (old_in && !new_in) {
+        *m_gpio_button_flag = 1;
+    }
+    old_in = new_in;
 };

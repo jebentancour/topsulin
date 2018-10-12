@@ -66,15 +66,9 @@
 #include "ble_gls.h"
 #include "ble_racp.h"
 #include "ble_conn_params.h"
-//#include "boards.h"
-//#include "sensorsim.h"
 #include "softdevice_handler.h"
 #include "app_timer.h"
 #include "peer_manager.h"
-//#include "app_button.h"
-//#include "app_uart.h"
-//#include "bsp.h"
-//#include "bsp_btn_ble.h"
 #include "fds.h"
 #include "fstorage.h"
 #include "ble_conn_state.h"
@@ -84,35 +78,32 @@
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 
+#include "clock.h"
+
 #define NRF_CLOCK_LFCLKSRC              {.source = NRF_CLOCK_LF_SRC_XTAL, .rc_ctiv = 0, .rc_temp_ctiv = 0, .xtal_accuracy=NRF_CLOCK_LF_XTAL_ACCURACY_20_PPM}
 
 #if (NRF_SD_BLE_API_VERSION == 3)
 #define NRF_BLE_MAX_MTU_SIZE            GATT_MTU_SIZE_DEFAULT                       /**< MTU size used in the softdevice enabling and to reply to a BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST event. */
 #endif
 
-#define CENTRAL_LINK_COUNT              0 /**< Number of central links used by the application. When changing this number remember to adjust the RAM settings*/
-#define PERIPHERAL_LINK_COUNT           1 /**< Number of peripheral links used by the application. When changing this number remember to adjust the RAM settings*/
+#define CENTRAL_LINK_COUNT              0                                           /**< Number of central links used by the application. When changing this number remember to adjust the RAM settings*/
+#define PERIPHERAL_LINK_COUNT           1                                           /**< Number of peripheral links used by the application. When changing this number remember to adjust the RAM settings*/
 
 #define IS_SRVC_CHANGED_CHARACT_PRESENT 0                                           /**< Include or not the service_changed characteristic. if not enabled, the server's database cannot be changed for the lifetime of the device*/
 
-#define DEVICE_NAME                     "Nordic_Glucose"                            /**< Name of device. Will be included in the advertising data. */
-#define MANUFACTURER_NAME               "NordicSemiconductor"                       /**< Manufacturer. Will be passed to Device Information Service. */
-#define MODEL_NUMBER                    "nRF51"                                     /**< Model Number string. Will be passed to Device Information Service. */
+#define DEVICE_NAME                     "Topsulin"                                  /**< Name of device. Will be included in the advertising data. */
+#define MANUFACTURER_NAME               "Glucosee"                                  /**< Manufacturer. Will be passed to Device Information Service. */
+#define MODEL_NUMBER                    "alpha"                                     /**< Model Number string. Will be passed to Device Information Service. */
 #define MANUFACTURER_ID                 0x55AA55AA55                                /**< DUMMY Manufacturer ID. Will be passed to Device Information Service. You shall use the ID for your Company*/
 #define ORG_UNIQUE_ID                   0xEEBBEE                                    /**< DUMMY Organisation Unique ID. Will be passed to Device Information Service. You shall use the Organisation Unique ID relevant for your Company */
 
 #define APP_ADV_INTERVAL                40                                          /**< The advertising interval (in units of 0.625 ms. This value corresponds to 25 ms). */
-#define APP_ADV_TIMEOUT_IN_SECONDS      180                                         /**< The advertising timeout in units of seconds. */
+#define APP_ADV_TIMEOUT_IN_SECONDS      30                                          /**< The advertising timeout in units of seconds. */
 
 #define APP_TIMER_PRESCALER             0                                           /**< Value of the RTC1 PRESCALER register. */
 #define APP_TIMER_OP_QUEUE_SIZE         4                                           /**< Size of timer operation queues. */
 
 #define SECURITY_REQUEST_DELAY          APP_TIMER_TICKS(400, APP_TIMER_PRESCALER)   /**< Delay after connection until Security Request is sent, if necessary (ticks). */
-
-#define BATTERY_LEVEL_MEAS_INTERVAL     APP_TIMER_TICKS(10000, APP_TIMER_PRESCALER) /**< Battery level measurement interval (ticks). */
-#define MIN_BATTERY_LEVEL               81                                          /**< Minimum battery level as returned by the simulated measurement function. */
-#define MAX_BATTERY_LEVEL               100                                         /**< Maximum battery level as returned by the simulated measurement function. */
-#define BATTERY_LEVEL_INCREMENT         1                                           /**< Value by which the battery level is incremented/decremented for each call to the simulated measurement function. */
 
 #define MIN_CONN_INTERVAL               MSEC_TO_UNITS(10, UNIT_1_25_MS)             /**< Minimum acceptable connection interval (10 ms). */
 #define MAX_CONN_INTERVAL               MSEC_TO_UNITS(100, UNIT_1_25_MS)            /**< Maximum acceptable connection interval (100 ms) */
@@ -131,8 +122,6 @@
 #define SEC_PARAM_MIN_KEY_SIZE          7                                           /**< Minimum encryption key size. */
 #define SEC_PARAM_MAX_KEY_SIZE          16                                          /**< Maximum encryption key size. */
 
-#define PASSKEY_TXT                     "Passkey:"                                  /**< Message to be displayed together with the pass-key. */
-#define PASSKEY_TXT_LENGTH              8                                           /**< Length of message to be displayed together with the pass-key. */
 #define PASSKEY_LENGTH                  6                                           /**< Length of pass-key received by the stack for display. */
 
 #define DEAD_BEEF                       0xDEADBEEF                                  /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
@@ -143,10 +132,6 @@ static uint16_t  m_conn_handle = BLE_CONN_HANDLE_INVALID;                       
 static ble_bas_t m_bas;                                                             /**< Structure used to identify the battery service. */
 static ble_gls_t m_gls;                                                             /**< Structure used to identify the glucose service. */
 
-//static sensorsim_cfg_t   m_battery_sim_cfg;                                         /**< Battery Level sensor simulator configuration. */
-//static sensorsim_state_t m_battery_sim_state;                                       /**< Battery Level sensor simulator state. */
-
-APP_TIMER_DEF(m_battery_timer_id);                                                  /**< Battery timer. */
 APP_TIMER_DEF(m_sec_req_timer_id);                                                  /**< Security Request timer. */
 
 static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_GLUCOSE_SERVICE, BLE_UUID_TYPE_BLE},
@@ -154,8 +139,6 @@ static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_GLUCOSE_SERVICE, BLE_UUID_TYPE_BLE}
                                    {BLE_UUID_DEVICE_INFORMATION_SERVICE, BLE_UUID_TYPE_BLE}}; /**< Universally unique service identifiers. */
 
 pm_peer_id_t m_peer_to_be_deleted = PM_PEER_ID_INVALID;
-
-static void advertising_start(void);
 
 
 /**@brief Callback function for asserts in the SoftDevice.
@@ -313,13 +296,9 @@ static void service_error_handler(uint32_t nrf_error)
 /**@brief Function for performing battery measurement and updating the Battery Level characteristic
  *        in Battery Service.
  */
-static void battery_level_update(void)
+void battery_level_update(uint8_t  battery_level)
 {
     uint32_t err_code;
-    uint8_t  battery_level;
-
-    //battery_level = (uint8_t)sensorsim_measure(&m_battery_sim_state, &m_battery_sim_cfg);
-    battery_level = 20;
 
     err_code = ble_bas_battery_level_update(&m_bas, battery_level);
     if ((err_code != NRF_SUCCESS) &&
@@ -330,20 +309,6 @@ static void battery_level_update(void)
     {
         APP_ERROR_HANDLER(err_code);
     }
-}
-
-
-/**@brief Function for handling the Battery measurement timer timeout.
- *
- * @details This function will be called each time the battery level measurement timer expires.
- *
- * @param[in] p_context  Pointer used for passing some arbitrary information (context) from the
- *                       app_start_timer() call to the timeout handler.
- */
-static void battery_level_meas_timeout_handler(void * p_context)
-{
-    UNUSED_PARAMETER(p_context);
-    battery_level_update();
 }
 
 
@@ -375,30 +340,34 @@ static void sec_req_timeout_handler(void * p_context)
 /**@brief Function for updating glucose measurement and updating glucose characteristic in Glucose.
           Service.
  */
-/*static void read_glucose_measurement(void)
+void read_glucose_measurement(void)
 {
     ble_gls_rec_t rec;
     uint32_t      err_code;
 
     static int16_t s_mantissa = 550;
     static int16_t s_exponent = -3;
-    static uint8_t s_secs     = 5;
+
+    uint32_t  ms = clock_get_timestamp();
+    uint8_t   s = (ms / 1000) % 60;
+    uint8_t   m = (ms / 60000) % 60;
+    uint8_t   h = ms / 3600000;
 
     // simulate the reading of a glucose measurement.
     rec.meas.flags = BLE_GLS_MEAS_FLAG_TIME_OFFSET |
                      BLE_GLS_MEAS_FLAG_CONC_TYPE_LOC |
                      BLE_GLS_MEAS_FLAG_UNITS_MOL_L;
-    rec.meas.base_time.year                 = 2012;
-    rec.meas.base_time.month                = 1;
+    rec.meas.base_time.year                 = 2018;
+    rec.meas.base_time.month                = 10;
     rec.meas.base_time.day                  = 1;
-    rec.meas.base_time.hours                = 12;
-    rec.meas.base_time.minutes              = 30;
-    rec.meas.base_time.seconds              = 15;
+    rec.meas.base_time.hours                = h;
+    rec.meas.base_time.minutes              = m;
+    rec.meas.base_time.seconds              = s;
     rec.meas.glucose_concentration.exponent = s_exponent;
     rec.meas.glucose_concentration.mantissa = s_mantissa;
     rec.meas.time_offset                    = 0;
-    rec.meas.type                           = BLE_GLS_MEAS_TYPE_CAP_BLOOD;
-    rec.meas.sample_location                = BLE_GLS_MEAS_LOC_FINGER;
+    rec.meas.type                           = BLE_GLS_MEAS_TYPE_UNDET_BLOOD;
+    rec.meas.sample_location                = BLE_GLS_MEAS_LOC_NOT_AVAIL;
     rec.meas.sensor_status_annunciation     = 0;
 
     // change values for next read.
@@ -408,18 +377,12 @@ static void sec_req_timeout_handler(void * p_context)
         s_mantissa -= 434;
     }
 
-    s_secs += 3;
-    if (s_secs > 59)
-    {
-        s_secs = 0;
-    }
-
     err_code = ble_gls_glucose_new_meas(&m_gls, &rec);
     if (err_code != NRF_SUCCESS)
     {
         // Do nothing.
     }
-}*/
+}
 
 
 /**@brief Function for the Timer initialization.
@@ -432,12 +395,6 @@ static void timers_init(void)
 
     // Initialize timer module.
     APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_OP_QUEUE_SIZE, false);
-
-    // Create timers.
-    err_code = app_timer_create(&m_battery_timer_id,
-                                APP_TIMER_MODE_REPEATED,
-                                battery_level_meas_timeout_handler);
-    APP_ERROR_CHECK(err_code);
 
     // Create Security Request timer.
     err_code = app_timer_create(&m_sec_req_timer_id,
@@ -500,7 +457,7 @@ static void services_init(void)
     gls_init.feature             |= BLE_GLS_FEATURE_LOW_BATT;
     gls_init.feature             |= BLE_GLS_FEATURE_TEMP_HIGH_LOW;
     gls_init.feature             |= BLE_GLS_FEATURE_GENERAL_FAULT;
-    gls_init.is_context_supported = false;
+    gls_init.is_context_supported = true;
 
     err_code = ble_gls_init(&m_gls, &gls_init);
     APP_ERROR_CHECK(err_code);
@@ -540,31 +497,7 @@ static void services_init(void)
 
     err_code = ble_dis_init(&dis_init);
     APP_ERROR_CHECK(err_code);
-}
 
-
-/**@brief Function for initializing the sensor simulators.
- */
-static void sensor_simulator_init(void)
-{
-    //m_battery_sim_cfg.min          = MIN_BATTERY_LEVEL;
-    //m_battery_sim_cfg.max          = MAX_BATTERY_LEVEL;
-    //m_battery_sim_cfg.incr         = BATTERY_LEVEL_INCREMENT;
-    //m_battery_sim_cfg.start_at_max = true;
-
-    //sensorsim_init(&m_battery_sim_state, &m_battery_sim_cfg);
-}
-
-
-/**@brief Function for starting application timers.
- */
-static void application_timers_start(void)
-{
-    uint32_t err_code;
-
-    // Start application timers.
-    err_code = app_timer_start(m_battery_timer_id, BATTERY_LEVEL_MEAS_INTERVAL, NULL);
-    APP_ERROR_CHECK(err_code);
 }
 
 
@@ -623,27 +556,6 @@ static void conn_params_init(void)
 }
 
 
-/**@brief Function for putting the chip into sleep mode.
- *
- * @note This function will not return.
- */
-/*static void sleep_mode_enter(void)
-{
-    uint32_t err_code;
-
-    //err_code = bsp_indication_set(BSP_INDICATE_IDLE);
-    //APP_ERROR_CHECK(err_code);
-
-    // Prepare wakeup buttons.
-    //err_code = bsp_btn_ble_sleep_mode_prepare();
-    //APP_ERROR_CHECK(err_code);
-
-    // Go to system-off mode (this function will not return; wakeup will cause a reset).
-    err_code = sd_power_system_off();
-    APP_ERROR_CHECK(err_code);
-}*/
-
-
 /**@brief Function for handling the Application's BLE Stack events.
  *
  * @details This function will be called for advertising events which are passed to the application.
@@ -658,13 +570,10 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
     {
         case BLE_ADV_EVT_FAST:
             NRF_LOG_INFO("Fast advertising\r\n");
-            //err_code = bsp_indication_set(BSP_INDICATE_ADVERTISING);
-            //APP_ERROR_CHECK(err_code);
             break; // BLE_ADV_EVT_FAST
 
         case BLE_ADV_EVT_IDLE:
             NRF_LOG_INFO("Idle advertising\r\n");
-            //sleep_mode_enter();
             break; // BLE_ADV_EVT_IDLE
 
         default:
@@ -806,7 +715,6 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
     ble_gls_on_ble_evt(&m_gls, p_ble_evt);
     ble_bas_on_ble_evt(&m_bas, p_ble_evt);
     ble_conn_params_on_ble_evt(p_ble_evt);
-    //bsp_btn_ble_on_ble_evt(p_ble_evt);
     on_ble_evt(p_ble_evt);
     ble_advertising_on_ble_evt(p_ble_evt);
 }
@@ -869,50 +777,6 @@ static void ble_stack_init(void)
     err_code = softdevice_sys_evt_handler_set(sys_evt_dispatch);
     APP_ERROR_CHECK(err_code);
 }
-
-
-/**@brief Function for handling events from the BSP module.
- *
- * @param[in]   event   Event generated by button press.
- */
-/*static void bsp_event_handler(bsp_event_t event)
-{
-    uint32_t err_code;
-
-    switch (event)
-    {
-        case BSP_EVENT_SLEEP:
-            sleep_mode_enter();
-            break; // BSP_EVENT_SLEEP
-
-        case BSP_EVENT_DISCONNECT:
-            err_code = sd_ble_gap_disconnect(m_conn_handle,
-                                             BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-            if (err_code != NRF_ERROR_INVALID_STATE)
-            {
-                APP_ERROR_CHECK(err_code);
-            }
-            break; // BSP_EVENT_DISCONNECT
-
-        case BSP_EVENT_WHITELIST_OFF:
-            if (m_conn_handle == BLE_CONN_HANDLE_INVALID)
-            {
-                err_code = ble_advertising_restart_without_whitelist();
-                if (err_code != NRF_ERROR_INVALID_STATE)
-                {
-                    APP_ERROR_CHECK(err_code);
-                }
-            }
-            break; // BSP_EVENT_WHITELIST_OFF
-
-        case BSP_EVENT_KEY_1:
-            read_glucose_measurement();
-            break; // BSP_EVENT_KEY_1
-
-        default:
-            break;
-    }
-}*/
 
 
 /**@brief Function for the Peer Manager initialization.
@@ -988,44 +852,11 @@ static void advertising_init(void)
 }
 
 
-/**@brief Function for initializing buttons and leds.
- *
- * @param[out] p_erase_bonds  Will be true if the clear bonding button was pressed to wake the application up.
- */
-/*static void buttons_leds_init(bool * p_erase_bonds)
-{
-    bsp_event_t startup_event;
-
-    uint32_t err_code = bsp_init(BSP_INIT_LED | BSP_INIT_BUTTONS,
-                                 APP_TIMER_TICKS(100, APP_TIMER_PRESCALER),
-                                 bsp_event_handler);
-
-    APP_ERROR_CHECK(err_code);
-
-    err_code = bsp_btn_ble_init(NULL, &startup_event);
-    APP_ERROR_CHECK(err_code);
-
-    *p_erase_bonds = (startup_event == BSP_EVENT_CLEAR_BONDING_DATA);
-}*/
-
-
-/**@brief Function for the Power manager.
- */
-/*static void power_manage(void)
-{
-    uint32_t err_code = sd_app_evt_wait();
-
-    APP_ERROR_CHECK(err_code);
-}*/
-
-
 /**@brief Function for starting advertising.
  */
-static void advertising_start(void)
+void advertising_start(void)
 {
-    uint32_t err_code = ble_advertising_start(BLE_ADV_MODE_FAST);
-
-    APP_ERROR_CHECK(err_code);
+    ble_advertising_start(BLE_ADV_MODE_FAST);
 }
 
 
@@ -1033,42 +864,23 @@ static void advertising_start(void)
  */
 void ble_gs_init(void)
 {
-    //uint32_t err_code;
     bool     erase_bonds;
     erase_bonds = false;
 
-    // Initialize.
-    //err_code = NRF_LOG_INIT(NULL);
-    //APP_ERROR_CHECK(err_code);
-
     timers_init();
-    //buttons_leds_init(&erase_bonds);
     ble_stack_init();
     peer_manager_init(erase_bonds);
     if (erase_bonds == true)
     {
         NRF_LOG_INFO("Bonds erased!\r\n");
     }
+    services_init();
     gap_params_init();
     advertising_init();
-    services_init();
-    sensor_simulator_init();
     conn_params_init();
-
-    // Start execution.
-    application_timers_start();
 
     NRF_LOG_INFO("GLS Start!\r\n");
     advertising_start();
-
-    // Enter main loop.
-    /*for (;;)
-    {
-        if (NRF_LOG_PROCESS() == false)
-        {
-            power_manage();
-        }
-    }*/
 }
 
 

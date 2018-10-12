@@ -1,4 +1,4 @@
-#include <stdio.h>
+//#include <stdio.h>
 
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
@@ -21,7 +21,6 @@ volatile uint8_t display_done_flag;
 volatile uint8_t clock_tick_flag;
 volatile uint8_t button_flag;
 
-uint8_t old_in;
 uint8_t idle_timer;
 
 int main(void)
@@ -31,6 +30,7 @@ int main(void)
     NRF_LOG_FLUSH();
 
     ble_gs_init();
+    battery_level_update(100);
 
     clock_tick_flag = 0;
     clock_tick_set_flag(&clock_tick_flag);
@@ -43,6 +43,7 @@ int main(void)
     gpio_init();
 
     display_done_set_flag(&display_done_flag);
+    nrf_delay_ms(100);
     display_init();
     display_show();
 
@@ -59,15 +60,13 @@ int main(void)
             idle_timer++;
         }
 
-        uint8_t new_in = (((NRF_GPIO->IN) >> 9) & 0x01);
-        if (old_in && !new_in) {
-            button_flag = 1;
-        }
-        old_in = new_in;
+        gpio_read();
 
         if(button_flag) {
             button_flag = 0;
             display_on();
+            advertising_start();
+            read_glucose_measurement();
             idle_timer = 0;
         }
 
