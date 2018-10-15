@@ -26,7 +26,7 @@ uint8_t idle_timer;
 int main(void)
 {
     NRF_LOG_INIT(clock_get_timestamp);
-    NRF_LOG_INFO("Init.\r\n");
+    NRF_LOG_INFO("Init.\n");
     NRF_LOG_FLUSH();
 
     ble_gs_init();
@@ -67,6 +67,7 @@ int main(void)
             display_on();
             advertising_start();
             read_glucose_measurement();
+            temperature_update();
             idle_timer = 0;
         }
 

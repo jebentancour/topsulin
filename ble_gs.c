@@ -79,6 +79,7 @@
 #include "nrf_log_ctrl.h"
 
 #include "clock.h"
+#include "our_service.h"
 
 #define NRF_CLOCK_LFCLKSRC              {.source = NRF_CLOCK_LF_SRC_XTAL, .rc_ctiv = 0, .rc_temp_ctiv = 0, .xtal_accuracy=NRF_CLOCK_LF_XTAL_ACCURACY_20_PPM}
 
@@ -91,7 +92,7 @@
 
 #define IS_SRVC_CHANGED_CHARACT_PRESENT 0                                           /**< Include or not the service_changed characteristic. if not enabled, the server's database cannot be changed for the lifetime of the device*/
 
-#define DEVICE_NAME                     "Topsulin"                                  /**< Name of device. Will be included in the advertising data. */
+#define DEVICE_NAME                     "Topsulin"                                 /**< Name of device. Will be included in the advertising data. */
 #define MANUFACTURER_NAME               "Glucosee"                                  /**< Manufacturer. Will be passed to Device Information Service. */
 #define MODEL_NUMBER                    "alpha"                                     /**< Model Number string. Will be passed to Device Information Service. */
 #define MANUFACTURER_ID                 0x55AA55AA55                                /**< DUMMY Manufacturer ID. Will be passed to Device Information Service. You shall use the ID for your Company*/
@@ -131,12 +132,16 @@
 static uint16_t  m_conn_handle = BLE_CONN_HANDLE_INVALID;                           /**< Handle of the current connection. */
 static ble_bas_t m_bas;                                                             /**< Structure used to identify the battery service. */
 static ble_gls_t m_gls;                                                             /**< Structure used to identify the glucose service. */
+static ble_os_t  m_our_service;
 
 APP_TIMER_DEF(m_sec_req_timer_id);                                                  /**< Security Request timer. */
 
 static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_GLUCOSE_SERVICE, BLE_UUID_TYPE_BLE},
                                    {BLE_UUID_BATTERY_SERVICE, BLE_UUID_TYPE_BLE},
                                    {BLE_UUID_DEVICE_INFORMATION_SERVICE, BLE_UUID_TYPE_BLE}}; /**< Universally unique service identifiers. */
+
+static ble_uuid_t m_more_adv_uuids[] = {{BLE_UUID_OUR_SERVICE, BLE_UUID_TYPE_VENDOR_BEGIN}};
+
 
 pm_peer_id_t m_peer_to_be_deleted = PM_PEER_ID_INVALID;
 
@@ -156,6 +161,7 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
 {
     app_error_handler(DEAD_BEEF, line_num, p_file_name);
 }
+
 
 /**@brief Function for handling Peer Manager events.
  *
@@ -208,7 +214,7 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
             m_conn_handle = BLE_CONN_HANDLE_INVALID;
             err_code = sd_ble_gap_disconnect(m_conn_handle,
                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-            APP_ERROR_CHECK(err_code);
+            //APP_ERROR_CHECK(err_code);
         } break;
 
         case PM_EVT_CONN_SEC_CONFIG_REQ:
@@ -469,7 +475,6 @@ static void services_init(void)
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&bas_init.battery_level_char_attr_md.cccd_write_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&bas_init.battery_level_char_attr_md.read_perm);
     BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&bas_init.battery_level_char_attr_md.write_perm);
-
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&bas_init.battery_level_report_read_perm);
 
     bas_init.evt_handler          = NULL;
@@ -497,6 +502,9 @@ static void services_init(void)
 
     err_code = ble_dis_init(&dis_init);
     APP_ERROR_CHECK(err_code);
+
+    // Initialize Our Service.
+    our_service_init(&m_our_service);
 
 }
 
@@ -717,6 +725,7 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
     ble_conn_params_on_ble_evt(p_ble_evt);
     on_ble_evt(p_ble_evt);
     ble_advertising_on_ble_evt(p_ble_evt);
+    ble_our_service_on_ble_evt(p_ble_evt, &m_our_service);
 }
 
 
@@ -831,6 +840,7 @@ static void advertising_init(void)
 {
     uint32_t               err_code;
     ble_advdata_t          advdata;
+    ble_advdata_t          scanrsp;
     ble_adv_modes_config_t options;
 
     // Build and set advertising data.
@@ -842,12 +852,16 @@ static void advertising_init(void)
     advdata.uuids_complete.uuid_cnt = sizeof(m_adv_uuids) / sizeof(m_adv_uuids[0]);
     advdata.uuids_complete.p_uuids  = m_adv_uuids;
 
+    memset(&scanrsp, 0, sizeof(scanrsp));
+    scanrsp.uuids_complete.uuid_cnt = sizeof(m_more_adv_uuids) / sizeof(m_more_adv_uuids[0]);
+    scanrsp.uuids_complete.p_uuids  = m_more_adv_uuids;
+
     memset(&options, 0, sizeof(options));
     options.ble_adv_fast_enabled  = true;
     options.ble_adv_fast_interval = APP_ADV_INTERVAL;
     options.ble_adv_fast_timeout  = APP_ADV_TIMEOUT_IN_SECONDS;
 
-    err_code = ble_advertising_init(&advdata, NULL, &options, on_adv_evt, NULL);
+    err_code = ble_advertising_init(&advdata, &scanrsp, &options, on_adv_evt, NULL);
     APP_ERROR_CHECK(err_code);
 }
 
@@ -866,6 +880,7 @@ void ble_gs_init(void)
 {
     bool     erase_bonds;
     erase_bonds = false;
+    //erase_bonds = true;
 
     timers_init();
     ble_stack_init();
@@ -881,6 +896,15 @@ void ble_gs_init(void)
 
     NRF_LOG_INFO("GLS Start!\r\n");
     advertising_start();
+}
+
+void temperature_update()
+{
+    int32_t temperature = 0;
+    sd_temp_get(&temperature);
+    our_temperature_characteristic_update(&m_our_service, &temperature);
+    NRF_LOG_INFO("Temperature %#04x\r\n", temperature);
+    NRF_LOG_FLUSH();
 }
 
 
