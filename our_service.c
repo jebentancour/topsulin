@@ -56,12 +56,12 @@
 static void on_write(ble_os_t * p_our_service, ble_evt_t * p_ble_evt)
 {
     ble_gatts_evt_write_t * p_evt_write = &p_ble_evt->evt.gatts_evt.params.write;
-    NRF_LOG_INFO("Evt Write handle: %#04x\n", p_evt_write->handle);
+    //NRF_LOG_INFO("Evt Write handle: %#04x\n", p_evt_write->handle);
 
     if (p_evt_write->handle == p_our_service->char_handles.value_handle)
     {
         NRF_LOG_INFO("Write to temp len: %#04x\n", p_evt_write->len);
-        //NRF_LOG_INFO("data[0]: %#04x\n", p_evt_write->data[0]);
+        NRF_LOG_INFO("data[0]: %#04x\n", p_evt_write->data[0]);
     }
     NRF_LOG_FLUSH();
 }
@@ -86,9 +86,6 @@ void ble_our_service_on_ble_evt(ble_evt_t * p_ble_evt, void * p_context)
           // No implementation needed.
           break;
     }
-
-    NRF_LOG_INFO("Connection handle: %#04x\n", p_our_service->conn_handle);
-    NRF_LOG_FLUSH();
 }
 
 

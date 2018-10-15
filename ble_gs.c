@@ -92,7 +92,7 @@
 
 #define IS_SRVC_CHANGED_CHARACT_PRESENT 0                                           /**< Include or not the service_changed characteristic. if not enabled, the server's database cannot be changed for the lifetime of the device*/
 
-#define DEVICE_NAME                     "Topsulin"                                 /**< Name of device. Will be included in the advertising data. */
+#define DEVICE_NAME                     "Topsulin"                                  /**< Name of device. Will be included in the advertising data. */
 #define MANUFACTURER_NAME               "Glucosee"                                  /**< Manufacturer. Will be passed to Device Information Service. */
 #define MODEL_NUMBER                    "alpha"                                     /**< Model Number string. Will be passed to Device Information Service. */
 #define MANUFACTURER_ID                 0x55AA55AA55                                /**< DUMMY Manufacturer ID. Will be passed to Device Information Service. You shall use the ID for your Company*/
@@ -362,6 +362,7 @@ void read_glucose_measurement(void)
     // simulate the reading of a glucose measurement.
     rec.meas.flags = BLE_GLS_MEAS_FLAG_TIME_OFFSET |
                      BLE_GLS_MEAS_FLAG_CONC_TYPE_LOC |
+                     BLE_GLS_MEAS_FLAG_CONTEXT_INFO |
                      BLE_GLS_MEAS_FLAG_UNITS_MOL_L;
     rec.meas.base_time.year                 = 2018;
     rec.meas.base_time.month                = 10;
@@ -375,6 +376,11 @@ void read_glucose_measurement(void)
     rec.meas.type                           = BLE_GLS_MEAS_TYPE_UNDET_BLOOD;
     rec.meas.sample_location                = BLE_GLS_MEAS_LOC_NOT_AVAIL;
     rec.meas.sensor_status_annunciation     = 0;
+
+    rec.context.flags = BLE_GLS_CONTEXT_FLAG_CARB;
+    rec.context.carbohydrate_id = BLE_GLS_CONTEXT_CARB_LUNCH;
+    rec.context.carbohydrate.exponent = s_exponent;
+    rec.context.carbohydrate.mantissa = s_mantissa;
 
     // change values for next read.
     s_mantissa += 23;
