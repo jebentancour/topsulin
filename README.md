@@ -1,5 +1,37 @@
 # Topsulin
 
+## Software
+
+### BLE Services
+
+|GATT Services |GATT Characteristics        |Descripción                              |
+|--------------|----------------------------|-----------------------------------------|
+|Glucose       |                            |Servicio para transferir los registros   |
+|              |Glucose Measurement         |Valores de glucemia                      |
+|              |Glucose Measurement Context |Información adicional (CHO e insulina)   |
+|              |Glucose Feature             |Información sobre features soportadas    |
+|              |Record Access Control Point |Punto de control de acceso del registro  |
+|Topsulin      |                            |Servicio propietario de Topsulin         |
+|              |Configuration               |Configuración de preferencias de usuario |
+|              |Name                        |Nombre para mostrar                      |
+|              |Time                        |Fecha y hora                             |
+|              |Calculator                  |Parámetros pra el calculador de bolos    |
+|              |Insulin                     |Tipo, capacidad y cantidad restante      |
+
+Opciones configurables:
+
+- Invertir los colores de la pantalla
+- Unidades de glucemia (mol/L o kg/L)
+- Calculador de bolo (activado o desactivado)
+- Orientación de pantalla (diestro o zurdo)
+- Unidades de CHO (gramos o porciones)
+- Equivalencia entre gramos y porciones
+- Registro de CHO (si o no)
+- Registro de glucemia (si o no)
+- Registro de insulina (si o no)
+- Tipo de insulina
+- Capacidad de la lapicera (en U de insulina)
+
 ## Board
 
 |Programming header|
@@ -62,20 +94,3 @@ SoC [nRF51822](https://www.nordicsemi.com/eng/nordic/download_resource/62726/14/
 |NA |0x50000000   |GPIO        |GPIO        |General Purpose Input and Output.            |gpio              |
 |NA |0x10000000   |FICR        |FICR        |Factory Information Configuration Registers. |SoftDevice        |
 |NA |0x10001000   |UICR        |UICR        |User Information Configuration Registers.    |SoftDevice        |
-
-## Software
-
-Opciones configurables:
-
-- Intertir los colores de la pantalla
-- Unidades de glucemia (mol/L o kg/L)
-- Calculador de bolo (activado o desactivado)
-- Orientación de pantalla (diestro o zurdo)
-- Nombre
-- Unidades de CHO (gramos o porciones)
-- Equivalencia entre gramos y porciones
-- Registro de CHO (si o no)
-- Registro de glucemia (si o no)
-- Registro de insulina (si o no)
-- Tipo de insulina
-- Capacidad de la lapicera (en U de insulina)
