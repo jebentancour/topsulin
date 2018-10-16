@@ -62,3 +62,20 @@ SoC [nRF51822](https://www.nordicsemi.com/eng/nordic/download_resource/62726/14/
 |NA |0x50000000   |GPIO        |GPIO        |General Purpose Input and Output.            |gpio              |
 |NA |0x10000000   |FICR        |FICR        |Factory Information Configuration Registers. |SoftDevice        |
 |NA |0x10001000   |UICR        |UICR        |User Information Configuration Registers.    |SoftDevice        |
+
+## Software
+
+Opciones configurables:
+
+- Intertir los colores de la pantalla
+- Unidades de glucemia (mol/L o kg/L)
+- Calculador de bolo (activado o desactivado)
+- Orientación de pantalla (diestro o zurdo)
+- Nombre
+- Unidades de CHO (gramos o porciones)
+- Equivalencia entre gramos y porciones
+- Registro de CHO (si o no)
+- Registro de glucemia (si o no)
+- Registro de insulina (si o no)
+- Tipo de insulina
+- Capacidad de la lapicera (en U de insulina)
