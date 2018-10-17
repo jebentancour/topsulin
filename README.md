@@ -6,11 +6,11 @@
 
 |GATT Services |GATT Characteristics        |Descripción                              |
 |--------------|----------------------------|-----------------------------------------|
-|Glucose       |                            |Servicio para transferir los registros   |
-|              |Glucose Measurement         |Valores de glucemia                      |
-|              |Glucose Measurement Context |Información adicional (CHO e insulina)   |
-|              |Glucose Feature             |Información sobre features soportadas    |
-|              |Record Access Control Point |Punto de control de acceso del registro  |
+|Glucose       |0x1808                      |Servicio estándar para glucómetros       |
+|0x2A18        |Glucose Measurement         |Valores de glucemia                      |
+|0x2A34        |Glucose Measurement Context |Información adicional (CHO e insulina)   |
+|0x2A51        |Glucose Feature             |Información sobre features soportadas    |
+|0x2A52        |Record Access Control Point |Punto de control de acceso del registro  |
 |Topsulin      |                            |Servicio propietario de Topsulin         |
 |              |Configuration               |Configuración de preferencias de usuario |
 |              |Name                        |Nombre para mostrar                      |
