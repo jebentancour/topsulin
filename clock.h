@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#include "ble_gs.h"
+#include "ble_services.h"
 
 #define CLOCK_TICK_MS   100
 

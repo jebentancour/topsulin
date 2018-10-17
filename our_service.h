@@ -40,9 +40,17 @@
 #include "ble.h"
 #include "ble_srv_common.h"
 
-#define BLE_UUID_OUR_BASE_UUID              {{0x23, 0xD1, 0x14, 0xEF, 0x5F, 0xF8, 0x23, 0x15, 0xDE, 0xEF, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00}} // 128-bit base UUID
-#define BLE_UUID_OUR_SERVICE                0xABCD // Just a random, but recognizable value
-#define BLE_UUID_OUR_CHARACTERISTC          0xADAF // Just a random, but recognizable value
+#define BLE_UUID_OUR_BASE_UUID                  {{0x23, 0xD1, 0x14, 0xEF, 0x5F, 0xF8, 0x23, 0x15, 0xDE, 0xEF, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00}} // 128-bit base UUID
+#define BLE_UUID_OUR_SERVICE                    0xABCD // Just a random, but recognizable value
+#define BLE_UUID_OUR_CHARACTERISTC              0xADAF // Just a random, but recognizable value
+
+#define BLE_UUID_TOPSULIN_BASE_UUID             {{0x04, 0x11, 0x52, 0x07, 0x9B, 0x44, 0x4D, 0xEC, 0xA7, 0x31, 0x05, 0x15, 0x00, 0x00, 0x19, 0x34}} // 128-bit base UUID
+#define BLE_UUID_TOPSULIN_SERVICE               0xF65D
+#define BLE_UUID_TOPSULIN_CONFIG_CHARACTERISTC  0xF65E
+#define BLE_UUID_TOPSULIN_NAME_CHARACTERISTC    0xF65F
+#define BLE_UUID_TOPSULIN_TIME_CHARACTERISTC    0xF660
+#define BLE_UUID_TOPSULIN_CALC_CHARACTERISTC    0xF661
+#define BLE_UUID_TOPSULIN_INS_CHARACTERISTC     0xF662
 
 
 /**@brief This structure contains various status information for our service.

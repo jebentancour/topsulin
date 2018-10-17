@@ -14,9 +14,6 @@
 
 #define SSD1306_I2C_ADDRESS 0x3C
 
-#define SSD1306_LCDWIDTH 128
-#define SSD1306_LCDHEIGHT 32
-
 #define SSD1306_SETCONTRAST 0x81
 #define SSD1306_DISPLAYALLON_RESUME 0xA4
 #define SSD1306_DISPLAYALLON 0xA5
@@ -62,7 +59,18 @@
 #define SSD1306_VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL 0x29
 #define SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL 0x2A
 
+#define SSD1306_LCDWIDTH 128
+#define SSD1306_LCDHEIGHT 32
+
 // the memory buffer for the LCD
+
+// Los bytes estan colgados de arriba a abajo y van avanzando de izquierda a derecha:
+// byte0       byte1         ..... byte127
+// bit0        bit0
+// bit1        bit1
+// bit2        bit2
+// ....        ....
+// byte(128*i) byte(128*i+1)
 
 static uint8_t buffer[SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8] = {
 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x30, 0xF0, 0xF0, 0x00,
@@ -234,7 +242,16 @@ void display_process(void) {
             m_buffer_index = 0;
         }
         if (m_buffer_index < (SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8)) {
-            ssd1306_data(buffer[m_buffer_index]);
+            uint8_t value;
+            value = buffer[(SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8) - 1 - m_buffer_index];
+            uint8_t flip;
+            flip = 0;
+            for (uint8_t i = 0; i < 8; i++){
+              if (value & (0x01 << i)){
+                flip |= (0x01 << (7 - i));
+              }
+            }
+            ssd1306_data(flip);
             m_buffer_index++;
         } else {
             if (m_show_req) {
@@ -268,5 +285,44 @@ void display_draw_pixel(int16_t x, int16_t y, uint16_t color) {
         case WHITE:   buffer[x+ (y/8)*SSD1306_LCDWIDTH] |=  (1 << (y&7)); break;
         case BLACK:   buffer[x+ (y/8)*SSD1306_LCDWIDTH] &= ~(1 << (y&7)); break;
         case INVERSE: buffer[x+ (y/8)*SSD1306_LCDWIDTH] ^=  (1 << (y&7)); break;
+    }
+}
+
+static const uint8_t* m_font;      // Current font.
+static uint8_t m_font_offset = 2;  // Font bytes for meta data.
+static uint8_t m_font_width;       // Font witdth.
+static uint8_t m_font_height;      // Font height.
+
+void display_set_font(const uint8_t* font)
+{
+    m_font = font;
+    m_font_width = m_font[0];
+    m_font_height = m_font[2];
+}
+
+void display_put_char(uint8_t ch, uint8_t x, uint8_t y)
+{
+    if (!m_font) return;
+    if (x > SSD1306_LCDWIDTH - m_font_width) return;
+    if (y > SSD1306_LCDHEIGHT / 8 - m_font_height) return;
+    // Ignore non-printable ASCII characters. This can be modified for
+    // multilingual font.
+    if(ch < 32 || ch > 127)
+    {
+        ch = ' ';
+    }
+    uint8_t i;
+    for(i=0;i<m_font_width;i++)
+    {
+       // Font array starts at 0, ASCII starts at 32
+       buffer[x + SSD1306_LCDWIDTH * y + i] = m_font[(ch-32) * m_font_width + m_font_offset + i];
+    }
+}
+
+void display_put_string(uint8_t * s, uint8_t len, uint8_t x, uint8_t y)
+{
+    uint8_t i;
+    for (i=0;i<len;i++){
+        display_put_char(s[i], x + m_font_width * i, y);
     }
 }
