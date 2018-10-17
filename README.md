@@ -4,19 +4,21 @@
 
 ### BLE Services
 
-|GATT Services |GATT Characteristics        |Descripción                              |
-|--------------|----------------------------|-----------------------------------------|
-|Glucose       |0x1808                      |Servicio estándar para glucómetros       |
-|0x2A18        |Glucose Measurement         |Valores de glucemia                      |
-|0x2A34        |Glucose Measurement Context |Información adicional (CHO e insulina)   |
-|0x2A51        |Glucose Feature             |Información sobre features soportadas    |
-|0x2A52        |Record Access Control Point |Punto de control de acceso del registro  |
-|Topsulin      |                            |Servicio propietario de Topsulin         |
-|              |Configuration               |Configuración de preferencias de usuario |
-|              |Name                        |Nombre para mostrar                      |
-|              |Time                        |Fecha y hora                             |
-|              |Calculator                  |Parámetros pra el calculador de bolos    |
-|              |Insulin                     |Tipo, capacidad y cantidad restante      |
+|GATT Services |GATT Characteristics            |Descripción                              |
+|--------------|--------------------------------|-----------------------------------------|
+|**Glucose**   |0x1808                          |Servicio estándar para glucómetros       |
+|0x2A18        |**Glucose Measurement**         |Valores de glucemia                      |
+|0x2A34        |**Glucose Measurement Context** |Información adicional (CHO e insulina)   |
+|0x2A51        |**Glucose Feature**             |Información sobre features soportadas    |
+|0x2A52        |**Record Access Control Point** |Punto de control de acceso del registro  |
+|**Topsulin**  |0xF65D                          |Servicio propietario de Topsulin         |
+|0xF65E        |**Configuration**               |Configuración de preferencias de usuario |
+|0xF65F        |**Name**                        |Nombre para mostrar                      |
+|0xF660        |**Time**                        |Fecha y hora                             |
+|0xF661        |**Calculator**                  |Parámetros pra el calculador de bolos    |
+|0xF662        |**Insulin**                     |Tipo, capacidad y cantidad restante      |
+
+Base UUID 0x3419-XXXX-1505-31A7-EC4D-449B-0752-1104 
 
 Opciones configurables:
 
