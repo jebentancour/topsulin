@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "i2c.h"
 #include "app_util_platform.h"
@@ -132,6 +133,7 @@ static uint32_t m_buffer_index;
 static uint8_t m_show_req;
 static uint8_t m_process_begin;
 static uint8_t m_display_off;
+static bool rotate_screen;
 static volatile uint8_t i2c_tx_flag;
 
 static void ssd1306_command(uint8_t command) {
@@ -159,8 +161,13 @@ void display_done_set_flag(volatile uint8_t* main_done_flag)
     m_done_flag = main_done_flag;
 }
 
+void display_set_rotation(bool rotation)
+{
+    rotate_screen = rotation;
+}
+
 void display_init(void) {
-    NRF_LOG_INFO("Module init.\r\n");
+    //NRF_LOG_INFO("Module init.\n");
 
     m_display_off = 0;
     m_buffer_index = 0;
@@ -207,8 +214,8 @@ void display_init(void) {
 
     ssd1306_command(SSD1306_DISPLAYON);
 
-    NRF_LOG_INFO("Module init done.\r\n");
-    NRF_LOG_FLUSH();
+    //NRF_LOG_INFO("Module init done.\n");
+    //NRF_LOG_FLUSH();
 }
 
 void display_off(void) {
@@ -251,7 +258,12 @@ void display_process(void) {
                 flip |= (0x01 << (7 - i));
               }
             }
-            ssd1306_data(flip);
+            if (rotate_screen)
+            {
+              ssd1306_data(flip);
+            } else {
+              ssd1306_data(value);
+            }
             m_buffer_index++;
         } else {
             if (m_show_req) {

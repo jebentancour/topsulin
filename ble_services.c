@@ -177,7 +177,7 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
     {
         case PM_EVT_BONDED_PEER_CONNECTED:
         {
-            NRF_LOG_INFO("Connected to a previously bonded device.\r\n");
+            NRF_LOG_INFO("Connected to a previously bonded device.\n");
             // Start Security Request timer.
             err_code = app_timer_start(m_sec_req_timer_id, SECURITY_REQUEST_DELAY, NULL);
             APP_ERROR_CHECK(err_code);
@@ -193,7 +193,7 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
 
             if (conn_sec_status.mitm_protected)
             {
-                NRF_LOG_INFO("Link secured. Role: %d. conn_handle: %d, Procedure: %d\r\n",
+                NRF_LOG_INFO("Link secured. Role: %d. conn_handle: %d, Procedure: %d\n",
                              ble_conn_state_role(p_evt->conn_handle),
                              p_evt->conn_handle,
                              p_evt->params.conn_sec_succeeded.procedure);
@@ -201,7 +201,7 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
             else
             {
                 // The peer did not use MITM, disconnect.
-                NRF_LOG_INFO("Collector did not use MITM, disconnecting\r\n");
+                NRF_LOG_INFO("Collector did not use MITM, disconnecting\n");
                 err_code = pm_peer_id_get(m_conn_handle, &m_peer_to_be_deleted);
                 APP_ERROR_CHECK(err_code);
                 err_code = sd_ble_gap_disconnect(m_conn_handle,
@@ -212,7 +212,7 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
 
         case PM_EVT_CONN_SEC_FAILED:
         {
-            NRF_LOG_INFO("Failed to secure connection. Disconnecting.\r\n");
+            NRF_LOG_INFO("Failed to secure connection. Disconnecting.\n");
             m_conn_handle = BLE_CONN_HANDLE_INVALID;
             err_code = sd_ble_gap_disconnect(m_conn_handle,
                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
@@ -334,7 +334,7 @@ static void sec_req_timeout_handler(void * p_context)
     if (m_conn_handle != BLE_CONN_HANDLE_INVALID)
     {
         // Initiate bonding.
-        NRF_LOG_DEBUG("Start encryption\r\n");
+        NRF_LOG_DEBUG("Start encryption\n");
         err_code = pm_conn_secure(m_conn_handle, false);
         if (err_code != NRF_ERROR_INVALID_STATE)
         {
@@ -592,11 +592,11 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
     switch (ble_adv_evt)
     {
         case BLE_ADV_EVT_FAST:
-            NRF_LOG_INFO("Fast advertising\r\n");
+            NRF_LOG_INFO("Fast advertising\n");
             break; // BLE_ADV_EVT_FAST
 
         case BLE_ADV_EVT_IDLE:
-            NRF_LOG_INFO("Idle advertising\r\n");
+            NRF_LOG_INFO("Idle advertising\n");
             break; // BLE_ADV_EVT_IDLE
 
         default:
@@ -618,14 +618,14 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
     {
         case BLE_GAP_EVT_DISCONNECTED:
         {
-            NRF_LOG_INFO("Disconnected\r\n");
+            NRF_LOG_INFO("Disconnected\n");
             m_conn_handle = BLE_CONN_HANDLE_INVALID;
             /*check if the last connected peer had not used MITM, if so, delete its bond information*/
             if (m_peer_to_be_deleted != PM_PEER_ID_INVALID)
             {
                 ret_code_t ret_val = pm_peer_delete(m_peer_to_be_deleted);
                 APP_ERROR_CHECK(ret_val);
-                NRF_LOG_DEBUG("Collector's bond deleted\r\n");
+                NRF_LOG_DEBUG("Collector's bond deleted\n");
                 m_peer_to_be_deleted = PM_PEER_ID_INVALID;
             }
         } break; // BLE_GAP_EVT_DISCONNECTED
@@ -633,7 +633,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
         case BLE_GAP_EVT_CONNECTED:
         {
             m_peer_to_be_deleted = PM_PEER_ID_INVALID;
-            NRF_LOG_INFO("Connected\r\n");
+            NRF_LOG_INFO("Connected\n");
             //err_code           = bsp_indication_set(BSP_INDICATE_CONNECTED);
             //APP_ERROR_CHECK(err_code);
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
@@ -644,7 +644,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
 
         case BLE_GATTC_EVT_TIMEOUT:
             // Disconnect on GATT Client timeout event.
-            NRF_LOG_DEBUG("GATT Client Timeout.\r\n");
+            NRF_LOG_DEBUG("GATT Client Timeout.\n");
             err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gattc_evt.conn_handle,
                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
             APP_ERROR_CHECK(err_code);
@@ -652,14 +652,14 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
 
         case BLE_GATTS_EVT_TIMEOUT:
             // Disconnect on GATT Server timeout event.
-            NRF_LOG_DEBUG("GATT Server Timeout.\r\n");
+            NRF_LOG_DEBUG("GATT Server Timeout.\n");
             err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle,
                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
             APP_ERROR_CHECK(err_code);
             break; // BLE_GATTS_EVT_TIMEOUT
 
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
-            NRF_LOG_DEBUG("BLE_GAP_EVT_SEC_PARAMS_REQUEST\r\n");
+            NRF_LOG_DEBUG("BLE_GAP_EVT_SEC_PARAMS_REQUEST\n");
             break; // BLE_GAP_EVT_SEC_PARAMS_REQUEST
 
         case BLE_GAP_EVT_PASSKEY_DISPLAY:
@@ -912,16 +912,6 @@ void ble_services_init(void)
     NRF_LOG_INFO("GLS Start!\n");
     advertising_start();
 }
-
-void temperature_update()
-{
-    int32_t temperature = 0;
-    sd_temp_get(&temperature);
-    our_temperature_characteristic_update(&m_our_service, &temperature);
-    NRF_LOG_INFO("Temperature %#04x\n", temperature);
-    NRF_LOG_FLUSH();
-}
-
 
 /**
  * @}

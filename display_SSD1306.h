@@ -1,10 +1,13 @@
 #include <stdint.h>
+#include <stdbool.h>
 
 #define BLACK 0
 #define WHITE 1
 #define INVERSE 2
 
 void display_done_set_flag(volatile uint8_t* main_done_flag);
+
+void display_set_rotation(bool rotation);
 
 void display_init(void);
 

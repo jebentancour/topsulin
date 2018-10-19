@@ -25,11 +25,10 @@ SRC_FILES += \
   $(SDK_ROOT)/components/boards/boards.c \
   $(SDK_ROOT)/components/drivers_nrf/clock/nrf_drv_clock.c \
   $(SDK_ROOT)/components/drivers_nrf/common/nrf_drv_common.c \
+	$(SDK_ROOT)/components/drivers_nrf/qdec/nrf_drv_qdec.c \
   $(wildcard $(SDK_ROOT)/components/ble/peer_manager/*.c) \
   $(SDK_ROOT)/components/ble/ble_advertising/ble_advertising.c \
   $(SDK_ROOT)/components/ble/ble_racp/ble_racp.c \
-  $(SDK_ROOT)/components/ble/ble_services/ble_bas/ble_bas.c \
-  $(SDK_ROOT)/components/ble/ble_services/ble_dis/ble_dis.c \
   $(SDK_ROOT)/components/ble/ble_services/ble_gls/ble_gls.c \
   $(SDK_ROOT)/components/ble/ble_services/ble_gls/ble_gls_db.c \
   $(SDK_ROOT)/external/segger_rtt/RTT_Syscalls_GCC.c \

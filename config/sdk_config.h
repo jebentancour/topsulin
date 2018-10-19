@@ -1490,7 +1490,7 @@
 // <e> QDEC_ENABLED - nrf_drv_qdec - QDEC peripheral driver
 //==========================================================
 #ifndef QDEC_ENABLED
-#define QDEC_ENABLED 0
+#define QDEC_ENABLED 1
 #endif
 #if  QDEC_ENABLED
 // <o> QDEC_CONFIG_REPORTPER  - Report period
@@ -1520,28 +1520,28 @@
 // <7=> 16384 us
 
 #ifndef QDEC_CONFIG_SAMPLEPER
-#define QDEC_CONFIG_SAMPLEPER 7
+#define QDEC_CONFIG_SAMPLEPER 5
 #endif
 
 // <o> QDEC_CONFIG_PIO_A - A pin  <0-31>
 
 
 #ifndef QDEC_CONFIG_PIO_A
-#define QDEC_CONFIG_PIO_A 31
+#define QDEC_CONFIG_PIO_A 30
 #endif
 
 // <o> QDEC_CONFIG_PIO_B - B pin  <0-31>
 
 
 #ifndef QDEC_CONFIG_PIO_B
-#define QDEC_CONFIG_PIO_B 31
+#define QDEC_CONFIG_PIO_B 1
 #endif
 
 // <o> QDEC_CONFIG_PIO_LED - LED pin  <0-31>
 
 
 #ifndef QDEC_CONFIG_PIO_LED
-#define QDEC_CONFIG_PIO_LED 31
+#define QDEC_CONFIG_PIO_LED 0xFFFFFFFF
 #endif
 
 // <o> QDEC_CONFIG_LEDPRE - LED pre
@@ -1562,7 +1562,7 @@
 
 
 #ifndef QDEC_CONFIG_DBFEN
-#define QDEC_CONFIG_DBFEN 0
+#define QDEC_CONFIG_DBFEN 1
 #endif
 
 // <q> QDEC_CONFIG_SAMPLE_INTEN  - Sample ready interrupt enable
