@@ -17,8 +17,9 @@
 #include "gpio.h"
 #include "ble_services.h"
 #include "encoder.h"
+#include "state.h"
 
-#define IDLE_S          60
+#define IDLE_S          10
 #define IDLE_TICKS      (IDLE_S * 1000)/CLOCK_TICK_MS
 
 volatile uint8_t display_done_flag;
@@ -30,11 +31,11 @@ uint16_t idle_timer;
 
 int main(void)
 {
-    nrf_delay_ms(200);
+    nrf_delay_ms(1000);
 
     NRF_LOG_INIT(clock_get_timestamp);
-    NRF_LOG_INFO("Main init.\n");
-    NRF_LOG_FLUSH();
+    NRF_LOG_INFO("Main init\n");
+    //NRF_LOG_FLUSH();
 
     ble_services_init();
 
@@ -47,22 +48,13 @@ int main(void)
     gpio_button_set_flag(&button_flag);
     gpio_init();
 
+    state_init();
+
     display_done_flag = 0;
     display_done_set_flag(&display_done_flag);
     display_set_rotation(true);
     display_set_font(font8x8);
     display_init();
-
-    display_clear();
-
-    uint8_t topsulin[] = "TOPsulin";
-    display_put_string(topsulin, sizeof(topsulin) - 1, 35, 0);
-    uint8_t line[] = "____________";
-    display_put_string(line, sizeof(line) - 1, 20, 1);
-    uint8_t take_control[] = "Take control";
-    display_put_string(take_control, sizeof(take_control) - 1, 20, 2);
-
-    display_show();
 
     encoder_flag = 0;
     encoder_set_flag(&encoder_flag);
@@ -73,14 +65,7 @@ int main(void)
 
     while (true)
     {
-        if (!display_done_flag) {
-            display_process();
-        }
-
-        if(clock_tick_flag) {
-            clock_tick_flag = 0;
-            idle_timer++;
-        }
+        display_process();
 
         gpio_read();
 
@@ -89,18 +74,24 @@ int main(void)
             display_on();
             encoder_enable();
             advertising_start();
-            read_glucose_measurement();
+            state_on_event(button_pressed);
             idle_timer = 0;
         }
 
         if(encoder_flag) {
             encoder_flag = 0;
-            NRF_LOG_INFO("Encoder position %d\n", encoder_get_position());
-            NRF_LOG_FLUSH();
+            state_on_event(encoder_update);
             idle_timer = 0;
         }
 
-        if((idle_timer >= IDLE_TICKS)&&(!clock_tick_flag)&&(display_done_flag)&&(!button_flag)) {
+        if(clock_tick_flag) {
+            clock_tick_flag = 0;
+            state_on_event(time_update);
+            idle_timer++;
+        }
+
+        if((idle_timer >= IDLE_TICKS)&&(!clock_tick_flag)&&(display_done_flag)&&(!button_flag)&&(!encoder_flag)) {
+            state_disable();
             display_off();
             encoder_disable();
             sd_app_evt_wait();

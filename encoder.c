@@ -31,15 +31,18 @@ static void qdec_event_handler(nrf_drv_qdec_event_t event)
           m_position          -= m_accread;
         } else {
           m_position          += m_accread;
-        }        
-        if (m_report_position != (m_position / 4)) {
-          m_report_position   = m_position / 4;
-          *m_encoder_flag     = 1;
         }
-        //NRF_LOG_INFO("ACCDBL %d\n", m_accdblread);
-        //NRF_LOG_INFO("ACC %d\n", m_accread);
-        //NRF_LOG_INFO("Encoder position %d\n", m_position / 4);
-        //NRF_LOG_FLUSH();
+        if (m_accdblread > 0){
+          //NRF_LOG_INFO("Encoder position %d\n", m_position / 4);
+          NRF_LOG_INFO("ACCDBL %d\n", m_accdblread);
+          NRF_LOG_INFO("ACC %d\n", m_accread);
+          NRF_LOG_FLUSH();
+        } else {
+          if (m_report_position != (m_position / 4)) {
+            m_report_position   = m_position / 4;
+            *m_encoder_flag     = 1;
+          }
+        }
     }
 }
 
@@ -57,8 +60,8 @@ void encoder_init(void)
 
   nrf_drv_qdec_config_t qdec_cfg =
   {
-      .reportper = NRF_QDEC_REPORTPER_10,                     /**< Report period in samples. */
-      .sampleper = NRF_QDEC_SAMPLEPER_512us,                  /**< Sampling period in microseconds. */
+      .reportper = NRF_QDEC_REPORTPER_120,                    /**< Report period in samples. */
+      .sampleper = NRF_QDEC_SAMPLEPER_128us,                  /**< Sampling period in microseconds. */
       .psela = A_PIN,                                         /**< Pin number for A input. */
       .pselb = B_PIN,                                         /**< Pin number for B input. */
       .pselled = 0xFFFFFFFF,                                  /**< Pin number for LED output. */

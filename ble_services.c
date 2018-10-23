@@ -100,7 +100,7 @@
 //#define ORG_UNIQUE_ID                   0xEEBBEE                                    /**< DUMMY Organisation Unique ID. Will be passed to Device Information Service. You shall use the Organisation Unique ID relevant for your Company */
 
 #define APP_ADV_INTERVAL                40                                          /**< The advertising interval (in units of 0.625 ms. This value corresponds to 25 ms). */
-#define APP_ADV_TIMEOUT_IN_SECONDS      180                                         /**< The advertising timeout in units of seconds. */
+#define APP_ADV_TIMEOUT_IN_SECONDS      30                                         /**< The advertising timeout in units of seconds. */
 
 #define APP_TIMER_PRESCALER             0                                           /**< Value of the RTC1 PRESCALER register. */
 #define APP_TIMER_OP_QUEUE_SIZE         4                                           /**< Size of timer operation queues. */
@@ -348,7 +348,7 @@ static void sec_req_timeout_handler(void * p_context)
 /**@brief Function for updating glucose measurement and updating glucose characteristic in Glucose.
           Service.
  */
-void read_glucose_measurement(void)
+void add_glucose_measurement(void)
 {
     ble_gls_rec_t rec;
     uint32_t      err_code;
@@ -909,7 +909,7 @@ void ble_services_init(void)
     advertising_init();
     conn_params_init();
 
-    NRF_LOG_INFO("GLS Start!\n");
+    //NRF_LOG_INFO("GLS Start!\n");
     advertising_start();
 }
 

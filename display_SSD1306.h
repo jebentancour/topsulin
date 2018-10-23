@@ -25,6 +25,8 @@ void display_draw_pixel(int16_t x, int16_t y, uint16_t color);
 
 void display_set_font(const uint8_t* font);
 
-void display_put_char(uint8_t ch, uint8_t x, uint8_t y);
+void display_put_char(char ch, uint8_t x, uint8_t y);
 
-void display_put_string(uint8_t * s, uint8_t len, uint8_t x, uint8_t y);
+void display_put_buff(char * s, uint8_t len, uint8_t x, uint8_t y);
+
+void display_put_string(char * s, uint8_t x, uint8_t y);

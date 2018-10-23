@@ -60,8 +60,7 @@ static void on_write(ble_os_t * p_our_service, ble_evt_t * p_ble_evt)
 
     if (p_evt_write->handle == p_our_service->char_handles.value_handle)
     {
-        NRF_LOG_INFO("Write to temp len: %#04x\n", p_evt_write->len);
-        NRF_LOG_INFO("data[0]: %#04x\n", p_evt_write->data[0]);
+        NRF_LOG_INFO("Write len: %#04x\n", p_evt_write->len);
     }
     NRF_LOG_FLUSH();
 }
@@ -181,16 +180,16 @@ void our_service_init(ble_os_t * p_our_service)
     our_char_add(p_our_service);
 
     // Print messages to Segger Real Time Terminal
-    NRF_LOG_INFO("Exectuing our_service_init().\n"); // Print message to RTT to the application flow
-    NRF_LOG_INFO("Service UUID: %#04x\n", service_uuid.uuid); // Print service UUID should match definition BLE_UUID_OUR_SERVICE
-    NRF_LOG_INFO("Service UUID type: %#02x\n", service_uuid.type); // Print UUID type. Should match BLE_UUID_TYPE_VENDOR_BEGIN. Search for BLE_UUID_TYPES in ble_types.h for more info
-    NRF_LOG_INFO("Service handle: %#04x\n", p_our_service->service_handle); // Print out the service handle. Should match service handle shown in MCP under Attribute values
-    NRF_LOG_INFO("Characterstic Value handle: %#04x\n", p_our_service->char_handles.value_handle);
-    NRF_LOG_FLUSH();
+    //NRF_LOG_INFO("Exectuing our_service_init().\n"); // Print message to RTT to the application flow
+    //NRF_LOG_INFO("Service UUID: %#04x\n", service_uuid.uuid); // Print service UUID should match definition BLE_UUID_OUR_SERVICE
+    //NRF_LOG_INFO("Service UUID type: %#02x\n", service_uuid.type); // Print UUID type. Should match BLE_UUID_TYPE_VENDOR_BEGIN. Search for BLE_UUID_TYPES in ble_types.h for more info
+    //NRF_LOG_INFO("Service handle: %#04x\n", p_our_service->service_handle); // Print out the service handle. Should match service handle shown in MCP under Attribute values
+    //NRF_LOG_INFO("Characterstic Value handle: %#04x\n", p_our_service->char_handles.value_handle);
+    //NRF_LOG_FLUSH();
 }
 
 
-void our_temperature_characteristic_update(ble_os_t *p_our_service, int32_t *temperature_value)
+void our_characteristic_update(ble_os_t *p_our_service, int32_t *characteristic_value);
 {
     // Update characteristic value
     if (p_our_service->conn_handle != BLE_CONN_HANDLE_INVALID)
@@ -203,7 +202,7 @@ void our_temperature_characteristic_update(ble_os_t *p_our_service, int32_t *tem
       hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
       hvx_params.offset = 0;
       hvx_params.p_len  = &len;
-      hvx_params.p_data = (uint8_t*)temperature_value;
+      hvx_params.p_data = (uint8_t*)characteristic_value;
 
       sd_ble_gatts_hvx(p_our_service->conn_handle, &hvx_params);
     }

@@ -73,7 +73,7 @@
 // ....        ....
 // byte(128*i) byte(128*i+1)
 
-static uint8_t buffer[SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8] = {
+static uint8_t buffer[SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8];/* = {
 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x30, 0xF0, 0xF0, 0x00,
 0x00, 0x00, 0x00, 0xC0, 0xE0, 0x70, 0x30, 0x30, 0x70, 0xE0,
 0xC0, 0x00, 0x00, 0x60, 0x60, 0x30, 0x30, 0xB0, 0xF0, 0xE0,
@@ -126,7 +126,7 @@ static uint8_t buffer[SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8] = {
 0x0C, 0x08, 0x08, 0x06, 0x01, 0x04, 0x0C, 0x08, 0x08, 0x0D,
 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 0x00, 0x00
-};
+};*/
 
 static volatile uint8_t* m_done_flag;         /**< Bandera que indica que la pantalla fue actualizada. */
 static uint32_t m_buffer_index;
@@ -312,7 +312,7 @@ void display_set_font(const uint8_t* font)
     m_font_height = m_font[2];
 }
 
-void display_put_char(uint8_t ch, uint8_t x, uint8_t y)
+void display_put_char(char ch, uint8_t x, uint8_t y)
 {
     if (!m_font) return;
     if (x > SSD1306_LCDWIDTH - m_font_width) return;
@@ -331,10 +331,15 @@ void display_put_char(uint8_t ch, uint8_t x, uint8_t y)
     }
 }
 
-void display_put_string(uint8_t * s, uint8_t len, uint8_t x, uint8_t y)
+void display_put_buff(char * s, uint8_t len, uint8_t x, uint8_t y)
 {
     uint8_t i;
     for (i=0;i<len;i++){
         display_put_char(s[i], x + m_font_width * i, y);
     }
+}
+
+void display_put_string(char * s, uint8_t x, uint8_t y)
+{
+    display_put_buff(s, strlen(s), x, y);
 }
