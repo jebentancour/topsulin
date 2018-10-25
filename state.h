@@ -10,4 +10,4 @@ void state_init(void);
 
 void state_on_event(event_t event);
 
-void state_disable(void);
+void state_off(void);

@@ -50,21 +50,10 @@
  * @ref srvlib_conn_params module.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include "nordic_common.h"
-#include "nrf.h"
-#include "app_error.h"
-#include "nrf_gpio.h"
-#include "ble.h"
-#include "ble_hci.h"
-#include "ble_srv_common.h"
-#include "ble_advdata.h"
+#include "ble_services.h"
+
 #include "ble_advertising.h"
-//#include "ble_dis.h"
-//#include "ble_bas.h"
 #include "ble_gls.h"
-#include "ble_racp.h"
 #include "ble_conn_params.h"
 #include "softdevice_handler.h"
 #include "app_timer.h"
@@ -78,9 +67,7 @@
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 
-#include "clock.h"
 #include "our_service.h"
-#include "ble_services.h"
 
 #define NRF_CLOCK_LFCLKSRC              {.source = NRF_CLOCK_LF_SRC_XTAL, .rc_ctiv = 0, .rc_temp_ctiv = 0, .xtal_accuracy=NRF_CLOCK_LF_XTAL_ACCURACY_20_PPM}
 
@@ -94,13 +81,9 @@
 #define IS_SRVC_CHANGED_CHARACT_PRESENT 0                                           /**< Include or not the service_changed characteristic. if not enabled, the server's database cannot be changed for the lifetime of the device*/
 
 #define DEVICE_NAME                     "GLUCOsee"                                  /**< Name of device. Will be included in the advertising data. */
-//#define MANUFACTURER_NAME               "Glucosee"                                  /**< Manufacturer. Will be passed to Device Information Service. */
-//#define MODEL_NUMBER                    "alpha"                                     /**< Model Number string. Will be passed to Device Information Service. */
-//#define MANUFACTURER_ID                 0x55AA55AA55                                /**< DUMMY Manufacturer ID. Will be passed to Device Information Service. You shall use the ID for your Company*/
-//#define ORG_UNIQUE_ID                   0xEEBBEE                                    /**< DUMMY Organisation Unique ID. Will be passed to Device Information Service. You shall use the Organisation Unique ID relevant for your Company */
 
 #define APP_ADV_INTERVAL                40                                          /**< The advertising interval (in units of 0.625 ms. This value corresponds to 25 ms). */
-#define APP_ADV_TIMEOUT_IN_SECONDS      30                                         /**< The advertising timeout in units of seconds. */
+#define APP_ADV_TIMEOUT_IN_SECONDS      30                                          /**< The advertising timeout in units of seconds. */
 
 #define APP_TIMER_PRESCALER             0                                           /**< Value of the RTC1 PRESCALER register. */
 #define APP_TIMER_OP_QUEUE_SIZE         4                                           /**< Size of timer operation queues. */
@@ -131,19 +114,14 @@
 #define APP_FEATURE_NOT_SUPPORTED       BLE_GATT_STATUS_ATTERR_APP_BEGIN + 2        /**< Reply when unsupported features are requested. */
 
 static uint16_t  m_conn_handle = BLE_CONN_HANDLE_INVALID;                           /**< Handle of the current connection. */
-//static ble_bas_t m_bas;                                                             /**< Structure used to identify the battery service. */
 static ble_gls_t m_gls;                                                             /**< Structure used to identify the glucose service. */
 static ble_os_t  m_our_service;
 
 APP_TIMER_DEF(m_sec_req_timer_id);                                                  /**< Security Request timer. */
 
-static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_GLUCOSE_SERVICE, BLE_UUID_TYPE_BLE},
-                                   //{BLE_UUID_BATTERY_SERVICE, BLE_UUID_TYPE_BLE},
-                                   //{BLE_UUID_DEVICE_INFORMATION_SERVICE, BLE_UUID_TYPE_BLE}
-                                  }; /**< Universally unique service identifiers. */
+static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_GLUCOSE_SERVICE, BLE_UUID_TYPE_BLE}};  /**< Universally unique service identifiers. */
 
 static ble_uuid_t m_more_adv_uuids[] = {{BLE_UUID_OUR_SERVICE, BLE_UUID_TYPE_VENDOR_BEGIN}};
-
 
 pm_peer_id_t m_peer_to_be_deleted = PM_PEER_ID_INVALID;
 
@@ -301,25 +279,6 @@ static void service_error_handler(uint32_t nrf_error)
 }
 
 
-/**@brief Function for performing battery measurement and updating the Battery Level characteristic
- *        in Battery Service.
- */
-/*void battery_level_update(uint8_t  battery_level)
-{
-    uint32_t err_code;
-
-    err_code = ble_bas_battery_level_update(&m_bas, battery_level);
-    if ((err_code != NRF_SUCCESS) &&
-        (err_code != NRF_ERROR_INVALID_STATE) &&
-        (err_code != BLE_ERROR_NO_TX_PACKETS) &&
-        (err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)
-       )
-    {
-        APP_ERROR_HANDLER(err_code);
-    }
-}*/
-
-
 /**@brief Function for handling the Security Request timer timeout.
  *
  * @details This function will be called each time the Security Request timer expires.
@@ -348,55 +307,9 @@ static void sec_req_timeout_handler(void * p_context)
 /**@brief Function for updating glucose measurement and updating glucose characteristic in Glucose.
           Service.
  */
-void add_glucose_measurement(void)
+void add_glucose_measurement(ble_gls_rec_t rec)
 {
-    ble_gls_rec_t rec;
     uint32_t      err_code;
-
-    static int16_t s_mantissa = 550;
-    static int16_t s_exponent = -3;
-
-    uint32_t  ms = clock_get_timestamp();
-    uint8_t   s = (ms / 1000) % 60;
-    uint8_t   m = (ms / 60000) % 60;
-    uint8_t   h = ms / 3600000;
-
-    // simulate the reading of a glucose measurement.
-    rec.meas.flags = BLE_GLS_MEAS_FLAG_TIME_OFFSET |
-                     BLE_GLS_MEAS_FLAG_CONC_TYPE_LOC |
-                     BLE_GLS_MEAS_FLAG_CONTEXT_INFO |
-                     BLE_GLS_MEAS_FLAG_SENSOR_STATUS |
-                     BLE_GLS_MEAS_FLAG_UNITS_MOL_L;
-    rec.meas.base_time.year                 = 2018;
-    rec.meas.base_time.month                = 10;
-    rec.meas.base_time.day                  = 1;
-    rec.meas.base_time.hours                = h;
-    rec.meas.base_time.minutes              = m;
-    rec.meas.base_time.seconds              = s;
-    rec.meas.glucose_concentration.exponent = s_exponent;
-    rec.meas.glucose_concentration.mantissa = s_mantissa;
-    rec.meas.time_offset                    = 0;
-    rec.meas.type                           = BLE_GLS_MEAS_TYPE_UNDET_BLOOD;
-    rec.meas.sample_location                = BLE_GLS_MEAS_LOC_NOT_AVAIL;
-    rec.meas.sensor_status_annunciation     = 0;
-    //rec.meas.sensor_status_annunciation     = BLE_GLS_MEAS_STATUS_BATT_LOW;
-
-    rec.context.flags = BLE_GLS_CONTEXT_FLAG_CARB |
-                        BLE_GLS_CONTEXT_FLAG_MED |
-                        BLE_GLS_CONTEXT_FLAG_MED_L;
-    rec.context.carbohydrate_id = BLE_GLS_CONTEXT_CARB_LUNCH;
-    rec.context.carbohydrate.exponent = 0;
-    rec.context.carbohydrate.mantissa = 259;
-    rec.context.medication_id         = BLE_GLS_CONTEXT_MED_RAPID;
-    rec.context.medication.exponent   = 3;
-    rec.context.medication.mantissa   = 150;
-
-    // change values for next read.
-    s_mantissa += 23;
-    if (s_mantissa > 939)
-    {
-        s_mantissa -= 434;
-    }
 
     err_code = ble_gls_glucose_new_meas(&m_gls, &rec);
     if (err_code != NRF_SUCCESS)
@@ -466,8 +379,6 @@ static void services_init(void)
 {
     uint32_t       err_code;
     ble_gls_init_t gls_init;
-    //ble_dis_init_t dis_init;
-    //ble_bas_init_t bas_init;
 
     // Initialize Glucose Service - sample selection of feature bits.
     memset(&gls_init, 0, sizeof(gls_init));
@@ -482,41 +393,6 @@ static void services_init(void)
 
     err_code = ble_gls_init(&m_gls, &gls_init);
     APP_ERROR_CHECK(err_code);
-
-    // Initialize Battery Service.
-    /*memset(&bas_init, 0, sizeof(bas_init));
-
-    // Here the sec level for the Battery Service can be changed/increased.
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&bas_init.battery_level_char_attr_md.cccd_write_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&bas_init.battery_level_char_attr_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&bas_init.battery_level_char_attr_md.write_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&bas_init.battery_level_report_read_perm);
-
-    bas_init.evt_handler          = NULL;
-    bas_init.support_notification = true;
-    bas_init.p_report_ref         = NULL;
-    bas_init.initial_batt_level   = 100;
-
-    err_code = ble_bas_init(&m_bas, &bas_init);
-    APP_ERROR_CHECK(err_code);*/
-
-    // Initialize Device Information Service.
-    /*memset(&dis_init, 0, sizeof(dis_init));
-
-    ble_srv_ascii_to_utf8(&dis_init.manufact_name_str, MANUFACTURER_NAME);
-
-    ble_srv_ascii_to_utf8(&dis_init.serial_num_str, MODEL_NUMBER);
-
-    ble_dis_sys_id_t system_id;
-    system_id.manufacturer_id            = MANUFACTURER_ID;
-    system_id.organizationally_unique_id = ORG_UNIQUE_ID;
-    dis_init.p_sys_id                    = &system_id;
-
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&dis_init.dis_attr_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&dis_init.dis_attr_md.write_perm);
-
-    err_code = ble_dis_init(&dis_init);
-    APP_ERROR_CHECK(err_code);*/
 
     // Initialize Our Service.
     our_service_init(&m_our_service);
@@ -587,8 +463,6 @@ static void conn_params_init(void)
  */
 static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
 {
-    //uint32_t err_code;
-
     switch (ble_adv_evt)
     {
         case BLE_ADV_EVT_FAST:
@@ -736,7 +610,6 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
     ble_conn_state_on_ble_evt(p_ble_evt);
     pm_on_ble_evt(p_ble_evt);
     ble_gls_on_ble_evt(&m_gls, p_ble_evt);
-    //ble_bas_on_ble_evt(&m_bas, p_ble_evt);
     ble_conn_params_on_ble_evt(p_ble_evt);
     on_ble_evt(p_ble_evt);
     ble_advertising_on_ble_evt(p_ble_evt);
@@ -804,23 +677,14 @@ static void ble_stack_init(void)
 
 
 /**@brief Function for the Peer Manager initialization.
- *
- * @param[in] erase_bonds  Indicates whether bonding information should be cleared from
- *                         persistent storage during initialization of the Peer Manager.
  */
-static void peer_manager_init(bool erase_bonds)
+static void peer_manager_init(void)
 {
     ble_gap_sec_params_t sec_param;
     ret_code_t           err_code;
 
     err_code = pm_init();
     APP_ERROR_CHECK(err_code);
-
-    if (erase_bonds)
-    {
-        err_code = pm_peers_delete();
-        APP_ERROR_CHECK(err_code);
-    }
 
     memset(&sec_param, 0, sizeof(ble_gap_sec_params_t));
 
@@ -843,6 +707,18 @@ static void peer_manager_init(bool erase_bonds)
 
     err_code = pm_register(pm_evt_handler);
     APP_ERROR_CHECK(err_code);
+}
+
+/**@brief Function for erase Peer Manager bonds.
+ */
+void peer_manager_erase_bonds(void)
+{
+    uint32_t err_code;
+
+    err_code = pm_peers_delete();
+    APP_ERROR_CHECK(err_code);
+
+    NRF_LOG_INFO("Bonds erased!\n");
 }
 
 
@@ -893,23 +769,14 @@ void advertising_start(void)
  */
 void ble_services_init(void)
 {
-    bool     erase_bonds;
-    erase_bonds = false;
-    //erase_bonds = true;
-
+    //NRF_LOG_INFO("GLS init\n");
     timers_init();
     ble_stack_init();
-    peer_manager_init(erase_bonds);
-    if (erase_bonds == true)
-    {
-        NRF_LOG_INFO("Bonds erased!\n");
-    }
+    peer_manager_init();
     services_init();
     gap_params_init();
     advertising_init();
     conn_params_init();
-
-    //NRF_LOG_INFO("GLS Start!\n");
     advertising_start();
 }
 

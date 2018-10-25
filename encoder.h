@@ -13,4 +13,6 @@ void encoder_disable(void);
 
 int32_t encoder_get_position(void);
 
+void encoder_set_position(int32_t new_position);
+
 void encoder_reset_position(void);

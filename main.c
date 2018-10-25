@@ -1,10 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "nrf_gpio.h"
 #include "nrf_delay.h"
-#include "softdevice_handler.h"
-#include "app_util_platform.h"
 
 #define NRF_LOG_MODULE_NAME "MAIN"
 
@@ -18,6 +15,7 @@
 #include "ble_services.h"
 #include "encoder.h"
 #include "state.h"
+#include "batt.h"
 
 #define IDLE_S          10
 #define IDLE_TICKS      (IDLE_S * 1000)/CLOCK_TICK_MS
@@ -26,7 +24,9 @@ volatile uint8_t display_done_flag;
 volatile uint8_t clock_tick_flag;
 volatile uint8_t button_flag;
 volatile uint8_t encoder_flag;
+volatile uint8_t batt_flag;
 
+uint8_t wake_up;
 uint16_t idle_timer;
 
 int main(void)
@@ -35,7 +35,7 @@ int main(void)
 
     NRF_LOG_INIT(clock_get_timestamp);
     NRF_LOG_INFO("Main init\n");
-    //NRF_LOG_FLUSH();
+    NRF_LOG_FLUSH();
 
     ble_services_init();
 
@@ -61,19 +61,30 @@ int main(void)
     encoder_set_direction(true);
     encoder_init();
 
+    batt_flag = 0;
+    batt_set_flag(&batt_flag);
+    batt_init();
+    batt_sample();
+
+    wake_up = 1;
     sd_power_mode_set(NRF_POWER_MODE_LOWPWR);
 
     while (true)
     {
         display_process();
 
-        gpio_read();
+        gpio_process();
 
         if(button_flag) {
             button_flag = 0;
-            display_on();
-            encoder_enable();
-            advertising_start();
+            if (!wake_up) {
+                display_on();
+                encoder_enable();
+                advertising_start();
+                NRF_LOG_INFO("Wake up!\r\n");
+                NRF_LOG_FLUSH();
+                wake_up = 1;
+            }
             state_on_event(button_pressed);
             idle_timer = 0;
         }
@@ -91,9 +102,10 @@ int main(void)
         }
 
         if((idle_timer >= IDLE_TICKS)&&(!clock_tick_flag)&&(display_done_flag)&&(!button_flag)&&(!encoder_flag)) {
-            state_disable();
-            display_off();
+            wake_up = 0;
             encoder_disable();
+            state_off();
+            display_off();
             sd_app_evt_wait();
             idle_timer = IDLE_TICKS;
         }

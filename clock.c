@@ -1,7 +1,6 @@
 #include "clock.h"
 
 #include "app_timer.h"
-#include "nrf_drv_clock.h"
 #include "app_util_platform.h"
 
 #define APP_TIMER_PRESCALER     0       /**< Value of the RTC1 PRESCALER register. */
@@ -9,10 +8,10 @@
 
 APP_TIMER_DEF(clock_timer_id);
 
-static volatile uint8_t* m_tick_flag;
-
 static uint32_t clock_ticks = APP_TIMER_TICKS(CLOCK_TICK_MS, APP_TIMER_PRESCALER);
 static uint64_t clock_ms_counter;
+
+static volatile uint8_t* m_tick_flag;
 
 static void clock_timeout_handler(void * clock_timeout_handler_pointer)
 {

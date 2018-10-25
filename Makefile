@@ -26,6 +26,7 @@ SRC_FILES += \
   $(SDK_ROOT)/components/drivers_nrf/clock/nrf_drv_clock.c \
   $(SDK_ROOT)/components/drivers_nrf/common/nrf_drv_common.c \
 	$(SDK_ROOT)/components/drivers_nrf/qdec/nrf_drv_qdec.c \
+	$(SDK_ROOT)/components/drivers_nrf/adc/nrf_drv_adc.c \
   $(wildcard $(SDK_ROOT)/components/ble/peer_manager/*.c) \
   $(SDK_ROOT)/components/ble/ble_advertising/ble_advertising.c \
   $(SDK_ROOT)/components/ble/ble_racp/ble_racp.c \

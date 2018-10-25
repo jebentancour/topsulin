@@ -1,5 +1,3 @@
-#include <stdint.h>
-
 #include "encoder.h"
 
 #include "nrf_drv_qdec.h"
@@ -13,7 +11,7 @@
 #define A_PIN 1
 #define B_PIN 30
 
-static volatile uint32_t m_accdblread;
+static volatile int32_t m_accdblread;
 static volatile int32_t m_accread;
 static volatile int32_t m_position;
 static volatile int32_t m_report_position;
@@ -33,7 +31,6 @@ static void qdec_event_handler(nrf_drv_qdec_event_t event)
           m_position          += m_accread;
         }
         if (m_accdblread > 0){
-          //NRF_LOG_INFO("Encoder position %d\n", m_position / 4);
           NRF_LOG_INFO("ACCDBL %d\n", m_accdblread);
           NRF_LOG_INFO("ACC %d\n", m_accread);
           NRF_LOG_FLUSH();
@@ -83,7 +80,6 @@ void encoder_init(void)
 
 void encoder_enable(void)
 {
-  encoder_reset_position();
   nrf_drv_qdec_enable();
 }
 
@@ -99,11 +95,19 @@ void encoder_set_flag(volatile uint8_t* main_encoder_flag)
 
 int32_t encoder_get_position(void)
 {
-  uint32_t aux;
+  int32_t aux;
   CRITICAL_REGION_ENTER();
-  aux = m_position / 4;
+  aux = m_report_position;
   CRITICAL_REGION_EXIT();
   return aux;
+}
+
+void encoder_set_position(int32_t new_position)
+{
+  CRITICAL_REGION_ENTER();
+  m_position = new_position * 4;
+  m_report_position = new_position;
+  CRITICAL_REGION_EXIT();
 }
 
 void encoder_reset_position(void)
