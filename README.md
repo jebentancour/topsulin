@@ -1,5 +1,7 @@
 # Topsulin
 
+![topsulin](images/topsulin.png)
+
 ## Software
 
 ### BLE Services
@@ -35,6 +37,8 @@ Opciones configurables:
 - Capacidad de la lapicera (en U de insulina)
 
 ## Board
+
+![pinout](images/Core51822-B-pin.jpg)
 
 |Programming header|
 |------------------|
