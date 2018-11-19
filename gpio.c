@@ -4,11 +4,13 @@
 #include "nrf_gpio.h"
 
 #define SW_PIN 9
+#define LED_PIN 21
 
 static volatile uint8_t* m_gpio_button_flag;
 
 void gpio_init() {
     nrf_gpio_cfg_input(SW_PIN,NRF_GPIO_PIN_PULLUP);
+    nrf_gpio_cfg_output(LED_PIN);
 }
 
 void gpio_button_set_flag(volatile uint8_t* main_button_flag)
@@ -28,3 +30,16 @@ void gpio_process(void) {
     }
     old_in = new_in;
 };
+
+void gpio_set_led(bool state) {
+    if (state){
+        nrf_gpio_pin_set(LED_PIN);
+    } else {
+        nrf_gpio_pin_clear(LED_PIN);
+    }
+}
+
+void gpio_led_toggle(void) {
+    nrf_gpio_pin_toggle(LED_PIN);
+}
+    
