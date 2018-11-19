@@ -54,7 +54,7 @@ Opciones configurables:
 
 ## SoC
 
-SoC [nRF51822](https://www.nordicsemi.com/eng/nordic/download_resource/62726/14/39584073/13358) QFAAH10 (256kB flash, 16 kB RAM)
+SoC [nRF51822](https://www.nordicsemi.com/eng/nordic/download_resource/62726/14/39584073/13358) QFACA10 (256kB flash, 32 kB RAM)
 
 [INFOCENTER](http://infocenter.nordicsemi.com)
 
