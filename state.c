@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "encoder.h"
-#include "display_SSD1306.h"
+//#include "display_SSD1306.h"
 #include "ble_services.h"
 #include "clock.h"
 
@@ -15,8 +15,8 @@ typedef enum {
 } internal_state_t;
 
 static internal_state_t       m_state;
-static char                   encoder[32];
-static uint8_t                len;
+//static char                   encoder[32];
+//static uint8_t                len;
 
 void state_init()
 {
@@ -25,7 +25,7 @@ void state_init()
 
 void state_process_display(void)
 {
-  display_clear();
+  /*display_clear();
   switch(m_state){
     case off:
       display_put_string("TOPsulin", 35, 0);
@@ -48,12 +48,12 @@ void state_process_display(void)
       display_put_buff(encoder, len, 20, 2);
       break;
   }
-  display_show();
+  display_show();*/
 }
 
 void state_on_event(event_t event)
 {
-  switch(m_state){
+  /*switch(m_state){
     case off:
       if (event == button_pressed){
         encoder_reset_position();
@@ -126,7 +126,7 @@ void state_on_event(event_t event)
       }
       break;
   }
-  state_process_display();
+  state_process_display();*/
 }
 
 void state_off()

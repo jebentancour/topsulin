@@ -47,15 +47,21 @@ Opciones configurables:
 |VCC               |
 |GND               |
 
-|nRF pin|Use|
-|-------|---|
-|P_30   |A  |
-|P_01   |B  |
-|P_03   |SCL|
-|P_05   |SDA|
-|P_07   |   |
-|P_09   |SW |
-|P_21   |LED|
+|nRF pin|Use  |
+|-------|-----|
+|30     |A    |
+|01     |B    |
+|03     |SCL  |
+|05     |SDA  |
+|09     |SW   |
+|21     |LED  |
+|20     |MISO |
+|19     |MOSI |
+|18     |CLK  |
+|22     |CS   |
+|23     |DC   |
+|24     |RST  |
+|25     |BUSY |
 
 ## SoC
 
@@ -70,8 +76,8 @@ SoC [nRF51822](https://www.nordicsemi.com/eng/nordic/download_resource/62726/14/
 |0  |0x40000000   |MPU         |MPU         |Memory Protection Unit.                      |SoftDevice        |
 |1  |0x40001000   |RADIO       |RADIO       |2.4 GHz Radio.                               |SoftDevice        |
 |2  |0x40002000   |UART        |UART0       |Universal Asynchronous Receiver/Transmitter. |                  |
-|3  |0x40003000   |SPI         |SPI0        |SPI Master.                                  |i2c               |
-|3  |0x40003000   |TWI         |TWI0        |I2C compatible Two-Wire Interface 0.         |i2c               |
+|3  |0x40003000   |SPI         |SPI0        |SPI Master.                                  |EPD               |
+|3  |0x40003000   |TWI         |TWI0        |I2C compatible Two-Wire Interface 0.         |EPD               |
 |4  |0x40004000   |SPIS        |SPIS1       |SPI Slave.                                   |                  |
 |4  |0x40004000   |SPI         |SPI1        |SPI Master.                                  |                  |
 |4  |0x40004000   |TWI         |TWI1        |I2C compatible Two-Wire Interface 1.         |                  |
@@ -98,6 +104,6 @@ SoC [nRF51822](https://www.nordicsemi.com/eng/nordic/download_resource/62726/14/
 |25 |0x40019000   |SWI         |SWI5        |Software interrupt.                          |SoftDevice        |
 |30 |0x4001E000   |NVMC        |NVMC        |Non-Volatile Memory Controller.              |SoftDevice        |
 |31 |0x4001F000   |PPI         |PPI         |Programmable Peripheral Interconnect.        |                  |
-|NA |0x50000000   |GPIO        |GPIO        |General Purpose Input and Output.            |gpio              |
+|NA |0x50000000   |GPIO        |GPIO        |General Purpose Input and Output.            |GPIO              |
 |NA |0x10000000   |FICR        |FICR        |Factory Information Configuration Registers. |SoftDevice        |
 |NA |0x10001000   |UICR        |UICR        |User Information Configuration Registers.    |SoftDevice        |

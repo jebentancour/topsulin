@@ -9,7 +9,7 @@
 #include "nrf_log_ctrl.h"
 
 //#include "display_SSD1306.h"
-#include "font8x8.h"
+//#include "font8x8.h"
 #include "clock.h"
 #include "gpio.h"
 #include "ble_services.h"

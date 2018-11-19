@@ -10,6 +10,7 @@ $(OUTPUT_DIRECTORY)/nrf51422_xxac.out: \
 # Source files common to all targets
 SRC_FILES += \
   $(wildcard *.c) \
+  $(wildcard epd/*.c) \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_serial.c \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_frontend.c \
   $(SDK_ROOT)/components/libraries/hardfault/hardfault_implementation.c \
@@ -25,8 +26,9 @@ SRC_FILES += \
   $(SDK_ROOT)/components/boards/boards.c \
   $(SDK_ROOT)/components/drivers_nrf/clock/nrf_drv_clock.c \
   $(SDK_ROOT)/components/drivers_nrf/common/nrf_drv_common.c \
-	$(SDK_ROOT)/components/drivers_nrf/qdec/nrf_drv_qdec.c \
-	$(SDK_ROOT)/components/drivers_nrf/adc/nrf_drv_adc.c \
+  $(SDK_ROOT)/components/drivers_nrf/qdec/nrf_drv_qdec.c \
+  $(SDK_ROOT)/components/drivers_nrf/adc/nrf_drv_adc.c \
+  $(SDK_ROOT)/components/drivers_nrf/spi_master/nrf_drv_spi.c \
   $(wildcard $(SDK_ROOT)/components/ble/peer_manager/*.c) \
   $(SDK_ROOT)/components/ble/ble_advertising/ble_advertising.c \
   $(SDK_ROOT)/components/ble/ble_racp/ble_racp.c \
@@ -45,6 +47,7 @@ SRC_FILES += \
 
 # Include folders common to all targets
 INC_FOLDERS += \
+  config \
   $(SDK_ROOT)/components/drivers_nrf/comp \
   $(SDK_ROOT)/components/drivers_nrf/twi_master \
   $(SDK_ROOT)/components/ble/ble_services/ble_ancs_c \
@@ -101,7 +104,6 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/drivers_nrf/timer \
   $(SDK_ROOT)/components/libraries/util \
   $(SDK_ROOT)/components/drivers_nrf/pwm \
-  config \
   $(SDK_ROOT)/components/libraries/usbd/class/cdc \
   $(SDK_ROOT)/components/libraries/csense \
   $(SDK_ROOT)/components/drivers_nrf/rng \
