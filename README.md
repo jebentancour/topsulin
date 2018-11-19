@@ -51,6 +51,7 @@ Opciones configurables:
 |P_05   |SDA|
 |P_07   |   |
 |P_09   |SW |
+|P_21   |LED|
 
 ## SoC
 
