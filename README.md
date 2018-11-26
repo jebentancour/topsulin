@@ -4,7 +4,7 @@
 
 ## Software
 
-### BLE Services
+### BLE Services and Characteristics
 
 |GATT Services |GATT Characteristics            |Descripción                              |
 |--------------|--------------------------------|-----------------------------------------|
@@ -20,21 +20,39 @@
 |0xF661        |**Calculator**                  |Parámetros pra el calculador de bolos    |
 |0xF662        |**Insulin**                     |Tipo, capacidad y cantidad restante      |
 
-Base UUID 0x3419-XXXX-1505-31A7-EC4D-449B-0752-1104 
+Base UUID para Topsulin Services y Characteristics 0x3419-XXXX-1505-31A7-EC4D-449B-0752-1104
 
-Opciones configurables:
+[Glucose Service](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.glucose.xml)
 
-- Invertir los colores de la pantalla
-- Unidades de glucemia (mol/L o kg/L)
-- Calculador de bolo (activado o desactivado)
-- Orientación de pantalla (diestro o zurdo)
-- Unidades de CHO (gramos o porciones)
-- Equivalencia entre gramos y porciones
-- Registro de CHO (si o no)
-- Registro de glucemia (si o no)
-- Registro de insulina (si o no)
-- Tipo de insulina
-- Capacidad de la lapicera (en U de insulina)
+Topsulin Service:
+
+|Configuration Characteristic                        |Format |Value                              |
+|----------------------------------------------------|-------|-----------------------------------|
+|Registro de glucemia (si o no)                      |bit0   |0 No, 1 Si                         |
+|Registro de insulina (si o no)                      |bit1   |0 No, 1 Si                         |
+|Registro de CHO (si o no)                           |bit2   |0 No, 1 Si                         |
+|Invertir los colores de la pantalla                 |bit3   |0 Fondo blanco, 1 Fondo negro      |
+|Unidades de glucemia (kg/L o mol/L)                 |bit4   |0 kg/L, 1 mol/L                    |
+|Calculador de bolo (activado o desactivado)         |bit5   |0 Desactivado, 1 Activado          |
+|Orientación de pantalla (diestro o zurdo)           |bit6   |0 Diestro, 1 Zurdo                 |
+|Unidades de CHO (gramos o porciones)                |bit7   |0 CHO en g, 1 CHO en porciones     |
+|Equivalencia entre gramos y porciones               |uint16 |Peso en g de una porción           |
+
+|Insulin Characteristic                              |Format |Value                              |
+|----------------------------------------------------|-------|-----------------------------------|
+|Tipo de insulina                                    |uint8  |Ver tabla siguiente                |
+|Capacidad de la lapicera (en U de insulina)         |uint16 |U de insulina en una lapicera nueva|
+|Capacidad restante de la lapicera (en U de insulina)|uint16 |U de insulina restantes            |
+
+|Value      |Tipo de insulina               |
+|-----------|-------------------------------|
+|0	        |Reserved for future use        |
+|1	        |Rapid acting insulin           |
+|2	        |Short acting insulin           |
+|3	        |Intermediate acting insulin    |
+|4	        |Long acting insulin            |
+|5	        |Pre-mixed insulin              |
+|6 - 255	  |Reserved for future use        |
 
 ## Board
 
