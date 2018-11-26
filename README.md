@@ -22,9 +22,11 @@
 
 Base UUID para Topsulin Services y Characteristics 0x3419-XXXX-1505-31A7-EC4D-449B-0752-1104
 
-[Glucose Service](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.glucose.xml)
+#### Glucose Service
 
-Topsulin Service:
+[Glucose Service Specification](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.glucose.xml)
+
+#### Topsulin Service
 
 |Configuration Characteristic                        |Format |Value                              |
 |----------------------------------------------------|-------|-----------------------------------|
