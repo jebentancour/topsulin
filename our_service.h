@@ -40,9 +40,7 @@
 #include "ble.h"
 #include "ble_srv_common.h"
 
-#define BLE_UUID_OUR_BASE_UUID                  {{0x23, 0xD1, 0x14, 0xEF, 0x5F, 0xF8, 0x23, 0x15, 0xDE, 0xEF, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00}} // 128-bit base UUID
-#define BLE_UUID_OUR_SERVICE                    0xABCD // Just a random, but recognizable value
-#define BLE_UUID_OUR_CHARACTERISTC              0xADAF // Just a random, but recognizable value
+#include "config_manager.h"
 
 #define BLE_UUID_TOPSULIN_BASE_UUID             {{0x04, 0x11, 0x52, 0x07, 0x9B, 0x44, 0x4D, 0xEC, 0xA7, 0x31, 0x05, 0x15, 0x00, 0x00, 0x19, 0x34}} // 128-bit base UUID
 #define BLE_UUID_TOPSULIN_SERVICE               0xF65D
@@ -52,9 +50,7 @@
 #define BLE_UUID_TOPSULIN_CALC_CHARACTERISTC    0xF661
 #define BLE_UUID_TOPSULIN_INS_CHARACTERISTC     0xF662
 
-
 /**@brief This structure contains various status information for our service.
- * It only holds one entry now, but will be populated with more items as we go.
  * The name is based on the naming convention used in Nordic's SDKs.
  * ble_ indicates that it is a Bluetooth Low Energy relevant structure and
  * os_ is short for Our Service.
@@ -63,7 +59,11 @@ typedef struct
 {
     uint16_t    conn_handle;        /**< Handle of the current connection (as provided by the BLE stack, is BLE_CONN_HANDLE_INVALID if not in a connection).*/
     uint16_t    service_handle;     /**< Handle of Our Service (as provided by the BLE stack). */
-    ble_gatts_char_handles_t    char_handles;
+    ble_gatts_char_handles_t    config_char_handles;
+    ble_gatts_char_handles_t    name_char_handles;
+    ble_gatts_char_handles_t    time_char_handles;
+    ble_gatts_char_handles_t    calc_char_handles;
+    ble_gatts_char_handles_t    ins_char_handles;
 }ble_os_t;
 
 
@@ -78,7 +78,7 @@ void our_service_init(ble_os_t * p_our_service);
  *
  * @details Handles all events from the BLE stack of interest to Our Service.
  *
- * @param[in]   p_ble_evt  Event received from the BLE stack.
+ * @param[in]   p_ble_evt           Event received from the BLE stack.
  * @param[in]   p_our_service       Our Service structure.
  */
 void ble_our_service_on_ble_evt(ble_evt_t * p_ble_evt, void * p_context);
@@ -86,11 +86,11 @@ void ble_our_service_on_ble_evt(ble_evt_t * p_ble_evt, void * p_context);
 
 /**@brief Function for updating and sending new characteristic values
  *
- * @details The application calls this function whenever our timer_timeout_handler triggers
- *
- * @param[in]   p_our_service                     Our Service structure.
+ * @param[in]   p_our_service            Our Service structure.
  * @param[in]   characteristic_value     New characteristic value.
  */
-void our_characteristic_update(ble_os_t *p_our_service, int32_t *characteristic_value);
+void config_char_update(ble_os_t *p_our_service, uint8_t *characteristic_value);
+
+void insulin_char_update(ble_os_t * p_our_service, uint8_t * characteristic_value);
 
 #endif  /* _ OUR_SERVICE_H__ */

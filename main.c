@@ -16,6 +16,7 @@
 #include "encoder.h"
 //#include "state.h"
 #include "batt.h"
+#include "config_manager.h"
 
 #define IDLE_S          10
 #define IDLE_TICKS      (IDLE_S * 1000)/CLOCK_TICK_MS
@@ -34,8 +35,11 @@ int main(void)
     //nrf_delay_ms(1000);
 
     NRF_LOG_INIT(clock_get_timestamp);
-    NRF_LOG_INFO("Setup\n");
+    NRF_LOG_INFO("-------------------- MAIN --------------------\n");
     NRF_LOG_FLUSH();
+
+    config_manager_init();
+    config_manager_print();
 
     ble_services_init();
 
@@ -68,9 +72,10 @@ int main(void)
 
     wake_up = 1;
     sd_power_mode_set(NRF_POWER_MODE_LOWPWR);
-    
+
     gpio_set_led(true);
 
+    NRF_LOG_FLUSH();
     while (true)
     {
         //display_process();

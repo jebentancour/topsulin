@@ -80,7 +80,7 @@
 
 #define IS_SRVC_CHANGED_CHARACT_PRESENT 0                                           /**< Include or not the service_changed characteristic. if not enabled, the server's database cannot be changed for the lifetime of the device*/
 
-#define DEVICE_NAME                     "GLUCOsee"                                  /**< Name of device. Will be included in the advertising data. */
+#define DEVICE_NAME                     "glucosee"                                  /**< Name of device. Will be included in the advertising data. */
 
 #define APP_ADV_INTERVAL                40                                          /**< The advertising interval (in units of 0.625 ms. This value corresponds to 25 ms). */
 #define APP_ADV_TIMEOUT_IN_SECONDS      30                                          /**< The advertising timeout in units of seconds. */
@@ -121,7 +121,7 @@ APP_TIMER_DEF(m_sec_req_timer_id);                                              
 
 static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_GLUCOSE_SERVICE, BLE_UUID_TYPE_BLE}};  /**< Universally unique service identifiers. */
 
-static ble_uuid_t m_more_adv_uuids[] = {{BLE_UUID_OUR_SERVICE, BLE_UUID_TYPE_VENDOR_BEGIN}};
+static ble_uuid_t m_more_adv_uuids[] = {{BLE_UUID_TOPSULIN_SERVICE, BLE_UUID_TYPE_VENDOR_BEGIN}};
 
 pm_peer_id_t m_peer_to_be_deleted = PM_PEER_ID_INVALID;
 
