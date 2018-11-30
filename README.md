@@ -40,11 +40,17 @@ Base UUID para Topsulin Services y Characteristics 0x3419-XXXX-1505-31A7-EC4D-44
 |Unidades de CHO (gramos o porciones)                |bit7   |0 CHO en g, 1 CHO en porciones     |
 |Equivalencia entre gramos y porciones               |uint16 |Peso en g de una porción           |
 
+|Name Characteristic |Format |Value                              |
+|--------------------|-------|-----------------------------------|
+|Nombre para mostrar |uint8  |String de largo máximo 20 UTF-8    |
+
+[Time Characteristic](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.date_time.xml)
+
 |Insulin Characteristic                              |Format |Value                              |
 |----------------------------------------------------|-------|-----------------------------------|
 |Tipo de insulina                                    |uint8  |Ver tabla siguiente                |
-|Capacidad de la lapicera (en U de insulina)         |uint16 |U de insulina en una lapicera nueva|
-|Capacidad restante de la lapicera (en U de insulina)|uint16 |U de insulina restantes            |
+|Capacidad de la lapicera                            |uint16 |U de insulina en una lapicera nueva|
+|Capacidad restante de la lapicera                   |uint16 |U de insulina restantes            |
 
 |Value      |Tipo de insulina               |
 |-----------|-------------------------------|
@@ -59,13 +65,6 @@ Base UUID para Topsulin Services y Characteristics 0x3419-XXXX-1505-31A7-EC4D-44
 ## Board
 
 ![pinout](images/Core51822-B-pin.jpg)
-
-|Programming header|
-|------------------|
-|SWCLK             |
-|SWDIO             |
-|VCC               |
-|GND               |
 
 |nRF pin|Use  |
 |-------|-----|
