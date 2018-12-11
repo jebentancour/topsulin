@@ -6,14 +6,14 @@
 
 ### BLE Services and Characteristics
 
-|GATT Services |GATT Characteristics            |Descripción                              |
+|GATT Services |GATT Characteristics            |Description                              |
 |--------------|--------------------------------|-----------------------------------------|
 |**Glucose**   |0x1808                          |Servicio estándar para glucómetros       |
 |0x2A18        |**Glucose Measurement**         |Valores de glucemia                      |
 |0x2A34        |**Glucose Measurement Context** |Información adicional (CHO e insulina)   |
 |0x2A51        |**Glucose Feature**             |Información sobre features soportadas    |
 |0x2A52        |**Record Access Control Point** |Punto de control de acceso del registro  |
-|**Topsulin**  |0xF65D                          |Servicio propietario de Topsulin         |
+|**Topsulin**  |0xF65D                          |Servicio específico de Topsulin          |
 |0xF65E        |**Configuration**               |Configuración de preferencias de usuario |
 |0xF65F        |**Name**                        |Nombre para mostrar                      |
 |0xF660        |**Time**                        |Fecha y hora                             |
@@ -24,12 +24,13 @@ Base UUID para Topsulin Services y Characteristics 0x3419-XXXX-1505-31A7-EC4D-44
 
 #### Glucose Service
 
-[Glucose Service Specification](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.glucose.xml)
+Según el servicio estándar [Glucose Service Specification](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.glucose.xml)
 
 #### Topsulin Service
 
-|Configuration Characteristic                        |Format |Value                              |
+|Characteristic                                      |Format |Value                              |
 |----------------------------------------------------|-------|-----------------------------------|
+|**Configuration**                                   |       |                                   |
 |Registro de glucemia (si o no)                      |bit0   |0 No, 1 Si                         |
 |Registro de insulina (si o no)                      |bit1   |0 No, 1 Si                         |
 |Registro de CHO (si o no)                           |bit2   |0 No, 1 Si                         |
@@ -39,28 +40,15 @@ Base UUID para Topsulin Services y Characteristics 0x3419-XXXX-1505-31A7-EC4D-44
 |Orientación de pantalla (diestro o zurdo)           |bit6   |0 Diestro, 1 Zurdo                 |
 |Unidades de CHO (gramos o porciones)                |bit7   |0 CHO en g, 1 CHO en porciones     |
 |Equivalencia entre gramos y porciones               |uint16 |Peso en g de una porción           |
-
-|Name Characteristic |Format |Value                              |
-|--------------------|-------|-----------------------------------|
-|Nombre para mostrar |uint8  |String de largo máximo 20 UTF-8    |
-
-[Time Characteristic](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.date_time.xml)
-
-|Insulin Characteristic                              |Format |Value                              |
-|----------------------------------------------------|-------|-----------------------------------|
-|Tipo de insulina                                    |uint8  |Ver tabla siguiente                |
+|**Name**                                            |       |                                   |
+|Nombre para mostrar                                 |uint8  |String de largo máximo 20 UTF-8    |
+|**Time**                                            |       |                                   |
+|Hora y fecha del dispositivo                        |       |[Time Characteristic](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.date_time.xml) |
+|**Insulin**                                         |       |                                   |
+|Tipo de insulina                                    |uint8  |Medication ID from Glucose Service |
 |Capacidad de la lapicera                            |uint16 |U de insulina en una lapicera nueva|
 |Capacidad restante de la lapicera                   |uint16 |U de insulina restantes            |
 
-|Value      |Tipo de insulina               |
-|-----------|-------------------------------|
-|0	        |Reserved for future use        |
-|1	        |Rapid acting insulin           |
-|2	        |Short acting insulin           |
-|3	        |Intermediate acting insulin    |
-|4	        |Long acting insulin            |
-|5	        |Pre-mixed insulin              |
-|6 - 255	  |Reserved for future use        |
 
 ## Board
 
