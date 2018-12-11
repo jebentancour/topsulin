@@ -17,7 +17,7 @@
 |0xF65E        |**Configuration**               |Configuración de preferencias de usuario |
 |0xF65F        |**Name**                        |Nombre para mostrar                      |
 |0xF660        |**Time**                        |Fecha y hora                             |
-|0xF661        |**Calculator**                  |Parámetros pra el calculador de bolos    |
+|0xF661        |**Calculator**                  |Parámetros para el calculador de bolos   |
 |0xF662        |**Insulin**                     |Tipo, capacidad y cantidad restante      |
 
 Base UUID para Topsulin Services y Characteristics 0x3419-XXXX-1505-31A7-EC4D-449B-0752-1104
@@ -44,6 +44,8 @@ Según el servicio estándar [Glucose Service Specification](https://www.bluetoo
 |Nombre para mostrar                                 |uint8  |String de largo máximo 20 UTF-8    |
 |**Time**                                            |       |                                   |
 |Hora y fecha del dispositivo                        |       |[Time Characteristic](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.date_time.xml) |
+|**Calculator**                                      |       |                                   |
+|Parámetros para calcular dosis sugerida             |       |                                   |
 |**Insulin**                                         |       |                                   |
 |Tipo de insulina                                    |uint8  |Medication ID from Glucose Service |
 |Capacidad de la lapicera                            |uint16 |U de insulina en una lapicera nueva|
