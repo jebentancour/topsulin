@@ -19,6 +19,7 @@
 |0xF660        |**Time**                        |Fecha y hora                             |
 |0xF661        |**Calculator**                  |Parámetros para el calculador de bolos   |
 |0xF662        |**Insulin**                     |Tipo, capacidad y cantidad restante      |
+|0xF663        |**Device**                      |Información sobre el dispositivo         |
 
 Base UUID para Topsulin Services y Characteristics 0x3419-XXXX-1505-31A7-EC4D-449B-0752-1104
 
@@ -43,14 +44,17 @@ Según el servicio estándar [Glucose Service Specification](https://www.bluetoo
 |**Name**                                            |       |                                   |
 |Nombre para mostrar                                 |uint8  |String de largo máximo 20 UTF-8    |
 |**Time**                                            |       |                                   |
-|Hora y fecha del dispositivo                        |       |[Time Characteristic](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.date_time.xml) |
+|Hora y fecha del dispositivo                        |time   |[Time Characteristic](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.date_time.xml) |
 |**Calculator**                                      |       |                                   |
 |Parámetros para calcular dosis sugerida             |       |                                   |
 |**Insulin**                                         |       |                                   |
 |Tipo de insulina                                    |uint8  |Medication ID from Glucose Service |
 |Capacidad de la lapicera                            |uint16 |U de insulina en una lapicera nueva|
 |Capacidad restante de la lapicera                   |uint16 |U de insulina restantes            |
-
+|**Device**                                          |       |                                   |
+|Firmware                                            |uint8  |Versión de firmware                |
+|Serial Number                                       |uint16 |Número de serie                    |
+|Battery                                             |uint16 |Voltaje de la batería en mV        |
 
 ## Board
 
