@@ -32,14 +32,14 @@ Según el servicio estándar [Glucose Service Specification](https://www.bluetoo
 |Characteristic                                      |Format |Value                              |
 |----------------------------------------------------|-------|-----------------------------------|
 |**Configuration**                                   |       |                                   |
-|Registro de glucemia (si o no)                      |bit0   |0 No, 1 Si                         |
-|Registro de insulina (si o no)                      |bit1   |0 No, 1 Si                         |
-|Registro de CHO (si o no)                           |bit2   |0 No, 1 Si                         |
+|Registro de glucemia                                |bit0   |0 No, 1 Si                         |
+|Registro de insulina                                |bit1   |0 No, 1 Si                         |
+|Registro de CHO                                     |bit2   |0 No, 1 Si                         |
 |Invertir los colores de la pantalla                 |bit3   |0 Fondo blanco, 1 Fondo negro      |
-|Unidades de glucemia (kg/L o mol/L)                 |bit4   |0 kg/L, 1 mol/L                    |
-|Calculador de bolo (activado o desactivado)         |bit5   |0 Desactivado, 1 Activado          |
-|Orientación de pantalla (diestro o zurdo)           |bit6   |0 Diestro, 1 Zurdo                 |
-|Unidades de CHO (gramos o porciones)                |bit7   |0 CHO en g, 1 CHO en porciones     |
+|Unidades de glucemia                                |bit4   |0 kg/L, 1 mol/L                    |
+|Calculador de bolo                                  |bit5   |0 Desactivado, 1 Activado          |
+|Orientación de pantalla                             |bit6   |0 Diestro, 1 Zurdo                 |
+|Unidades de CHO                                     |bit7   |0 CHO en g, 1 CHO en porciones     |
 |Equivalencia entre gramos y porciones               |uint16 |Peso en g de una porción           |
 |**Name**                                            |       |                                   |
 |Nombre para mostrar                                 |uint8  |String de largo máximo 20 UTF-8    |
