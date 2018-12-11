@@ -304,8 +304,7 @@ static void sec_req_timeout_handler(void * p_context)
 }
 
 
-/**@brief Function for updating glucose measurement and updating glucose characteristic in Glucose.
-          Service.
+/**@brief Function for updating glucose measurement and updating glucose characteristic in Glucose Service.
  */
 void add_glucose_measurement(ble_gls_rec_t rec)
 {
@@ -316,6 +315,11 @@ void add_glucose_measurement(ble_gls_rec_t rec)
     {
         // Do nothing.
     }
+}
+
+void time_ble_update(void)
+{
+    time_char_update(&m_our_service);
 }
 
 

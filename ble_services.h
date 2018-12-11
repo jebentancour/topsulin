@@ -6,6 +6,8 @@ void ble_services_init(void);
 
 void add_glucose_measurement(ble_gls_rec_t rec);
 
+void time_ble_update(void);
+
 void peer_manager_erase_bonds(void);
 
 void advertising_start(void);

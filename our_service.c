@@ -59,13 +59,59 @@ static void on_config_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p_
     uint8_t data_len = p_evt_write->len;
     uint8_t * p_data = p_evt_write->data;
     uint16_t offset = p_evt_write->offset;
-    NRF_LOG_INFO("Write to CONFIG\n");
+
+    NRF_LOG_INFO("Write to CONFIG (len = %d, offset = %d)\n", data_len, offset);
     NRF_LOG_HEXDUMP_INFO(p_data, data_len);
+
     if (data_len == 3 && offset == 0)
     {
+        // Decode and save
         config_manager_set_flags(p_data[0]);
         config_manager_set_portion(uint16_decode(&p_data[1]));
+
+        // Update
         config_char_update(p_our_service, p_data);
+    }
+}
+
+static void on_time_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p_evt_write)
+{
+    uint8_t data_len = p_evt_write->len;
+    uint8_t * p_data = p_evt_write->data;
+    uint16_t offset = p_evt_write->offset;
+
+    NRF_LOG_INFO("Write to TIME (len = %d, offset = %d)\n", data_len, offset);
+    NRF_LOG_HEXDUMP_INFO(p_data, data_len);
+
+    if (data_len == 7 && offset == 0)
+    {
+        // Decode
+        ble_date_time_t ble_t;
+
+        ble_date_time_decode(&ble_t, &p_data[0]);
+
+        // Save
+        struct tm t;
+                                            /* C time library                   - BLE time service       */
+        t.tm_year   = ble_t.year - 1900;    /* The number of years since 1900   - Year                   */
+        t.tm_mon    = ble_t.month - 1;      /* Month, range 0 to 11             - 1 January              */
+        t.tm_mday   = ble_t.day;            /* Day of the month, range 1 to 31  - Day of the month       */
+        t.tm_hour   = ble_t.hours;          /* Hours, range 0 to 23             - Hours past midnight    */
+        t.tm_min    = ble_t.minutes;        /* Minutes, range 0 to 59           - Minutes of the hour    */
+        t.tm_sec    = ble_t.seconds;        /* Seconds, range 0 to 59           - Seconds of the minute  */
+
+        //char buffer[80];
+        //strftime(buffer, sizeof(buffer), "%x %X", &t);
+        //NRF_LOG_INFO("Date to save %s\n", (uint32_t)buffer);
+        //NRF_LOG_FLUSH();
+
+        clock_set_time(&t);
+
+        //NRF_LOG_INFO("New date\n");
+        //clock_print();
+
+        // Update
+        time_char_update(p_our_service);
     }
 }
 
@@ -74,8 +120,10 @@ static void on_insulin_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p
     uint8_t data_len = p_evt_write->len;
     uint8_t * p_data = p_evt_write->data;
     uint16_t offset = p_evt_write->offset;
-    NRF_LOG_INFO("Write to INSULIN\n");
+
+    NRF_LOG_INFO("Write to INSULIN (len = %d, offset = %d)\n", data_len, offset);
     NRF_LOG_HEXDUMP_INFO(p_data, data_len);
+
     if (data_len == 5 && offset == 0)
     {
         config_manager_set_insulin_type(p_data[0]);
@@ -94,38 +142,46 @@ static void on_insulin_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p
  */
 static void on_write(ble_os_t * p_our_service, ble_evt_t * p_ble_evt)
 {
+    uint8_t print = 0;
+
     ble_gatts_evt_write_t * p_evt_write = &p_ble_evt->evt.gatts_evt.params.write;
 
     if (p_evt_write->handle == p_our_service->config_char_handles.value_handle)
     {
         on_config_write(p_our_service, p_evt_write);
+        print = 1;
     }
 
     if (p_evt_write->handle == p_our_service->name_char_handles.value_handle)
     {
-        NRF_LOG_INFO("Write to NAME\n");
-        //NRF_LOG_INFO("Write len: %#04x\n", p_evt_write->len);
+        NRF_LOG_INFO("Write to NAME (len = %d, offset = %d)\n", p_evt_write->len, p_evt_write->offset);
+        NRF_LOG_HEXDUMP_INFO(p_evt_write->data, p_evt_write->len);
+        print = 1;
     }
 
     if (p_evt_write->handle == p_our_service->time_char_handles.value_handle)
     {
-        NRF_LOG_INFO("Write to TIME\n");
-        //NRF_LOG_INFO("Write len: %#04x\n", p_evt_write->len);
+        on_time_write(p_our_service, p_evt_write);
+        print = 1;
     }
 
     if (p_evt_write->handle == p_our_service->calc_char_handles.value_handle)
     {
-        NRF_LOG_INFO("Write to CALC\n");
-        //NRF_LOG_INFO("Write len: %#04x\n", p_evt_write->len);
+        NRF_LOG_INFO("Write to CALC (len = %d, offset = %d)\n", p_evt_write->len, p_evt_write->offset);
+        NRF_LOG_HEXDUMP_INFO(p_evt_write->data, p_evt_write->len);
+        print = 1;
     }
 
     if (p_evt_write->handle == p_our_service->ins_char_handles.value_handle)
     {
         on_insulin_write(p_our_service, p_evt_write);
+        print = 1;
     }
 
-    config_manager_print();
-    NRF_LOG_FLUSH();
+    if (print){
+        config_manager_print();
+    }
+    
 }
 
 
@@ -260,8 +316,8 @@ static uint32_t name_char_add(ble_os_t * p_our_service)
 
     // Set characteristic length in number of bytes
     attr_char_value.max_len     = 20;
-    attr_char_value.init_len    = 8;
-    uint8_t value[20]           = "Glucosee";
+    attr_char_value.init_len    = 20;
+    uint8_t value[20]           = "Glucosee\0\0\0\0\0\0\0\0\0\0\0\0";
     //NRF_LOG_HEXDUMP_INFO(value, 20);
     attr_char_value.p_value     = value;
 
@@ -300,7 +356,7 @@ static uint32_t time_char_add(ble_os_t * p_our_service)
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
     cccd_md.vloc                = BLE_GATTS_VLOC_STACK;
     char_md.p_cccd_md           = &cccd_md;
-    //char_md.char_props.notify   = 1;
+    char_md.char_props.notify   = 1;
 
     // Configure the attribute metadata
     ble_gatts_attr_md_t attr_md;
@@ -321,9 +377,18 @@ static uint32_t time_char_add(ble_os_t * p_our_service)
     attr_char_value.max_len     = 7;
     attr_char_value.init_len    = 7;
     uint8_t value[7];
-    ble_date_time_t t;
-    t = clock_get_time();
-    ble_date_time_encode(&t, &value[0]);
+    ble_date_time_t ble_t;
+    struct tm t;
+    clock_get_time(&t);
+                                        /* BLE time service       - C time library                   */
+    ble_t.year    = t.tm_year + 1900;   /* Year                   - The number of years since 1900   */
+    ble_t.month   = t.tm_mon + 1;       /* 1 January              - Month, range 0 to 11             */
+    ble_t.day     = t.tm_mday;          /* Day of the month       - Day of the month, range 1 to 31  */
+    ble_t.hours   = t.tm_hour;          /* Hours past midnight    - Hours, range 0 to 23             */
+    ble_t.minutes = t.tm_min;           /* Minutes of the hour    - Minutes, range 0 to 59           */
+    ble_t.seconds = t.tm_sec;           /* Seconds of the minute  - Seconds, range 0 to 59           */
+
+    ble_date_time_encode(&ble_t, &value[0]);
     //NRF_LOG_HEXDUMP_INFO(value, sizeof(value));
     attr_char_value.p_value     = value;
 
@@ -431,6 +496,10 @@ void our_service_init(ble_os_t * p_our_service)
 }
 
 
+/**@brief Functions for updating Characteristics values.
+ *
+ * @param[in]   p_our_service        Our Service structure.
+ */
 void config_char_update(ble_os_t * p_our_service, uint8_t * characteristic_value)
 {
     // Update characteristic value
@@ -444,6 +513,41 @@ void config_char_update(ble_os_t * p_our_service, uint8_t * characteristic_value
       hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
       hvx_params.offset = 0;
       hvx_params.p_len  = &len;
+      hvx_params.p_data = characteristic_value;
+
+      sd_ble_gatts_hvx(p_our_service->conn_handle, &hvx_params);
+    }
+}
+
+void time_char_update(ble_os_t * p_our_service)
+{
+    // Update characteristic value
+    if (p_our_service->conn_handle != BLE_CONN_HANDLE_INVALID)
+    {
+      uint16_t               len = 7;
+      ble_gatts_hvx_params_t hvx_params;
+      memset(&hvx_params, 0, sizeof(hvx_params));
+
+      hvx_params.handle = p_our_service->time_char_handles.value_handle;
+      hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
+      hvx_params.offset = 0;
+      hvx_params.p_len  = &len;
+
+      static uint8_t characteristic_value[7];
+      ble_date_time_t ble_t;
+      struct tm t;
+      clock_get_time(&t);
+                                          /* BLE time service       - C time library                   */
+      ble_t.year    = t.tm_year + 1900;   /* Year                   - The number of years since 1900   */
+      ble_t.month   = t.tm_mon + 1;       /* 1 January              - Month, range 0 to 11             */
+      ble_t.day     = t.tm_mday;          /* Day of the month       - Day of the month, range 1 to 31  */
+      ble_t.hours   = t.tm_hour;          /* Hours past midnight    - Hours, range 0 to 23             */
+      ble_t.minutes = t.tm_min;           /* Minutes of the hour    - Minutes, range 0 to 59           */
+      ble_t.seconds = t.tm_sec;           /* Seconds of the minute  - Seconds, range 0 to 59           */
+
+      ble_date_time_encode(&ble_t, &characteristic_value[0]);
+      //NRF_LOG_HEXDUMP_INFO(characteristic_value, sizeof(characteristic_value));
+
       hvx_params.p_data = characteristic_value;
 
       sd_ble_gatts_hvx(p_our_service->conn_handle, &hvx_params);

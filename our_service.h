@@ -91,6 +91,8 @@ void ble_our_service_on_ble_evt(ble_evt_t * p_ble_evt, void * p_context);
  */
 void config_char_update(ble_os_t *p_our_service, uint8_t *characteristic_value);
 
+void time_char_update(ble_os_t * p_our_service);
+
 void insulin_char_update(ble_os_t * p_our_service, uint8_t * characteristic_value);
 
 #endif  /* _ OUR_SERVICE_H__ */

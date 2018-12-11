@@ -1,10 +1,13 @@
 #include "clock.h"
 
+#define NRF_LOG_MODULE_NAME "CLOCK"
+
+#include "nrf_log.h"
+#include "nrf_log_ctrl.h"
+
 #include "app_timer.h"
 #include "app_util_platform.h"
 #include "ble_date_time.h"
-
-static ble_date_time_t m_time;
 
 #define APP_TIMER_PRESCALER     0       /**< Value of the RTC1 PRESCALER register. */
 #define APP_TIMER_OP_QUEUE_SIZE 4       /**< Size of timer operation queues. */
@@ -26,12 +29,16 @@ void clock_init(void)
 {
     app_timer_create(&clock_timer_id, APP_TIMER_MODE_REPEATED, clock_timeout_handler);
     app_timer_start(clock_timer_id, clock_ticks, NULL);
-    m_time.year = 2018;
-    m_time.month = 11;
-    m_time.day = 26;
-    m_time.hours = 15;
-    m_time.minutes = 16;
-    m_time.seconds = 30;
+}
+
+void clock_print(void)
+{
+    char buffer[80];
+    struct tm m_time;
+    clock_get_time(&m_time);
+    strftime(buffer, sizeof(buffer), "%x %X", &m_time);
+    NRF_LOG_INFO("Date %s\n", (uint32_t)buffer);
+    NRF_LOG_FLUSH();
 }
 
 uint32_t clock_get_timestamp(void)
@@ -48,18 +55,31 @@ void clock_tick_set_flag(volatile uint8_t* main_tick_flag)
     m_tick_flag = main_tick_flag;
 }
 
-ble_date_time_t clock_get_time(void)
+void clock_get_time(struct tm * t)
 {
-    ble_date_time_t aux_time;
     CRITICAL_REGION_ENTER();
-    aux_time = m_time;
+    time_t s = clock_ms_counter / 1000;
+    struct tm * m_time;
+    m_time = localtime(&s);
+    t->tm_year   = m_time->tm_year;
+    t->tm_mon    = m_time->tm_mon;
+    t->tm_mday   = m_time->tm_mday;
+    t->tm_hour   = m_time->tm_hour;
+    t->tm_min    = m_time->tm_min;
+    t->tm_sec    = m_time->tm_sec;
     CRITICAL_REGION_EXIT();
-    return aux_time;
 }
 
-void clock_set_time(ble_date_time_t t)
+void clock_set_time(struct tm * timeptr)
 {
     CRITICAL_REGION_ENTER();
-    m_time = t;
+    time_t ret;
+    ret = mktime(timeptr);
+    if( ret == -1 ) {
+       NRF_LOG_INFO("Error: unable to make time using mktime\n");
+    } else {
+       NRF_LOG_INFO("time_t = %ld\n", ret);
+       clock_ms_counter = ret * 1000;
+    }
     CRITICAL_REGION_EXIT();
 }

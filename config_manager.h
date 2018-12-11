@@ -16,7 +16,7 @@ typedef struct
     uint8_t   insulin_type;
     uint16_t  insulin_total;
     uint16_t  insulin_remaining;
-    uint8_t   name[20];
+    char      name[20];
 }global_conf_t;
 
 void config_manager_init(void);
