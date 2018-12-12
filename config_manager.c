@@ -19,6 +19,9 @@ void config_manager_init(void)
   m_global_conf.insulin_type = BLE_GLS_CONTEXT_MED_RAPID;
   m_global_conf.insulin_total = 300;
   m_global_conf.insulin_remaining = 120;
+  m_global_conf.insulin_start = 30;     // 30 min
+  m_global_conf.insulin_max = 120;      // 2 h
+  m_global_conf.insulin_duration = 360; // 6 h
   const char* tmp = "Glucosee";
   strcpy(m_global_conf.name, tmp);
 }
@@ -69,9 +72,14 @@ void config_manager_print(void)
 
   // Insulin
   NRF_LOG_INFO("INS type  0x%02X\n", m_global_conf.insulin_type);
-  NRF_LOG_INFO("INS total %d\n", m_global_conf.insulin_total);
-  NRF_LOG_INFO("INS rem   %d\n", m_global_conf.insulin_remaining);
+  NRF_LOG_INFO("INS total %d U\n", m_global_conf.insulin_total);
+  NRF_LOG_INFO("INS rem   %d U\n", m_global_conf.insulin_remaining);
+  NRF_LOG_INFO("INS start %d min\n", m_global_conf.insulin_start);
+  NRF_LOG_INFO("INS max   %d min\n", m_global_conf.insulin_max);
+  NRF_LOG_INFO("INS dur   %d min\n", m_global_conf.insulin_duration);
   NRF_LOG_FLUSH();
+
+  // Device
 }
 
 void config_manager_set_flags(uint8_t flags)
@@ -122,6 +130,36 @@ void config_manager_set_insulin_remaining(uint16_t rem)
 uint16_t config_manager_get_insulin_remaining(void)
 {
   return m_global_conf.insulin_remaining;
+}
+
+void config_manager_set_insulin_start(uint16_t start)
+{
+  m_global_conf.insulin_start = start;
+}
+
+uint16_t config_manager_get_insulin_start(void)
+{
+  return m_global_conf.insulin_start;
+}
+
+void config_manager_set_insulin_max(uint16_t max)
+{
+  m_global_conf.insulin_max = max;
+}
+
+uint16_t config_manager_get_insulin_max(void)
+{
+  return m_global_conf.insulin_max;
+}
+
+void config_manager_set_insulin_duration(uint16_t d)
+{
+  m_global_conf.insulin_duration = d;
+}
+
+uint16_t config_manager_get_insulin_duration(void)
+{
+  return m_global_conf.insulin_duration;
 }
 
 void config_manager_set_name(uint8_t* data, uint8_t data_len)

@@ -16,6 +16,9 @@ typedef struct
     uint8_t   insulin_type;
     uint16_t  insulin_total;
     uint16_t  insulin_remaining;
+    uint16_t  insulin_start;
+    uint16_t  insulin_max;
+    uint16_t  insulin_duration;
     char      name[20];
 }global_conf_t;
 
@@ -42,5 +45,17 @@ uint16_t config_manager_get_insulin_total(void);
 void config_manager_set_insulin_remaining(uint16_t rem);
 
 uint16_t config_manager_get_insulin_remaining(void);
+
+void config_manager_set_insulin_start(uint16_t start);
+
+uint16_t config_manager_get_insulin_start(void);
+
+void config_manager_set_insulin_max(uint16_t max);
+
+uint16_t config_manager_get_insulin_max(void);
+
+void config_manager_set_insulin_duration(uint16_t d);
+
+uint16_t config_manager_get_insulin_duration(void);
 
 void config_manager_set_name(uint8_t* data, uint8_t data_len);

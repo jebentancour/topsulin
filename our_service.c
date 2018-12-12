@@ -143,11 +143,17 @@ static void on_insulin_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p
     NRF_LOG_INFO("Write to INSULIN (len = %d, offset = %d)\n", data_len, offset);
     NRF_LOG_HEXDUMP_INFO(p_data, data_len);
 
-    if (data_len == 5 && offset == 0)
+    if (data_len == 11 && offset == 0)
     {
+        // Save
         config_manager_set_insulin_type(p_data[0]);
         config_manager_set_insulin_total(uint16_decode(&p_data[1]));
         config_manager_set_insulin_remaining(uint16_decode(&p_data[3]));
+        config_manager_set_insulin_start(uint16_decode(&p_data[5]));
+        config_manager_set_insulin_max(uint16_decode(&p_data[7]));
+        config_manager_set_insulin_duration(uint16_decode(&p_data[9]));
+
+        // Update
         insulin_char_update(p_our_service, p_data);
     }
 }
@@ -463,12 +469,15 @@ static uint32_t insulin_char_add(ble_os_t * p_our_service)
     attr_char_value.p_attr_md   = &attr_md;
 
     // Set characteristic length in number of bytes
-    attr_char_value.max_len     = 5;
-    attr_char_value.init_len    = 5;
-    uint8_t value[5];
+    attr_char_value.max_len     = 11;
+    attr_char_value.init_len    = 11;
+    uint8_t value[11];
     value[0] = config_manager_get_insulin_type();
     uint16_encode(config_manager_get_insulin_total(), &value[1]);
     uint16_encode(config_manager_get_insulin_remaining(), &value[3]);
+    uint16_encode(config_manager_get_insulin_start(), &value[5]);
+    uint16_encode(config_manager_get_insulin_max(), &value[7]);
+    uint16_encode(config_manager_get_insulin_duration(), &value[9]);
     //NRF_LOG_HEXDUMP_INFO(value, sizeof(value));
     attr_char_value.p_value     = value;
 
