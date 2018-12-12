@@ -95,13 +95,13 @@ SoC [nRF51822](https://www.nordicsemi.com/eng/nordic/download_resource/62726/14/
 |0  |0x40000000   |MPU         |MPU         |Memory Protection Unit.                      |SoftDevice        |
 |1  |0x40001000   |RADIO       |RADIO       |2.4 GHz Radio.                               |SoftDevice        |
 |2  |0x40002000   |UART        |UART0       |Universal Asynchronous Receiver/Transmitter. |                  |
-|3  |0x40003000   |SPI         |SPI0        |SPI Master.                                  |EPD               |
-|3  |0x40003000   |TWI         |TWI0        |I2C compatible Two-Wire Interface 0.         |EPD               |
+|3  |0x40003000   |SPI         |SPI0        |SPI Master.                                  |EPD (SPI)         |
+|3  |0x40003000   |TWI         |TWI0        |I2C compatible Two-Wire Interface 0.         |EPD (SPI)         |
 |4  |0x40004000   |SPIS        |SPIS1       |SPI Slave.                                   |                  |
 |4  |0x40004000   |SPI         |SPI1        |SPI Master.                                  |                  |
 |4  |0x40004000   |TWI         |TWI1        |I2C compatible Two-Wire Interface 1.         |                  |
 |6  |0x40006000   |GPIOTE      |GPIOTE      |GPIO Task and Events.                        |                  |
-|7  |0x40007000   |ADC         |ADC         |Analog to Digital Converter.                 |                  |
+|7  |0x40007000   |ADC         |ADC         |Analog to Digital Converter.                 |Battery           |
 |8  |0x40008000   |TIMER       |TIMER0      |Timer/Counter 0.                             |SoftDevice        |
 |9  |0x40009000   |TIMER       |TIMER1      |Timer/Counter 1.                             |                  |
 |10 |0x4000A000   |TIMER       |TIMER2      |Timer/Counter 2.                             |                  |
