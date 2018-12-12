@@ -46,8 +46,10 @@ Según el servicio estándar [Glucose Service Specification](https://www.bluetoo
 |**Time**                                            |       |                                   |
 |Hora y fecha del dispositivo                        |time   |[Time Characteristic](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.date_time.xml) |
 |**Calculator**                                      |       |                                   |
-|Nivel bajo                                          |sfloat |Nivel de glucemia baja             |
-|Nivel alto                                          |sfloat |Nivel de glucemia alta             |
+|Nivel bajo                                          |sfloat |Nivel de glucemia baja en kg/L     |
+|Nivel alto                                          |sfloat |Nivel de glucemia alta en kg/L     |
+|Sensibilidad                                        |uint16 |Cada cuántos CHO en g sumo 1U      |
+|Corrección de hiperglucemia                         |sfloat |Cada cuántos kg/L de hiper sumo 1U |
 |**Insulin**                                         |       |                                   |
 |Tipo de insulina                                    |uint8  |Medication ID from Glucose Service |
 |Capacidad de la lapicera                            |uint16 |U de insulina en una lapicera nueva|
