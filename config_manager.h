@@ -42,3 +42,5 @@ uint16_t config_manager_get_insulin_total(void);
 void config_manager_set_insulin_remaining(uint16_t rem);
 
 uint16_t config_manager_get_insulin_remaining(void);
+
+void config_manager_set_name(uint8_t* data, uint8_t data_len);

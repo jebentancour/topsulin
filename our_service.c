@@ -74,6 +74,25 @@ static void on_config_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p_
     }
 }
 
+static void on_name_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p_evt_write)
+{
+    uint8_t data_len = p_evt_write->len;
+    uint8_t * p_data = p_evt_write->data;
+    uint16_t offset = p_evt_write->offset;
+
+    NRF_LOG_INFO("Write to NAME (len = %d, offset = %d)\n", data_len, offset);
+    NRF_LOG_HEXDUMP_INFO(p_data, data_len);
+
+    if (data_len <= 20 && offset == 0)
+    {
+        // Save
+        config_manager_set_name(p_data, data_len);
+
+        // Update
+        name_char_update(p_our_service, p_data, data_len);
+    }
+}
+
 static void on_time_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p_evt_write)
 {
     uint8_t data_len = p_evt_write->len;
@@ -154,8 +173,7 @@ static void on_write(ble_os_t * p_our_service, ble_evt_t * p_ble_evt)
 
     if (p_evt_write->handle == p_our_service->name_char_handles.value_handle)
     {
-        NRF_LOG_INFO("Write to NAME (len = %d, offset = %d)\n", p_evt_write->len, p_evt_write->offset);
-        NRF_LOG_HEXDUMP_INFO(p_evt_write->data, p_evt_write->len);
+        on_name_write(p_our_service, p_evt_write);
         print = 1;
     }
 
@@ -181,7 +199,7 @@ static void on_write(ble_os_t * p_our_service, ble_evt_t * p_ble_evt)
     if (print){
         config_manager_print();
     }
-    
+
 }
 
 
@@ -510,6 +528,36 @@ void config_char_update(ble_os_t * p_our_service, uint8_t * characteristic_value
       memset(&hvx_params, 0, sizeof(hvx_params));
 
       hvx_params.handle = p_our_service->config_char_handles.value_handle;
+      hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
+      hvx_params.offset = 0;
+      hvx_params.p_len  = &len;
+      hvx_params.p_data = characteristic_value;
+
+      sd_ble_gatts_hvx(p_our_service->conn_handle, &hvx_params);
+    }
+}
+
+void name_char_update(ble_os_t * p_our_service, uint8_t * p_data, uint16_t data_len)
+{
+    // Update characteristic value
+    if (p_our_service->conn_handle != BLE_CONN_HANDLE_INVALID)
+    {
+      uint16_t               len = 20;
+      ble_gatts_hvx_params_t hvx_params;
+      memset(&hvx_params, 0, sizeof(hvx_params));
+
+      uint8_t characteristic_value[20];
+      uint8_t i;
+      for(i = 0; i < 20; i++){
+        if(i < data_len){
+          characteristic_value[i] = p_data[i];
+        } else {
+          characteristic_value[i] = 0x00;
+        }
+      }
+      NRF_LOG_HEXDUMP_INFO(characteristic_value, sizeof(characteristic_value));
+
+      hvx_params.handle = p_our_service->name_char_handles.value_handle;
       hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
       hvx_params.offset = 0;
       hvx_params.p_len  = &len;

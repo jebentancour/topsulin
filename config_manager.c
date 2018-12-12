@@ -123,3 +123,15 @@ uint16_t config_manager_get_insulin_remaining(void)
 {
   return m_global_conf.insulin_remaining;
 }
+
+void config_manager_set_name(uint8_t* data, uint8_t data_len)
+{
+  uint8_t i;
+  for(i = 0; i < 20; i++){
+    if(i < data_len){
+      m_global_conf.name[i] = (char)data[i];
+    } else {
+      m_global_conf.name[i] = '\0';
+    }
+  }
+}

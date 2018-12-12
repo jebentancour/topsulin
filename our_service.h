@@ -49,6 +49,7 @@
 #define BLE_UUID_TOPSULIN_TIME_CHARACTERISTC    0xF660
 #define BLE_UUID_TOPSULIN_CALC_CHARACTERISTC    0xF661
 #define BLE_UUID_TOPSULIN_INS_CHARACTERISTC     0xF662
+#define BLE_UUID_TOPSULIN_DEV_CHARACTERISTC     0xF663
 
 /**@brief This structure contains various status information for our service.
  * The name is based on the naming convention used in Nordic's SDKs.
@@ -64,6 +65,7 @@ typedef struct
     ble_gatts_char_handles_t    time_char_handles;
     ble_gatts_char_handles_t    calc_char_handles;
     ble_gatts_char_handles_t    ins_char_handles;
+    ble_gatts_char_handles_t    dev_char_handles;
 }ble_os_t;
 
 
@@ -90,6 +92,8 @@ void ble_our_service_on_ble_evt(ble_evt_t * p_ble_evt, void * p_context);
  * @param[in]   characteristic_value     New characteristic value.
  */
 void config_char_update(ble_os_t *p_our_service, uint8_t *characteristic_value);
+
+void name_char_update(ble_os_t * p_our_service, uint8_t * p_data, uint16_t data_len);
 
 void time_char_update(ble_os_t * p_our_service);
 
