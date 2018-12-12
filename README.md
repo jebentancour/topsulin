@@ -46,11 +46,15 @@ Según el servicio estándar [Glucose Service Specification](https://www.bluetoo
 |**Time**                                            |       |                                   |
 |Hora y fecha del dispositivo                        |time   |[Time Characteristic](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.date_time.xml) |
 |**Calculator**                                      |       |                                   |
-|Parámetros para calcular dosis sugerida             |       |                                   |
+|Nivel bajo                                          |sfloat |Nivel de glucemia baja             |
+|Nivel alto                                          |sfloat |Nivel de glucemia alta             |
 |**Insulin**                                         |       |                                   |
 |Tipo de insulina                                    |uint8  |Medication ID from Glucose Service |
 |Capacidad de la lapicera                            |uint16 |U de insulina en una lapicera nueva|
 |Capacidad restante de la lapicera                   |uint16 |U de insulina restantes            |
+|Comienzo de acción                                  |uint16 |En minutos                         |
+|Acción máxima                                       |uint16 |En minutos                         |
+|Duración de la acción                               |uint16 |En minutos                         |
 |**Device**                                          |       |                                   |
 |Firmware                                            |uint8  |Versión de firmware                |
 |Serial Number                                       |uint16 |Número de serie                    |
