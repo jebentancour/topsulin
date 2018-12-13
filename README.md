@@ -29,6 +29,8 @@ Según el servicio estándar [Glucose Service Specification](https://www.bluetoo
 
 #### Topsulin Service
 
+[Characteristic Format Types](https://www.bluetooth.com/specifications/assigned-numbers/format-types)
+
 |Characteristic                                      |Format |Value                              |
 |----------------------------------------------------|-------|-----------------------------------|
 |**Configuration**                                   |       |                                   |
