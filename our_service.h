@@ -44,12 +44,12 @@
 
 #define BLE_UUID_TOPSULIN_BASE_UUID             {{0x04, 0x11, 0x52, 0x07, 0x9B, 0x44, 0x4D, 0xEC, 0xA7, 0x31, 0x05, 0x15, 0x00, 0x00, 0x19, 0x34}} // 128-bit base UUID
 #define BLE_UUID_TOPSULIN_SERVICE               0xF65D
-#define BLE_UUID_TOPSULIN_CONFIG_CHARACTERISTC  0xF65E
-#define BLE_UUID_TOPSULIN_NAME_CHARACTERISTC    0xF65F
-#define BLE_UUID_TOPSULIN_TIME_CHARACTERISTC    0xF660
-#define BLE_UUID_TOPSULIN_CALC_CHARACTERISTC    0xF661
-#define BLE_UUID_TOPSULIN_INS_CHARACTERISTC     0xF662
-#define BLE_UUID_TOPSULIN_DEV_CHARACTERISTC     0xF663
+#define BLE_UUID_TOPSULIN_CONFIG_CHARACTERISTIC  0xF65E
+#define BLE_UUID_TOPSULIN_NAME_CHARACTERISTIC    0xF65F
+#define BLE_UUID_TOPSULIN_TIME_CHARACTERISTIC    0xF660
+#define BLE_UUID_TOPSULIN_CALC_CHARACTERISTIC    0xF661
+#define BLE_UUID_TOPSULIN_INS_CHARACTERISTIC     0xF662
+#define BLE_UUID_TOPSULIN_DEV_CHARACTERISTIC     0xF663
 
 /**@brief This structure contains various status information for our service.
  * The name is based on the naming convention used in Nordic's SDKs.
@@ -97,6 +97,10 @@ void name_char_update(ble_os_t * p_our_service, uint8_t * p_data, uint16_t data_
 
 void time_char_update(ble_os_t * p_our_service);
 
+void calc_char_update(ble_os_t * p_our_service, uint8_t * characteristic_value);
+
 void insulin_char_update(ble_os_t * p_our_service, uint8_t * characteristic_value);
+
+void dev_char_update(ble_os_t * p_our_service, uint16_t v);
 
 #endif  /* _ OUR_SERVICE_H__ */

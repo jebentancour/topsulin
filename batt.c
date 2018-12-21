@@ -23,8 +23,6 @@ static void adc_event_handler(nrf_drv_adc_evt_t const * p_event)
     if (p_event->type == NRF_DRV_ADC_EVT_SAMPLE)
     {
         voltage = (p_event->data.sample.sample * 3 * DBG_IN_MV) / ADC_MAX;
-        NRF_LOG_INFO("VCC = %d.%d V\n", voltage / 1000, voltage % 1000);
-        NRF_LOG_FLUSH();
         *m_batt_flag = 1;
     }
 }

@@ -1,5 +1,7 @@
 #include <stdint.h>
 
+#include "ble_gls.h"
+
 #define CONFIG_GLUCOSE_FLAG                     0x01
 #define CONFIG_INSULIN_FLAG                     0x02
 #define CONFIG_CHO_FLAG                         0x04
@@ -13,14 +15,18 @@ typedef struct
 {
     uint8_t   flags;
     uint16_t  g_portion;
+    char      name[20];
+    sfloat_t  calc_low;
+    sfloat_t  calc_high;
+    uint16_t  calc_sens;
+    sfloat_t  calc_corr;
     uint8_t   insulin_type;
     uint16_t  insulin_total;
     uint16_t  insulin_remaining;
     uint16_t  insulin_start;
     uint16_t  insulin_max;
     uint16_t  insulin_duration;
-    char      name[20];
-}global_conf_t;
+} global_conf_t;
 
 void config_manager_init(void);
 
@@ -59,3 +65,23 @@ void config_manager_set_insulin_duration(uint16_t d);
 uint16_t config_manager_get_insulin_duration(void);
 
 void config_manager_set_name(uint8_t* data, uint8_t data_len);
+
+sfloat_t config_manager_get_calc_low(void);
+
+void config_manager_set_calc_low(sfloat_t low);
+
+sfloat_t config_manager_get_calc_high(void);
+
+void config_manager_set_calc_high(sfloat_t high);
+
+uint16_t config_manager_get_calc_sens(void);
+
+void config_manager_set_calc_sens(uint16_t s);
+
+sfloat_t config_manager_get_calc_corr(void);
+
+void config_manager_set_calc_corr(sfloat_t corr);
+
+uint8_t config_manager_get_version();
+
+uint16_t config_manager_get_serial_number();

@@ -41,6 +41,8 @@
 #include "ble_date_time.h"
 #include "app_error.h"
 #include "clock.h"
+#include "batt.h"
+
 #include "SEGGER_RTT.h"
 
 #define NRF_LOG_MODULE_NAME "BLE OS"
@@ -48,6 +50,20 @@
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 
+static uint16_t encode_sfloat(sfloat_t sf)
+{
+    uint16_t dec;
+    dec = ((sf.exponent << 12) & 0xF000) | ((sf.mantissa <<  0) & 0x0FFF);
+    return dec;
+}
+
+static sfloat_t decode_sfloat(uint16_t u)
+{
+    sfloat_t sf;
+    sf.exponent = (u & 0xF000) >> 12;
+    sf.mantissa = (u & 0x0FFF) >> 0;
+    return sf;
+}
 
 /**@brief Function for handling the Topsulin Config write event.
  *
@@ -134,6 +150,28 @@ static void on_time_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p_ev
     }
 }
 
+static void on_calc_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p_evt_write)
+{
+    uint8_t data_len = p_evt_write->len;
+    uint8_t * p_data = p_evt_write->data;
+    uint16_t offset = p_evt_write->offset;
+
+    NRF_LOG_INFO("Write to CALC (len = %d, offset = %d)\n", data_len, offset);
+    NRF_LOG_HEXDUMP_INFO(p_data, data_len);
+
+    if (data_len == 8 && offset == 0)
+    {
+        // Save
+        config_manager_set_calc_low(decode_sfloat(uint16_decode(&p_data[0])));
+        config_manager_set_calc_high(decode_sfloat(uint16_decode(&p_data[2])));
+        config_manager_set_calc_sens(uint16_decode(&p_data[4]));
+        config_manager_set_calc_corr(decode_sfloat(uint16_decode(&p_data[6])));
+
+        // Update
+        calc_char_update(p_our_service, p_data);
+    }
+}
+
 static void on_insulin_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p_evt_write)
 {
     uint8_t data_len = p_evt_write->len;
@@ -191,8 +229,7 @@ static void on_write(ble_os_t * p_our_service, ble_evt_t * p_ble_evt)
 
     if (p_evt_write->handle == p_our_service->calc_char_handles.value_handle)
     {
-        NRF_LOG_INFO("Write to CALC (len = %d, offset = %d)\n", p_evt_write->len, p_evt_write->offset);
-        NRF_LOG_HEXDUMP_INFO(p_evt_write->data, p_evt_write->len);
+        on_calc_write(p_our_service, p_evt_write);
         print = 1;
     }
 
@@ -242,7 +279,7 @@ static uint32_t config_char_add(ble_os_t * p_our_service)
     ble_uuid_t          char_uuid;
     ble_uuid128_t       base_uuid = BLE_UUID_TOPSULIN_BASE_UUID;
 
-    char_uuid.uuid      = BLE_UUID_TOPSULIN_CONFIG_CHARACTERISTC;
+    char_uuid.uuid      = BLE_UUID_TOPSULIN_CONFIG_CHARACTERISTIC;
 
     err_code = sd_ble_uuid_vs_add(&base_uuid, &char_uuid.type);
     APP_ERROR_CHECK(err_code);
@@ -303,7 +340,7 @@ static uint32_t name_char_add(ble_os_t * p_our_service)
     ble_uuid_t          char_uuid;
     ble_uuid128_t       base_uuid = BLE_UUID_TOPSULIN_BASE_UUID;
 
-    char_uuid.uuid      = BLE_UUID_TOPSULIN_NAME_CHARACTERISTC;
+    char_uuid.uuid      = BLE_UUID_TOPSULIN_NAME_CHARACTERISTIC;
 
     err_code = sd_ble_uuid_vs_add(&base_uuid, &char_uuid.type);
     APP_ERROR_CHECK(err_code);
@@ -362,7 +399,7 @@ static uint32_t time_char_add(ble_os_t * p_our_service)
     ble_uuid_t          char_uuid;
     ble_uuid128_t       base_uuid = BLE_UUID_TOPSULIN_BASE_UUID;
 
-    char_uuid.uuid      = BLE_UUID_TOPSULIN_TIME_CHARACTERISTC;
+    char_uuid.uuid      = BLE_UUID_TOPSULIN_TIME_CHARACTERISTIC;
 
     err_code = sd_ble_uuid_vs_add(&base_uuid, &char_uuid.type);
     APP_ERROR_CHECK(err_code);
@@ -426,6 +463,69 @@ static uint32_t time_char_add(ble_os_t * p_our_service)
     return NRF_SUCCESS;
 }
 
+static uint32_t calc_char_add(ble_os_t * p_our_service)
+{
+    // Add a custom characteristic UUID
+    uint32_t            err_code;
+    ble_uuid_t          char_uuid;
+    ble_uuid128_t       base_uuid = BLE_UUID_TOPSULIN_BASE_UUID;
+
+    char_uuid.uuid      = BLE_UUID_TOPSULIN_CALC_CHARACTERISTIC;
+
+    err_code = sd_ble_uuid_vs_add(&base_uuid, &char_uuid.type);
+    APP_ERROR_CHECK(err_code);
+
+    // Add read/write properties to our characteristic
+    ble_gatts_char_md_t char_md;
+    memset(&char_md, 0, sizeof(char_md));
+    char_md.char_props.read = 1;
+    char_md.char_props.write = 1;
+
+    // Configuring Client Characteristic Configuration Descriptor metadata and add to char_md structure
+    ble_gatts_attr_md_t cccd_md;
+    memset(&cccd_md, 0, sizeof(cccd_md));
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
+    cccd_md.vloc                = BLE_GATTS_VLOC_STACK;
+    char_md.p_cccd_md           = &cccd_md;
+    //char_md.char_props.notify   = 1;
+
+    // Configure the attribute metadata
+    ble_gatts_attr_md_t attr_md;
+    memset(&attr_md, 0, sizeof(attr_md));
+    attr_md.vloc        = BLE_GATTS_VLOC_STACK;
+
+    // Set read/write security levels to our characteristic
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.write_perm);
+
+    // Configure the characteristic value attribute
+    ble_gatts_attr_t    attr_char_value;
+    memset(&attr_char_value, 0, sizeof(attr_char_value));
+    attr_char_value.p_uuid      = &char_uuid;
+    attr_char_value.p_attr_md   = &attr_md;
+
+    // Set characteristic length in number of bytes
+    attr_char_value.max_len     = 8;
+    attr_char_value.init_len    = 8;
+    uint8_t value[8];
+    uint16_encode(encode_sfloat(config_manager_get_calc_low()), &value[0]);
+    uint16_encode(encode_sfloat(config_manager_get_calc_high()), &value[2]);
+    uint16_encode(config_manager_get_calc_sens(), &value[4]);
+    uint16_encode(encode_sfloat(config_manager_get_calc_corr()), &value[6]);
+    //NRF_LOG_HEXDUMP_INFO(value, sizeof(value));
+    attr_char_value.p_value     = value;
+
+    // Add our new characteristic to the service
+    err_code = sd_ble_gatts_characteristic_add(p_our_service->service_handle,
+                                   &char_md,
+                                   &attr_char_value,
+                                   &p_our_service->calc_char_handles);
+    APP_ERROR_CHECK(err_code);
+
+    return NRF_SUCCESS;
+}
+
 static uint32_t insulin_char_add(ble_os_t * p_our_service)
 {
     // Add a custom characteristic UUID
@@ -433,7 +533,7 @@ static uint32_t insulin_char_add(ble_os_t * p_our_service)
     ble_uuid_t          char_uuid;
     ble_uuid128_t       base_uuid = BLE_UUID_TOPSULIN_BASE_UUID;
 
-    char_uuid.uuid      = BLE_UUID_TOPSULIN_INS_CHARACTERISTC;
+    char_uuid.uuid      = BLE_UUID_TOPSULIN_INS_CHARACTERISTIC;
 
     err_code = sd_ble_uuid_vs_add(&base_uuid, &char_uuid.type);
     APP_ERROR_CHECK(err_code);
@@ -491,6 +591,70 @@ static uint32_t insulin_char_add(ble_os_t * p_our_service)
     return NRF_SUCCESS;
 }
 
+static uint32_t device_char_add(ble_os_t * p_our_service)
+{
+    // Add a custom characteristic UUID
+    uint32_t            err_code;
+    ble_uuid_t          char_uuid;
+    ble_uuid128_t       base_uuid = BLE_UUID_TOPSULIN_BASE_UUID;
+
+    char_uuid.uuid      = BLE_UUID_TOPSULIN_DEV_CHARACTERISTIC;
+
+    err_code = sd_ble_uuid_vs_add(&base_uuid, &char_uuid.type);
+    APP_ERROR_CHECK(err_code);
+
+    // Add read/write properties to our characteristic
+    ble_gatts_char_md_t char_md;
+    memset(&char_md, 0, sizeof(char_md));
+    char_md.char_props.read = 1;
+    char_md.char_props.write = 1;
+
+    // Configuring Client Characteristic Configuration Descriptor metadata and add to char_md structure
+    ble_gatts_attr_md_t cccd_md;
+    memset(&cccd_md, 0, sizeof(cccd_md));
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
+    cccd_md.vloc                = BLE_GATTS_VLOC_STACK;
+    //cccd_md.vloc                = BLE_GATTS_VLOC_USER;
+    char_md.p_cccd_md           = &cccd_md;
+    //char_md.char_props.notify   = 1;
+
+    // Configure the attribute metadata
+    ble_gatts_attr_md_t attr_md;
+    memset(&attr_md, 0, sizeof(attr_md));
+    attr_md.vloc        = BLE_GATTS_VLOC_STACK;
+    //attr_md.vloc        = BLE_GATTS_VLOC_USER;
+
+    // Set read/write security levels to our characteristic
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.write_perm);
+
+    // Configure the characteristic value attribute
+    ble_gatts_attr_t    attr_char_value;
+    memset(&attr_char_value, 0, sizeof(attr_char_value));
+    attr_char_value.p_uuid      = &char_uuid;
+    attr_char_value.p_attr_md   = &attr_md;
+
+    // Set characteristic length in number of bytes
+    attr_char_value.max_len     = 5;
+    attr_char_value.init_len    = 5;
+    uint8_t value[5];
+    value[0] = config_manager_get_version();
+    uint16_encode(config_manager_get_serial_number(), &value[1]);
+    uint16_encode(0x0000, &value[3]);
+    //NRF_LOG_HEXDUMP_INFO(value, sizeof(value));
+    attr_char_value.p_value     = value;
+
+    // Add our new characteristic to the service
+    err_code = sd_ble_gatts_characteristic_add(p_our_service->service_handle,
+                                   &char_md,
+                                   &attr_char_value,
+                                   &p_our_service->dev_char_handles);
+    APP_ERROR_CHECK(err_code);
+
+    return NRF_SUCCESS;
+}
+
 
 /**@brief Function for initiating our new service.
  *
@@ -519,7 +683,9 @@ void our_service_init(ble_os_t * p_our_service)
     config_char_add(p_our_service);
     name_char_add(p_our_service);
     time_char_add(p_our_service);
+    calc_char_add(p_our_service);
     insulin_char_add(p_our_service);
+    device_char_add(p_our_service);
 }
 
 
@@ -530,8 +696,8 @@ void our_service_init(ble_os_t * p_our_service)
 void config_char_update(ble_os_t * p_our_service, uint8_t * characteristic_value)
 {
     // Update characteristic value
-    if (p_our_service->conn_handle != BLE_CONN_HANDLE_INVALID)
-    {
+    //if (p_our_service->conn_handle != BLE_CONN_HANDLE_INVALID)
+    //{
       uint16_t               len = 3;
       ble_gatts_hvx_params_t hvx_params;
       memset(&hvx_params, 0, sizeof(hvx_params));
@@ -543,14 +709,14 @@ void config_char_update(ble_os_t * p_our_service, uint8_t * characteristic_value
       hvx_params.p_data = characteristic_value;
 
       sd_ble_gatts_hvx(p_our_service->conn_handle, &hvx_params);
-    }
+    //}
 }
 
 void name_char_update(ble_os_t * p_our_service, uint8_t * p_data, uint16_t data_len)
 {
     // Update characteristic value
-    if (p_our_service->conn_handle != BLE_CONN_HANDLE_INVALID)
-    {
+    //if (p_our_service->conn_handle != BLE_CONN_HANDLE_INVALID)
+    //{
       uint16_t               len = 20;
       ble_gatts_hvx_params_t hvx_params;
       memset(&hvx_params, 0, sizeof(hvx_params));
@@ -573,14 +739,14 @@ void name_char_update(ble_os_t * p_our_service, uint8_t * p_data, uint16_t data_
       hvx_params.p_data = characteristic_value;
 
       sd_ble_gatts_hvx(p_our_service->conn_handle, &hvx_params);
-    }
+    //}
 }
 
 void time_char_update(ble_os_t * p_our_service)
 {
     // Update characteristic value
-    if (p_our_service->conn_handle != BLE_CONN_HANDLE_INVALID)
-    {
+    //if (p_our_service->conn_handle != BLE_CONN_HANDLE_INVALID)
+    //{
       uint16_t               len = 7;
       ble_gatts_hvx_params_t hvx_params;
       memset(&hvx_params, 0, sizeof(hvx_params));
@@ -608,14 +774,33 @@ void time_char_update(ble_os_t * p_our_service)
       hvx_params.p_data = characteristic_value;
 
       sd_ble_gatts_hvx(p_our_service->conn_handle, &hvx_params);
-    }
+    //}
+}
+
+void calc_char_update(ble_os_t * p_our_service, uint8_t * characteristic_value)
+{
+    // Update characteristic value
+    //if (p_our_service->conn_handle != BLE_CONN_HANDLE_INVALID)
+    //{
+      uint16_t               len = 8;
+      ble_gatts_hvx_params_t hvx_params;
+      memset(&hvx_params, 0, sizeof(hvx_params));
+
+      hvx_params.handle = p_our_service->calc_char_handles.value_handle;
+      hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
+      hvx_params.offset = 0;
+      hvx_params.p_len  = &len;
+      hvx_params.p_data = characteristic_value;
+
+      sd_ble_gatts_hvx(p_our_service->conn_handle, &hvx_params);
+    //}
 }
 
 void insulin_char_update(ble_os_t * p_our_service, uint8_t * characteristic_value)
 {
     // Update characteristic value
-    if (p_our_service->conn_handle != BLE_CONN_HANDLE_INVALID)
-    {
+    //if (p_our_service->conn_handle != BLE_CONN_HANDLE_INVALID)
+    //{
       uint16_t               len = 5;
       ble_gatts_hvx_params_t hvx_params;
       memset(&hvx_params, 0, sizeof(hvx_params));
@@ -627,5 +812,32 @@ void insulin_char_update(ble_os_t * p_our_service, uint8_t * characteristic_valu
       hvx_params.p_data = characteristic_value;
 
       sd_ble_gatts_hvx(p_our_service->conn_handle, &hvx_params);
-    }
+    //}
+}
+
+void dev_char_update(ble_os_t * p_our_service, uint16_t v)
+{
+    // Update characteristic value
+    //if (p_our_service->conn_handle != BLE_CONN_HANDLE_INVALID)
+    //{
+      uint16_t               len = 5;
+      ble_gatts_hvx_params_t hvx_params;
+      memset(&hvx_params, 0, sizeof(hvx_params));
+
+      hvx_params.handle = p_our_service->dev_char_handles.value_handle;
+      hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
+      hvx_params.offset = 0;
+      hvx_params.p_len  = &len;
+
+      static uint8_t characteristic_value[5];
+      characteristic_value[0] = config_manager_get_version();
+      uint16_encode(config_manager_get_serial_number(), &characteristic_value[1]);
+      uint16_encode(v, &characteristic_value[3]);
+
+      //NRF_LOG_HEXDUMP_INFO(characteristic_value, sizeof(characteristic_value));
+
+      hvx_params.p_data = characteristic_value;
+
+      sd_ble_gatts_hvx(p_our_service->conn_handle, &hvx_params);
+    //}
 }

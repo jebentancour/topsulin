@@ -80,7 +80,7 @@
 
 #define IS_SRVC_CHANGED_CHARACT_PRESENT 0                                           /**< Include or not the service_changed characteristic. if not enabled, the server's database cannot be changed for the lifetime of the device*/
 
-#define DEVICE_NAME                     "glucosee"                                  /**< Name of device. Will be included in the advertising data. */
+#define DEVICE_NAME                     "Topsulin"                                  /**< Name of device. Will be included in the advertising data. */
 
 #define APP_ADV_INTERVAL                40                                          /**< The advertising interval (in units of 0.625 ms. This value corresponds to 25 ms). */
 #define APP_ADV_TIMEOUT_IN_SECONDS      30                                          /**< The advertising timeout in units of seconds. */
@@ -322,6 +322,10 @@ void time_ble_update(void)
     time_char_update(&m_our_service);
 }
 
+void batt_ble_update(uint16_t v)
+{
+    dev_char_update(&m_our_service, v);
+}
 
 /**@brief Function for the Timer initialization.
  *

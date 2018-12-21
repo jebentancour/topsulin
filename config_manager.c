@@ -1,6 +1,5 @@
 #include "config_manager.h"
 
-#include "ble_gls.h"
 #include "clock.h"
 
 #define NRF_LOG_MODULE_NAME "CONF"
@@ -14,16 +13,28 @@ static global_conf_t m_global_conf;
 void config_manager_init(void)
 {
   memset(&m_global_conf, 0, sizeof(m_global_conf));
+  // Config
   m_global_conf.flags = CONFIG_CHO_FLAG | CONFIG_INSULIN_FLAG | CONFIG_GLUCOSE_FLAG;
   m_global_conf.g_portion = 250;
+  // Name
+  const char* tmp = "Glucosee";
+  strcpy(m_global_conf.name, tmp);
+  // Calc
+  m_global_conf.calc_low.mantissa = 60;
+  m_global_conf.calc_low.exponent = -3;
+  m_global_conf.calc_high.mantissa = 150;
+  m_global_conf.calc_high.exponent = -3;
+  m_global_conf.calc_sens = 15;
+  m_global_conf.calc_corr.mantissa = 15;
+  m_global_conf.calc_corr.exponent = -3;
+  // Insulin
   m_global_conf.insulin_type = BLE_GLS_CONTEXT_MED_RAPID;
   m_global_conf.insulin_total = 300;
   m_global_conf.insulin_remaining = 120;
   m_global_conf.insulin_start = 30;     // 30 min
   m_global_conf.insulin_max = 120;      // 2 h
   m_global_conf.insulin_duration = 360; // 6 h
-  const char* tmp = "Glucosee";
-  strcpy(m_global_conf.name, tmp);
+
 }
 
 void config_manager_print(void)
@@ -172,4 +183,54 @@ void config_manager_set_name(uint8_t* data, uint8_t data_len)
       m_global_conf.name[i] = '\0';
     }
   }
+}
+
+sfloat_t config_manager_get_calc_low(void)
+{
+  return m_global_conf.calc_low;
+}
+
+void config_manager_set_calc_low(sfloat_t low)
+{
+  m_global_conf.calc_low = low;
+}
+
+sfloat_t config_manager_get_calc_high(void)
+{
+  return m_global_conf.calc_high;
+}
+
+void config_manager_set_calc_high(sfloat_t high)
+{
+  m_global_conf.calc_high = high;
+}
+
+uint16_t config_manager_get_calc_sens(void)
+{
+  return m_global_conf.calc_sens;
+}
+
+void config_manager_set_calc_sens(uint16_t s)
+{
+  m_global_conf.calc_sens = s;
+}
+
+sfloat_t config_manager_get_calc_corr(void)
+{
+  return m_global_conf.calc_corr;
+}
+
+void config_manager_set_calc_corr(sfloat_t corr)
+{
+  m_global_conf.calc_corr = corr;
+}
+
+uint8_t config_manager_get_version()
+{
+  return 1;
+}
+
+uint16_t config_manager_get_serial_number()
+{
+  return 1;
 }

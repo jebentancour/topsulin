@@ -82,6 +82,12 @@ int main(void)
     batt_init();
     batt_sample();
 
+    while(!batt_flag){}
+    batt_flag = 0;
+    uint32_t voltage;
+    voltage = batt_get();
+    NRF_LOG_INFO("VCC = %d.%d V\n", voltage / 1000, voltage % 1000);
+
     wake_up = 1;
     sd_power_mode_set(NRF_POWER_MODE_LOWPWR);
 
@@ -166,14 +172,22 @@ int main(void)
               if (now - last >= 1000){
                 //clock_print();
                 time_ble_update();
+                if(!batt_flag){
+                  batt_sample();
+                }
                 last = now;
               }
             }
             idle_timer++;
         }
 
+        if(batt_flag){
+            batt_ble_update((uint16_t)batt_get());
+            batt_flag = 0;
+        }
+
         // If it is nothing to do...
-        if((idle_timer >= IDLE_TICKS)&&(!clock_tick_flag)/*&&(display_done_flag)*/&&(!button_flag)&&(!encoder_flag)) {
+        if((idle_timer >= IDLE_TICKS)&&(!clock_tick_flag)/*&&(display_done_flag)*/&&(!button_flag)&&(!encoder_flag)&&(!batt_flag)) {
             // prepare to sleep
             gpio_set_led(false);
             wake_up = 0;
