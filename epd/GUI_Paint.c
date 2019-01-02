@@ -43,39 +43,15 @@ parameter:
     Rotate  :   Image flip degree
     Color   :   Whether the picture is inverted
 ******************************************************************************/
-void GUI_NewImage(UWORD Image_Name, UWORD Width, UWORD Height, UWORD Rotate, UWORD Color)
+void GUI_NewImage(UWORD Width, UWORD Height, UWORD Rotate, UWORD Color)
 {
-    if(Rotate == IMAGE_ROTATE_0 || Rotate == IMAGE_ROTATE_180) {
-        GUI_Image.Image_Width = Width;
-        GUI_Image.Image_Height = Height;
-    } else {
-        GUI_Image.Image_Width = Height;
-        GUI_Image.Image_Height = Width;
-    }
-    GUI_Image.Image_Name = Image_Name;//At least one picture
+    GUI_Image.Image_Width = Width;
+    GUI_Image.Image_Height = Height;
     GUI_Image.Image_Rotate = Rotate;
     GUI_Image.Memory_Width = Width;
     GUI_Image.Memory_Height = Height;
     GUI_Image.Image_Color = Color;
-
-    UWORD BYTE_Height = GUI_Image.Memory_Height;
-    UWORD BYTE_Width = (GUI_Image.Memory_Width % 8 == 0)? (GUI_Image.Memory_Width / 8 ): (GUI_Image.Memory_Width / 8 + 1);
-    GUI_Image.Image_Offset =  GUI_Image.Image_Name * (BYTE_Height * BYTE_Width);
 }
-
-/******************************************************************************
-function:	Select Image
-parameter:
-******************************************************************************/
-void GUI_SelectImage(UWORD Image_Name)
-{
-    GUI_Image.Image_Name = Image_Name;//At least one picture
-
-    UWORD BYTE_Height = GUI_Image.Memory_Height;
-    UWORD BYTE_Width = (GUI_Image.Memory_Width % 8 == 0)? (GUI_Image.Memory_Width / 8 ): (GUI_Image.Memory_Width / 8 + 1);
-    GUI_Image.Image_Offset =  GUI_Image.Image_Name * (BYTE_Height * BYTE_Width);
-}
-
 
 /******************************************************************************
 function:	Draw Pixels
@@ -86,11 +62,9 @@ parameter:
 ******************************************************************************/
 static void GUI_DrawPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
 {
-    // UWORD Height = GUI_Image.Memory_Height;
     UWORD Width = (GUI_Image.Memory_Width % 8 == 0)? (GUI_Image.Memory_Width / 8 ): (GUI_Image.Memory_Width / 8 + 1);
-    UDOUBLE Offset = GUI_Image.Image_Offset;
 
-    UDOUBLE Addr = Xpoint / 8 + Ypoint * Width + Offset;
+    UDOUBLE Addr = Xpoint / 8 + Ypoint * Width;
     UBYTE Rdata = ImageBuff[Addr];
     if(GUI_Image.Image_Color == IMAGE_COLOR_POSITIVE) {
         if(Color == BLACK)
@@ -114,7 +88,6 @@ void GUI_Clear(UWORD Color)
 {
     UWORD Height = GUI_Image.Memory_Height;
     UWORD Width = (GUI_Image.Memory_Width % 8 == 0)? (GUI_Image.Memory_Width / 8 ): (GUI_Image.Memory_Width / 8 + 1);
-    UDOUBLE Offset = GUI_Image.Image_Offset;
     UDOUBLE Addr;
     if(GUI_Image.Image_Color == IMAGE_COLOR_INVERTED) {
         Color = ~Color;
@@ -122,7 +95,7 @@ void GUI_Clear(UWORD Color)
     UWORD X, Y;
     for (Y = 0; Y < Height; Y++) {
         for (X = 0; X < Width; X++ ) {
-            Addr = X + Y * Width + Offset;
+            Addr = X + Y * Width;
             ImageBuff[Addr] = Color;
         }
     }
@@ -145,23 +118,14 @@ static void GUI_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
         Y = Ypoint;
         GUI_DrawPixel(X, Y, Color);
         break;
-    case IMAGE_ROTATE_90:
-        X = Ypoint;
-        Y = GUI_Image.Image_Width - Xpoint - 1;
-        GUI_DrawPixel(X, Y, Color);
-        break;
     case IMAGE_ROTATE_180:
         X = GUI_Image.Image_Width - Xpoint - 1;
         Y = GUI_Image.Image_Height - Ypoint - 1;
         GUI_DrawPixel(X, Y, Color);
         break;
-    case IMAGE_ROTATE_270:
-        X = GUI_Image.Image_Width - Ypoint - 1;
-        Y = Xpoint;
-        GUI_DrawPixel(X, Y, Color);
-        break;
     }
 }
+
 /******************************************************************************
 function:	Clear the color of a window
 parameter:
@@ -559,13 +523,16 @@ void GUI_DrawBitMap(const unsigned char* image_buffer)
     UWORD Xpoint, Ypoint, Height, Width;
     Height = GUI_Image.Memory_Height;
     Width = (GUI_Image.Memory_Width % 8 == 0)? (GUI_Image.Memory_Width / 8 ): (GUI_Image.Memory_Width / 8 + 1);
-    UDOUBLE Offset = GUI_Image.Image_Offset;
     UDOUBLE Addr = 0;
 
     for (Ypoint = 0; Ypoint < Height; Ypoint++) {
         for (Xpoint = 0; Xpoint < Width; Xpoint++) {//8 pixel =  1 byte
-            Addr = Xpoint + Ypoint * Width + Offset;
-            ImageBuff[Addr] = ~image_buffer[Xpoint + Ypoint * Width];
+            Addr = Xpoint + Ypoint * Width;
+            if(GUI_Image.Image_Color == IMAGE_COLOR_POSITIVE) {
+              ImageBuff[Addr] = ~image_buffer[Xpoint + Ypoint * Width];
+            } else {
+              ImageBuff[Addr] = image_buffer[Xpoint + Ypoint * Width];
+            }
         }
     }
 }

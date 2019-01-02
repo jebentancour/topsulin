@@ -8,8 +8,9 @@
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 
-//#include "display_SSD1306.h"
-//#include "font8x8.h"
+#include "FEPD_2in13.h"
+#include "GUI_Paint.h"
+#include "ImageData.h"
 #include "clock.h"
 #include "gpio.h"
 #include "ble_services.h"
@@ -87,6 +88,14 @@ int main(void)
     uint32_t voltage;
     voltage = batt_get();
     NRF_LOG_INFO("VCC = %d.%d V\n", voltage / 1000, voltage % 1000);
+
+    DEV_ModuleInit();
+    EPD_Init();
+    GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_POSITIVE);
+    GUI_Clear(WHITE);
+    GUI_DrawBitMap(gImage_IMAGE);
+    EPD_DisplayFull();
+    EPD_Sleep();
 
     wake_up = 1;
     sd_power_mode_set(NRF_POWER_MODE_LOWPWR);

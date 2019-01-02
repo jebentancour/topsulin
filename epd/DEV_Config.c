@@ -31,25 +31,25 @@ UBYTE DEV_ModuleInit(void)
     nrf_gpio_cfg_output(DC_PIN);
     nrf_gpio_cfg_output(RST_PIN);
     nrf_gpio_cfg_input(BUSY_PIN,NRF_GPIO_PIN_PULLUP);
-    
+
     // SPI INIT
     nrf_drv_spi_config_t spi_config = NRF_DRV_SPI_DEFAULT_CONFIG;
-    //spi_config.ss_pin   = NRF_DRV_SPI_PIN_NOT_USED;
-    spi_config.miso_pin = MISO_PIN;
+    spi_config.ss_pin   = NRF_DRV_SPI_PIN_NOT_USED;
+    spi_config.miso_pin = NRF_DRV_SPI_PIN_NOT_USED;
     spi_config.mosi_pin = MOSI_PIN;
     spi_config.sck_pin  = CLK_PIN;
     nrf_drv_spi_init(&spi, &spi_config, NULL);
-    
+
     EPD_CS_1;
-	
+
     return 0;
 }
 
 /*********************************************
 function:	Hardware interface
-*********************************************/	
+*********************************************/
 UBYTE DEV_SPI_WriteByte(UBYTE value)
-{ 
+{
     return nrf_drv_spi_transfer(&spi, &value, sizeof(value), NULL, 0);
 }
 

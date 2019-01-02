@@ -23,30 +23,18 @@
  * Display orientation
 **/
 #define IMAGE_ROTATE_0            0
-#define IMAGE_ROTATE_90           1
-#define IMAGE_ROTATE_180          2
-#define IMAGE_ROTATE_270          3
+#define IMAGE_ROTATE_180          1
 
 /**
- * image color level
+ * Image color level
 **/
 #define IMAGE_COLOR_POSITIVE 0X01
 #define IMAGE_COLOR_INVERTED 0X02
 
 /**
- * image number
-**/
-#define IMAGE_BW 0
-/**
- * Add your picture serial number here
-**/
-
-/**
  * Image attributes
 **/
 typedef struct {
-    UWORD Image_Name; //max = 128K / (Image_Width/8 * Image_Height)
-    UWORD Image_Offset;
     UWORD Image_Width;
     UWORD Image_Height;
     UWORD Image_Rotate;
@@ -57,11 +45,10 @@ typedef struct {
 extern GUI_IMAGE GUI_Image;
 
 /**
- * image color
+ * Image color
 **/
 #define WHITE          0xFF
 #define BLACK          0x00
-#define RED            BLACK
 
 #define IMAGE_BACKGROUND    WHITE
 #define FONT_FOREGROUND     BLACK
@@ -111,7 +98,7 @@ typedef enum {
  * Custom structure of a time attribute
 **/
 typedef struct {
-    UWORD Year;  //0000
+    UWORD  Year;  //0000
     UBYTE  Month; //1 - 12
     UBYTE  Day;   //1 - 30
     UBYTE  Hour;  //0 - 23
@@ -120,10 +107,8 @@ typedef struct {
 } GUI_TIME;
 extern GUI_TIME sGUI_time;
 
-//init and Clear
-void GUI_NewImage(UWORD Image_Name, UWORD Width, UWORD Height, UWORD Rotate, UWORD Color);
-void GUI_SelectImage(UWORD Image_Name);
-
+//Init and Clear
+void GUI_NewImage(UWORD Width, UWORD Height, UWORD Rotate, UWORD Color);
 void GUI_Clear(UWORD Color);
 void GUI_ClearWindows(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, UWORD Color);
 
@@ -142,10 +127,4 @@ void GUI_DrawTime(UWORD Xstart, UWORD Ystart, GUI_TIME *pTime, sFONT* Font, UWOR
 //pic
 void GUI_DrawBitMap(const unsigned char* image_buffer);
 
-
-#endif
-
-
-
-
-
+#endif /* GUI_GUI_H */

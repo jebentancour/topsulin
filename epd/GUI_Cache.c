@@ -1,7 +1,7 @@
 /*****************************************************************************
 * | File      	:   GUI_Cache.c
 * | Author      :   Waveshare team
-* | Function    :	When the controller's memory is sufficient, open up a part 
+* | Function    :	  When the controller's memory is sufficient, open up a part 
 *                   of the memory for the image cache
 *----------------
 * |	This version:   V1.0

@@ -22,11 +22,6 @@ UBYTE EPD_Init(void);
 void EPD_Clear(void);
 void EPD_DisplayFull(void);
 void EPD_DisplayPartial(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend);
-//void EPD_ClearPartial(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend);
 void EPD_Sleep(void);
 
-
-
 #endif /* EPD2IN13_H */
-
-/* END OF FILE */

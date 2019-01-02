@@ -3,9 +3,6 @@
 #include "nrf_delay.h"
 #include "nrf_gpio.h"
 
-#define SW_PIN 9
-#define LED_PIN 21
-
 static volatile uint8_t* m_gpio_button_flag;
 
 void gpio_init() {
@@ -42,4 +39,3 @@ void gpio_set_led(bool state) {
 void gpio_led_toggle(void) {
     nrf_gpio_pin_toggle(LED_PIN);
 }
-    

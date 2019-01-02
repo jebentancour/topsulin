@@ -29,14 +29,13 @@
 /**
  * e-Paper GPIO
 **/
-#define MISO_PIN        20
-#define MOSI_PIN        19
-#define CLK_PIN         18
+#define MOSI_PIN        21
+#define CLK_PIN         22
 
-#define CS_PIN          22
-#define DC_PIN          23
-#define RST_PIN         24
-#define BUSY_PIN        25
+#define CS_PIN          23
+#define DC_PIN          24
+#define RST_PIN         25
+#define BUSY_PIN        28
 
 #define EPD_CS_0		nrf_gpio_pin_clear(CS_PIN)
 #define EPD_CS_1		nrf_gpio_pin_set(CS_PIN)

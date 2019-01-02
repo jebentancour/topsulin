@@ -1,7 +1,7 @@
 /*****************************************************************************
 * | File      	:   GUI_Cache.h
 * | Author      :   Waveshare team
-* | Function    :	When the controller's memory is sufficient, open up a part 
+* | Function    :	  When the controller's memory is sufficient, open up a part
 *                   of the memory for the image cache
 *----------------
 * |	This version:   V1.0
@@ -17,5 +17,4 @@
 
 extern UBYTE ImageBuff[EPD_HEIGHT * EPD_WIDTH / 8];
 
-#endif
-
+#endif /* GUI_CACHE_H */

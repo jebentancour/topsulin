@@ -9,7 +9,7 @@
 #include "nrf_log_ctrl.h"
 
 #define A_PIN 1
-#define B_PIN 30
+#define B_PIN 0
 
 static volatile int32_t m_accdblread;
 static volatile int32_t m_accread;

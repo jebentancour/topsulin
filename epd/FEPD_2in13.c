@@ -182,8 +182,8 @@ parameter:
 ******************************************************************************/
 static void EPD_SetFullReg(void)
 {
-    EPD_SendCommand(0X50);			//VCOM AND DATA INTERVAL SETTING
-    EPD_SendData(0x97);		//WBmode:VBDF 17|D7 VBDW 97 VBDB 57		WBRmode:VBDF F7 VBDW 77 VBDB 37  VBDR B7
+    EPD_SendCommand(0X50);			 //VCOM AND DATA INTERVAL SETTING
+    EPD_SendData(0x97);		       //WBmode:VBDF 17|D7 VBDW 97 VBDB 57		WBRmode:VBDF F7 VBDW 77 VBDB 37  VBDR B7
 
     unsigned int count;
     EPD_SendCommand(0x20);
@@ -274,7 +274,7 @@ UBYTE EPD_Init()
 //    EPD_WaitUntilIdle();
 
     EPD_SendCommand(0x00);	//panel setting
-    EPD_SendData(0xbf);     //LUT from OTP£¬128x296
+    EPD_SendData(0xbf);     //LUT from OTP 128x296
     EPD_SendData(0x0d);     //VCOM to 0V fast
 
     EPD_SendCommand(0x30);	//PLL setting
@@ -297,8 +297,8 @@ parameter:
 ******************************************************************************/
 void EPD_TurnOnDisplay(void)
 {
-    EPD_SendCommand(0x12);		 //DISPLAY REFRESH
-    DEV_Delay_ms(10);     //!!!The delay here is necessary, 200uS at least!!!
+    EPD_SendCommand(0x12);		  //DISPLAY REFRESH
+    DEV_Delay_ms(10);           //!!!The delay here is necessary, 200uS at least!!!
 
     EPD_WaitUntilIdle();
 }
@@ -383,29 +383,17 @@ void EPD_DisplayPartial(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend)
         X1 = Xend - 1;
         Y1 = Yend - 1;
         break;
-    case IMAGE_ROTATE_90:
-        X0 = Ystart;
-        Y0 = GUI_Image.Image_Width - Xend;
-        X1 = Yend - 1;
-        Y1 = GUI_Image.Image_Width - Xstart - 1;
-        break;
     case IMAGE_ROTATE_180:
         X0 = GUI_Image.Image_Width - Xend;
         Y0 = GUI_Image.Image_Height - Yend;
         X1 = GUI_Image.Image_Width - Xstart - 1;
         Y1 = GUI_Image.Image_Height - Ystart - 1;
         break;
-    case IMAGE_ROTATE_270:
-        X0 = Ystart;
-        Y0 = Xstart;
-        X1 = Yend - 1;
-        Y1 = Xend - 1;
-        break;
     }
-    
+
     UWORD Dx0 = X0 / 8;
     UWORD Dx1 = X1 / 8;
-    
+
     EPD_SetPartReg();
     EPD_SendCommand(0x91);		//This command makes the display enter partial mode
     EPD_SendCommand(0x90);		//resolution setting
@@ -420,7 +408,7 @@ void EPD_DisplayPartial(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend)
 
     UWORD Width;
     Width = (EPD_WIDTH % 8 == 0)? (EPD_WIDTH / 8 ): (EPD_WIDTH / 8 + 1);
-    
+
     /* send data */
     EPD_SendCommand(0x10);
     for (UWORD j = Y0; j < Y1 + 1; j++) {
@@ -437,7 +425,7 @@ void EPD_DisplayPartial(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend)
     }
 
     /* Set partial refresh */
-    
+
     EPD_TurnOnDisplay();
 }
 
