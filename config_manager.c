@@ -80,6 +80,11 @@ void config_manager_print(void)
   NRF_LOG_FLUSH();
 
   // Calculator
+  NRF_LOG_INFO("CALC LOW  %dx10^%d kg/L\n", m_global_conf.calc_low.mantissa, m_global_conf.calc_low.exponent);
+  NRF_LOG_INFO("CALC HIGH %dx10^%d kg/L\n", m_global_conf.calc_high.mantissa, m_global_conf.calc_high.exponent);
+  NRF_LOG_INFO("CALC SENS %d g\n", m_global_conf.calc_sens);
+  NRF_LOG_INFO("CALC CORR %dx10^%d kg/L\n", m_global_conf.calc_corr.mantissa, m_global_conf.calc_corr.exponent);
+  NRF_LOG_FLUSH();
 
   // Insulin
   NRF_LOG_INFO("INS type  0x%02X\n", m_global_conf.insulin_type);
@@ -91,6 +96,9 @@ void config_manager_print(void)
   NRF_LOG_FLUSH();
 
   // Device
+  NRF_LOG_INFO("DEV v %d\n", 1);
+  NRF_LOG_INFO("DEV SN %d\n", 1);
+  NRF_LOG_FLUSH();
 }
 
 void config_manager_set_flags(uint8_t flags)
