@@ -68,6 +68,7 @@
 #include "nrf_log_ctrl.h"
 
 #include "our_service.h"
+#include "state.h"
 
 #define NRF_CLOCK_LFCLKSRC              {.source = NRF_CLOCK_LF_SRC_XTAL, .rc_ctiv = 0, .rc_temp_ctiv = 0, .xtal_accuracy=NRF_CLOCK_LF_XTAL_ACCURACY_20_PPM}
 
@@ -175,6 +176,8 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
                              ble_conn_state_role(p_evt->conn_handle),
                              p_evt->conn_handle,
                              p_evt->params.conn_sec_succeeded.procedure);
+
+                state_begin();
             }
             else
             {
@@ -475,10 +478,12 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
     {
         case BLE_ADV_EVT_FAST:
             NRF_LOG_INFO("Fast advertising\n");
+            state_on_event(ble_on);
             break; // BLE_ADV_EVT_FAST
 
         case BLE_ADV_EVT_IDLE:
             NRF_LOG_INFO("Idle advertising\n");
+            state_on_event(ble_off);
             break; // BLE_ADV_EVT_IDLE
 
         default:
@@ -554,6 +559,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             APP_ERROR_CHECK(err_code);
 
             NRF_LOG_INFO("Passkey: %s\n", nrf_log_push(passkey));
+            state_show_pin(passkey);
         } break; // BLE_GAP_EVT_PASSKEY_DISPLAY
 
         case BLE_EVT_USER_MEM_REQUEST:
@@ -772,6 +778,14 @@ void advertising_start(void)
     ble_advertising_start(BLE_ADV_MODE_FAST);
 }
 
+/**@brief Function for stop advertising.
+ */
+void advertising_stop(void)
+{
+    sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+    sd_ble_gap_adv_stop();
+}
+
 
 /**@brief Function for application main entry.
  */
@@ -785,7 +799,7 @@ void ble_services_init(void)
     gap_params_init();
     advertising_init();
     conn_params_init();
-    advertising_start();
+    //advertising_start();
 }
 
 /**

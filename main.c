@@ -15,14 +15,13 @@
 #include "gpio.h"
 #include "ble_services.h"
 #include "encoder.h"
-//#include "state.h"
+#include "state.h"
 #include "batt.h"
 #include "config_manager.h"
 
 #define IDLE_S          30
 #define IDLE_TICKS      (IDLE_S * 1000)/CLOCK_TICK_MS
 
-//volatile uint8_t display_done_flag;
 volatile uint8_t clock_tick_flag;
 volatile uint8_t button_flag;
 volatile uint8_t encoder_flag;
@@ -33,8 +32,6 @@ uint16_t idle_timer;
 
 int main(void)
 {
-    //nrf_delay_ms(1000);
-
     NRF_LOG_INIT(clock_get_timestamp);
     NRF_LOG_INFO("-------------------- MAIN --------------------\n");
     NRF_LOG_FLUSH();
@@ -53,7 +50,7 @@ int main(void)
 
     ble_services_init();
 
-    idle_timer = 0;
+    idle_timer = IDLE_TICKS;
     clock_tick_flag = 0;
     clock_tick_set_flag(&clock_tick_flag);
     clock_init();
@@ -61,22 +58,24 @@ int main(void)
     uint32_t last = 0;
     uint32_t now = 0;
 
-    button_flag = 0;
-    gpio_button_set_flag(&button_flag);
-    gpio_init();
+    DEV_ModuleInit();
+    EPD_Init();
+    GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_POSITIVE);
+    GUI_DrawBitMap(gImage_IMAGE_0);
+    /*GUI_Clear(WHITE);
 
-    //state_init();
+    GUI_DrawRectangle(1, 1, 104, 140, BLACK, DRAW_FILL_FULL, DOT_PIXEL_DFT);
+    GUI_DrawIcon(7, 90, gImage_icon_glu, BLACK);
+    GUI_DrawString_EN(11, 56, "000", &Font24, BLACK, WHITE);
+    GUI_DrawString_EN(9, 10, "00:00", &Font16, BLACK, WHITE);
 
-    //display_done_flag = 0;
-    //display_done_set_flag(&display_done_flag);
-    //display_set_rotation(true);
-    //display_set_font(font8x8);
-    //display_init();
+    GUI_DrawIcon(7, 161, gImage_icon_ins, WHITE);
+    GUI_DrawString_EN(162, 26, "00", &Font24, WHITE, BLACK);*/
 
-    encoder_flag = 0;
-    encoder_set_flag(&encoder_flag);
-    encoder_set_direction(true);
-    //encoder_init();
+    EPD_DisplayFull();
+    EPD_Sleep();
+
+    state_init();
 
     batt_flag = 0;
     batt_set_flag(&batt_flag);
@@ -89,31 +88,33 @@ int main(void)
     voltage = batt_get();
     NRF_LOG_INFO("VCC = %d.%d V\n", voltage / 1000, voltage % 1000);
 
-    DEV_ModuleInit();
-    EPD_Init();
-    GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_POSITIVE);
-    GUI_Clear(WHITE);
-    GUI_DrawBitMap(gImage_IMAGE);
-    EPD_DisplayFull();
-    EPD_Sleep();
-
     wake_up = 1;
     sd_power_mode_set(NRF_POWER_MODE_LOWPWR);
 
     gpio_set_led(true);
 
+    peer_manager_erase_bonds();
+
+    button_flag = 0;
+    gpio_button_set_flag(&button_flag);
+    gpio_init();
+
+    encoder_flag = 0;
+    encoder_set_flag(&encoder_flag);
+    encoder_set_direction(true);
+    encoder_init();
+
+    //nrf_delay_ms(1000);
     NRF_LOG_FLUSH();
     while (true)
     {
-        //display_process();
-
         gpio_process(); // GPIO polling
 
         if(button_flag) {
             button_flag = 0;
             if (!wake_up) {
                 gpio_set_led(true);
-                //display_on();
+                EPD_Init();
                 encoder_enable();
                 advertising_start();
                 NRF_LOG_INFO("Wake up!\r\n");
@@ -162,19 +163,21 @@ int main(void)
 
               add_glucose_measurement(rec);
             }
-            //state_on_event(button_pressed);
+            state_on_event(button_pressed);
             idle_timer = 0;
         }
 
         if(encoder_flag) {
             encoder_flag = 0;
-            //state_on_event(encoder_update);
+            state_on_event(encoder_update);
+            //NRF_LOG_INFO("Encoder position %d\n", encoder_get_position());
+            //NRF_LOG_FLUSH();
             idle_timer = 0;
         }
 
         if(clock_tick_flag) {
             clock_tick_flag = 0;
-            //state_on_event(time_update);
+            state_on_event(time_update);
             if (wake_up){
               // Update BLE Time Characteristic every second
               now = clock_get_timestamp();
@@ -196,13 +199,16 @@ int main(void)
         }
 
         // If it is nothing to do...
-        if((idle_timer >= IDLE_TICKS)&&(!clock_tick_flag)/*&&(display_done_flag)*/&&(!button_flag)&&(!encoder_flag)&&(!batt_flag)) {
+        if((idle_timer >= IDLE_TICKS)&&(!clock_tick_flag)&&(!button_flag)&&(!encoder_flag)&&(!batt_flag)) {
             // prepare to sleep
-            gpio_set_led(false);
+            if (wake_up){
+              advertising_stop();
+              state_sleep();
+              encoder_disable();
+              EPD_Sleep();
+              gpio_set_led(false);
+            }
             wake_up = 0;
-            encoder_disable();
-            //state_off();
-            //display_off();
 
              // sleep and wait for event...
             sd_app_evt_wait();

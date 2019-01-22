@@ -26,9 +26,13 @@
 #ifndef _IMAGEDATA_H_
 #define _IMAGEDATA_H_
 
-extern const unsigned char gImage_IMAGE[];
+extern const unsigned char gImage_IMAGE_0[];
+
+extern const unsigned char gImage_icon_bt[];
+extern const unsigned char gImage_icon_lock[];
+extern const unsigned char gImage_icon_glu[];
+extern const unsigned char gImage_icon_cho[];
+extern const unsigned char gImage_icon_ins[];
 
 #endif
 /* FILE END */
-
-

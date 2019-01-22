@@ -13,3 +13,5 @@ void batt_ble_update(uint16_t v);
 void peer_manager_erase_bonds(void);
 
 void advertising_start(void);
+
+void advertising_stop(void);

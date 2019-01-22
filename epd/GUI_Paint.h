@@ -113,6 +113,7 @@ void GUI_Clear(UWORD Color);
 void GUI_ClearWindows(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, UWORD Color);
 
 //Drawing
+// from (1, 1) to (104, 212)
 void GUI_DrawPoint(UWORD Xpoint, UWORD Ypoint, UWORD Color, DOT_PIXEL Dot_Pixel, DOT_STYLE Dot_FillWay);
 void GUI_DrawLine(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, UWORD Color, LINE_STYLE Line_Style, DOT_PIXEL Dot_Pixel);
 void GUI_DrawRectangle(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, UWORD Color, DRAW_FILL Filled , DOT_PIXEL Dot_Pixel);
@@ -125,6 +126,9 @@ void GUI_DrawNum(UWORD Xpoint, UWORD Ypoint, int32_t Nummber, sFONT* Font, UWORD
 void GUI_DrawTime(UWORD Xstart, UWORD Ystart, GUI_TIME *pTime, sFONT* Font, UWORD Color_Background, UWORD Color_Foreground);
 
 //pic
+// all the screen
 void GUI_DrawBitMap(const unsigned char* image_buffer);
+// Xstart from 0 to 13,
+void GUI_DrawIcon(UWORD Xstart, UWORD Ystart, const unsigned char* image_buffer, UWORD Color_Background);
 
 #endif /* GUI_GUI_H */

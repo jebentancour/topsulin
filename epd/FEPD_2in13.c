@@ -68,7 +68,6 @@ const unsigned char lut_bb[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 
-
 /**
  * partial screen update LUT
 **/
@@ -79,8 +78,8 @@ const unsigned char lut_vcom1[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-    ,0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00,
 };
 const unsigned char lut_ww1[] = {
     0x00, 0x19, 0x01, 0x00, 0x00, 0x01,
@@ -172,7 +171,7 @@ static void EPD_WaitUntilIdle(void)
         busy = EPD_BUSY_RD;
         busy =!(busy & 0x01);
     } while(busy);
-    DEV_Delay_ms(50);
+    // DEV_Delay_ms(50);
 		DEBUG("BUSY free....\r\n");
 }
 
@@ -271,7 +270,7 @@ UBYTE EPD_Init()
     EPD_SendData(0x17);     //C
 
     EPD_SendCommand(0x04);
-//    EPD_WaitUntilIdle();
+    // EPD_WaitUntilIdle();
 
     EPD_SendCommand(0x00);	//panel setting
     EPD_SendData(0xbf);     //LUT from OTP 128x296
@@ -298,7 +297,7 @@ parameter:
 void EPD_TurnOnDisplay(void)
 {
     EPD_SendCommand(0x12);		  //DISPLAY REFRESH
-    DEV_Delay_ms(10);           //!!!The delay here is necessary, 200uS at least!!!
+    DEV_Delay_ms(1);            //!!!The delay here is necessary, 200uS at least!!!
 
     EPD_WaitUntilIdle();
 }
@@ -409,7 +408,7 @@ void EPD_DisplayPartial(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend)
     UWORD Width;
     Width = (EPD_WIDTH % 8 == 0)? (EPD_WIDTH / 8 ): (EPD_WIDTH / 8 + 1);
 
-    /* send data */
+    /* Send data */
     EPD_SendCommand(0x10);
     for (UWORD j = Y0; j < Y1 + 1; j++) {
         for (UWORD i = Dx0; i < Dx1 + 1; i++) {
@@ -425,7 +424,6 @@ void EPD_DisplayPartial(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend)
     }
 
     /* Set partial refresh */
-
     EPD_TurnOnDisplay();
 }
 

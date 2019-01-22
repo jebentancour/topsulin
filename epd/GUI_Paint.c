@@ -169,7 +169,7 @@ void GUI_DrawPoint(UWORD Xpoint, UWORD Ypoint, UWORD Color,
         for (XDir_Num = 0; XDir_Num < 2 * Dot_Pixel - 1; XDir_Num++) {
             for (YDir_Num = 0; YDir_Num < 2 * Dot_Pixel - 1; YDir_Num++) {
                 if(Xpoint + XDir_Num - Dot_Pixel == -1 || Ypoint + XDir_Num - Dot_Pixel == -1) {
-                    DEBUG("error\r\n");
+                    //DEBUG("error\r\n");
                     break;
                 }
                 GUI_SetPixel(Xpoint + XDir_Num - Dot_Pixel, Ypoint + YDir_Num - Dot_Pixel, Color);
@@ -366,26 +366,21 @@ void GUI_DrawChar(UWORD Xpoint, UWORD Ypoint, const char Acsii_Char,
 {
     UWORD Page, Column;
 
-    if (Xpoint > GUI_Image.Image_Width || Ypoint > GUI_Image.Image_Height) {
-        DEBUG("GUI_DrawChar Input exceeds the normal display range\r\n");
-        return;
-    }
-    GUI_ClearWindows(Xpoint, Ypoint, Xpoint + Font->Width, Ypoint + Font->Height, WHITE);
     uint32_t Char_Offset = (Acsii_Char - ' ') * Font->Height * (Font->Width / 8 + (Font->Width % 8 ? 1 : 0));
     const unsigned char *ptr = &Font->table[Char_Offset];
 
-    for (Page = 0; Page < Font->Height; Page ++ ) {
+    for (Page = Font->Height; Page > 0; Page -- ) {
         for (Column = 0; Column < Font->Width; Column ++ ) {
 
             //To determine whether the font background color and screen background color is consistent
             if (FONT_BACKGROUND == Color_Background) { //this process is to speed up the scan
                 if (*ptr & (0x80 >> (Column % 8)))
-                    GUI_DrawPoint(Xpoint + Column, Ypoint + Page, Color_Foreground, DOT_PIXEL_DFT, DOT_STYLE_DFT);
+                    GUI_DrawPoint(Ypoint + Page, Xpoint + Column, Color_Foreground, DOT_PIXEL_DFT, DOT_STYLE_DFT);
             } else {
                 if (*ptr & (0x80 >> (Column % 8))) {
-                    GUI_DrawPoint(Xpoint + Column, Ypoint + Page, Color_Foreground, DOT_PIXEL_DFT, DOT_STYLE_DFT);
+                    GUI_DrawPoint(Ypoint + Page, Xpoint + Column, Color_Foreground, DOT_PIXEL_DFT, DOT_STYLE_DFT);
                 } else {
-                    GUI_DrawPoint(Xpoint + Column, Ypoint + Page, Color_Background, DOT_PIXEL_DFT, DOT_STYLE_DFT);
+                    GUI_DrawPoint(Ypoint + Page, Xpoint + Column, Color_Background, DOT_PIXEL_DFT, DOT_STYLE_DFT);
                 }
             }
             //One pixel is 8 bits
@@ -413,23 +408,7 @@ void GUI_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
     UWORD Xpoint = Xstart;
     UWORD Ypoint = Ystart;
 
-    if (Xstart > GUI_Image.Image_Width || Ystart > GUI_Image.Image_Height) {
-        DEBUG("GUI_DrawString_EN Input exceeds the normal display range\r\n");
-        return;
-    }
-
     while (* pString != '\0') {
-        //if X direction filled , reposition to(Xstart,Ypoint),Ypoint is Y direction plus the Height of the character
-        if ((Xpoint + Font->Width ) > GUI_Image.Image_Width ) {
-            Xpoint = Xstart;
-            Ypoint += Font->Height;
-        }
-
-        // If the Y direction is full, reposition to(Xstart, Ystart)
-        if ((Ypoint  + Font->Height ) > GUI_Image.Image_Height ) {
-            Xpoint = Xstart;
-            Ypoint = Ystart;
-        }
         GUI_DrawChar(Xpoint, Ypoint, * pString, Font, Color_Background, Color_Foreground);
 
         //The next character of the address
@@ -526,7 +505,7 @@ void GUI_DrawBitMap(const unsigned char* image_buffer)
     UDOUBLE Addr = 0;
 
     for (Ypoint = 0; Ypoint < Height; Ypoint++) {
-        for (Xpoint = 0; Xpoint < Width; Xpoint++) {//8 pixel =  1 byte
+        for (Xpoint = 0; Xpoint < Width; Xpoint++) { //8 pixel =  1 byte
             Addr = Xpoint + Ypoint * Width;
             if(GUI_Image.Image_Color == IMAGE_COLOR_POSITIVE) {
               ImageBuff[Addr] = ~image_buffer[Xpoint + Ypoint * Width];
@@ -535,4 +514,32 @@ void GUI_DrawBitMap(const unsigned char* image_buffer)
             }
         }
     }
+}
+
+void GUI_DrawIcon(UWORD Xstart, UWORD Ystart, const unsigned char* image_buffer, UWORD Color_Background)
+{
+  UWORD Xpoint, Ypoint, Height, Width, Memory_Width;
+  Height = 32;
+  Width = 4;
+  Memory_Width = (GUI_Image.Memory_Width % 8 == 0)? (GUI_Image.Memory_Width / 8 ): (GUI_Image.Memory_Width / 8 + 1);
+  UDOUBLE Addr = 0;
+
+  for (Ypoint = 0; Ypoint < Height; Ypoint++) {
+      for (Xpoint = 0; Xpoint < Width; Xpoint++) { //8 pixel =  1 byte
+          Addr = Xpoint + Xstart + (Ypoint + Ystart) * Memory_Width;
+          if(GUI_Image.Image_Color == IMAGE_COLOR_POSITIVE) {
+            if (Color_Background == WHITE){
+              ImageBuff[Addr] = ~image_buffer[Xpoint + Ypoint * Width];
+            } else {
+              ImageBuff[Addr] = image_buffer[Xpoint + Ypoint * Width];
+            }
+          } else {
+            if (Color_Background == WHITE){
+              ImageBuff[Addr] = image_buffer[Xpoint + Ypoint * Width];
+            } else {
+              ImageBuff[Addr] = ~image_buffer[Xpoint + Ypoint * Width];
+            }
+          }
+      }
+  }
 }
