@@ -160,6 +160,8 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
             // Start Security Request timer.
             err_code = app_timer_start(m_sec_req_timer_id, SECURITY_REQUEST_DELAY, NULL);
             APP_ERROR_CHECK(err_code);
+
+            state_begin();
         } break;
 
         case PM_EVT_CONN_SEC_SUCCEEDED:
@@ -328,6 +330,8 @@ void time_ble_update(void)
 void batt_ble_update(uint16_t v)
 {
     dev_char_update(&m_our_service, v);
+    NRF_LOG_INFO("VCC = %d.%d V\n", v / 1000, v % 1000);
+    NRF_LOG_FLUSH();
 }
 
 /**@brief Function for the Timer initialization.
@@ -483,7 +487,7 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
 
         case BLE_ADV_EVT_IDLE:
             NRF_LOG_INFO("Idle advertising\n");
-            state_on_event(ble_off);
+            //state_on_event(ble_off);
             break; // BLE_ADV_EVT_IDLE
 
         default:
@@ -733,6 +737,7 @@ void peer_manager_erase_bonds(void)
     APP_ERROR_CHECK(err_code);
 
     NRF_LOG_INFO("Bonds erased!\n");
+    NRF_LOG_FLUSH();
 }
 
 
@@ -778,12 +783,30 @@ void advertising_start(void)
     ble_advertising_start(BLE_ADV_MODE_FAST);
 }
 
-/**@brief Function for stop advertising.
+/**@brief Function for disconnect and stop advertising.
  */
 void advertising_stop(void)
 {
-    sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-    sd_ble_gap_adv_stop();
+    uint32_t err_code;
+
+    if (m_conn_handle != BLE_CONN_HANDLE_INVALID)
+    {
+        ble_advertising_set_manually_disconnected();
+        err_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+        if (err_code != NRF_ERROR_INVALID_STATE)
+        {
+            APP_ERROR_CHECK(err_code);
+        }
+    }
+
+    err_code = sd_ble_gap_adv_stop();
+    if (err_code != NRF_ERROR_INVALID_STATE)
+    {
+        APP_ERROR_CHECK(err_code);
+    }
+
+    NRF_LOG_INFO("Advertising stop\n");
+    NRF_LOG_FLUSH();
 }
 
 

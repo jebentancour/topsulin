@@ -297,7 +297,7 @@ static uint32_t config_char_add(ble_os_t * p_our_service)
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
     cccd_md.vloc                = BLE_GATTS_VLOC_STACK;
     char_md.p_cccd_md           = &cccd_md;
-    //char_md.char_props.notify   = 1;
+    char_md.char_props.notify   = 1;
 
     // Configure the attribute metadata
     ble_gatts_attr_md_t attr_md;
@@ -358,7 +358,7 @@ static uint32_t name_char_add(ble_os_t * p_our_service)
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
     cccd_md.vloc                = BLE_GATTS_VLOC_STACK;
     char_md.p_cccd_md           = &cccd_md;
-    //char_md.char_props.notify   = 1;
+    char_md.char_props.notify   = 1;
 
     // Configure the attribute metadata
     ble_gatts_attr_md_t attr_md;
@@ -488,7 +488,7 @@ static uint32_t calc_char_add(ble_os_t * p_our_service)
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
     cccd_md.vloc                = BLE_GATTS_VLOC_STACK;
     char_md.p_cccd_md           = &cccd_md;
-    //char_md.char_props.notify   = 1;
+    char_md.char_props.notify   = 1;
 
     // Configure the attribute metadata
     ble_gatts_attr_md_t attr_md;
@@ -551,7 +551,7 @@ static uint32_t insulin_char_add(ble_os_t * p_our_service)
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
     cccd_md.vloc                = BLE_GATTS_VLOC_STACK;
     char_md.p_cccd_md           = &cccd_md;
-    //char_md.char_props.notify   = 1;
+    char_md.char_props.notify   = 1;
 
     // Configure the attribute metadata
     ble_gatts_attr_md_t attr_md;
@@ -615,15 +615,13 @@ static uint32_t device_char_add(ble_os_t * p_our_service)
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.read_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
     cccd_md.vloc                = BLE_GATTS_VLOC_STACK;
-    //cccd_md.vloc                = BLE_GATTS_VLOC_USER;
     char_md.p_cccd_md           = &cccd_md;
-    //char_md.char_props.notify   = 1;
+    char_md.char_props.notify   = 1;
 
     // Configure the attribute metadata
     ble_gatts_attr_md_t attr_md;
     memset(&attr_md, 0, sizeof(attr_md));
     attr_md.vloc        = BLE_GATTS_VLOC_STACK;
-    //attr_md.vloc        = BLE_GATTS_VLOC_USER;
 
     // Set read/write security levels to our characteristic
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.read_perm);

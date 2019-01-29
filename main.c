@@ -24,6 +24,7 @@
 
 volatile uint8_t clock_tick_flag;
 volatile uint8_t button_flag;
+volatile uint8_t long_button_flag;
 volatile uint8_t encoder_flag;
 volatile uint8_t batt_flag;
 
@@ -45,12 +46,15 @@ int main(void)
     m_tm.tm_sec = 0;
     clock_set_time(&m_tm);
 
+    state_init();
+
     config_manager_init();
-    config_manager_print();
+    //config_manager_print();
 
+    sd_power_mode_set(NRF_POWER_MODE_LOWPWR);
     ble_services_init();
+    //peer_manager_erase_bonds();
 
-    idle_timer = IDLE_TICKS;
     clock_tick_flag = 0;
     clock_tick_set_flag(&clock_tick_flag);
     clock_init();
@@ -62,20 +66,8 @@ int main(void)
     EPD_Init();
     GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_POSITIVE);
     GUI_DrawBitMap(gImage_IMAGE_0);
-    /*GUI_Clear(WHITE);
-
-    GUI_DrawRectangle(1, 1, 104, 140, BLACK, DRAW_FILL_FULL, DOT_PIXEL_DFT);
-    GUI_DrawIcon(7, 90, gImage_icon_glu, BLACK);
-    GUI_DrawString_EN(11, 56, "000", &Font24, BLACK, WHITE);
-    GUI_DrawString_EN(9, 10, "00:00", &Font16, BLACK, WHITE);
-
-    GUI_DrawIcon(7, 161, gImage_icon_ins, WHITE);
-    GUI_DrawString_EN(162, 26, "00", &Font24, WHITE, BLACK);*/
-
-    EPD_DisplayFull();
-    EPD_Sleep();
-
-    state_init();
+    //EPD_DisplayFull();
+    //EPD_Sleep();
 
     batt_flag = 0;
     batt_set_flag(&batt_flag);
@@ -88,15 +80,10 @@ int main(void)
     voltage = batt_get();
     NRF_LOG_INFO("VCC = %d.%d V\n", voltage / 1000, voltage % 1000);
 
-    wake_up = 1;
-    sd_power_mode_set(NRF_POWER_MODE_LOWPWR);
-
-    gpio_set_led(true);
-
-    peer_manager_erase_bonds();
-
     button_flag = 0;
     gpio_button_set_flag(&button_flag);
+    long_button_flag = 0;
+    gpio_long_button_set_flag(&long_button_flag);
     gpio_init();
 
     encoder_flag = 0;
@@ -105,7 +92,13 @@ int main(void)
     encoder_init();
 
     //nrf_delay_ms(1000);
+    //gpio_set_led(true);
     NRF_LOG_FLUSH();
+
+    wake_up = 1;
+    idle_timer = IDLE_TICKS;
+    last = clock_get_timestamp();
+
     while (true)
     {
         gpio_process(); // GPIO polling
@@ -113,89 +106,52 @@ int main(void)
         if(button_flag) {
             button_flag = 0;
             if (!wake_up) {
-                gpio_set_led(true);
+                //gpio_set_led(true);
                 EPD_Init();
-                encoder_enable();
                 advertising_start();
+                encoder_enable();
                 NRF_LOG_INFO("Wake up!\r\n");
                 NRF_LOG_FLUSH();
                 clock_print();
                 wake_up = 1;
-            } else {
-              // simulate the reading of a glucose measurement
-              struct tm t;
-              clock_get_time(&t);
-
-              char time_buffer[80];
-              strftime(time_buffer, sizeof(time_buffer), "%x %X", &t);
-              NRF_LOG_INFO("New reading %s\n", (uint32_t)time_buffer);
-              NRF_LOG_FLUSH();
-
-              ble_gls_rec_t rec;
-
-              rec.meas.flags = BLE_GLS_MEAS_FLAG_TIME_OFFSET |
-                               BLE_GLS_MEAS_FLAG_CONC_TYPE_LOC |
-                               BLE_GLS_MEAS_FLAG_CONTEXT_INFO |
-                               BLE_GLS_MEAS_FLAG_SENSOR_STATUS |
-                               BLE_GLS_MEAS_FLAG_UNITS_MOL_L;
-              rec.meas.base_time.year                 = t.tm_year + 1900;
-              rec.meas.base_time.month                = t.tm_mon + 1;
-              rec.meas.base_time.day                  = t.tm_mday;
-              rec.meas.base_time.hours                = t.tm_hour;
-              rec.meas.base_time.minutes              = t.tm_min;
-              rec.meas.base_time.seconds              = t.tm_sec;
-              rec.meas.glucose_concentration.exponent = -3;
-              rec.meas.glucose_concentration.mantissa = 105;
-              rec.meas.time_offset                    = 0;
-              rec.meas.type                           = BLE_GLS_MEAS_TYPE_UNDET_BLOOD;
-              rec.meas.sample_location                = BLE_GLS_MEAS_LOC_NOT_AVAIL;
-              rec.meas.sensor_status_annunciation     = 0;
-              //rec.meas.sensor_status_annunciation     = BLE_GLS_MEAS_STATUS_BATT_LOW;
-              rec.context.flags = BLE_GLS_CONTEXT_FLAG_CARB |
-                                  BLE_GLS_CONTEXT_FLAG_MED |
-                                  BLE_GLS_CONTEXT_FLAG_MED_L;
-              rec.context.carbohydrate_id = BLE_GLS_CONTEXT_CARB_LUNCH;
-              rec.context.carbohydrate.exponent = 0;
-              rec.context.carbohydrate.mantissa = 259;
-              rec.context.medication_id         = BLE_GLS_CONTEXT_MED_RAPID;
-              rec.context.medication.exponent   = 3;
-              rec.context.medication.mantissa   = 150;
-
-              add_glucose_measurement(rec);
             }
             state_on_event(button_pressed);
+            idle_timer = 0;
+        }
+
+        if(long_button_flag) {
+            long_button_flag = 0;
+            state_on_event(long_button_pressed);
             idle_timer = 0;
         }
 
         if(encoder_flag) {
             encoder_flag = 0;
             state_on_event(encoder_update);
-            //NRF_LOG_INFO("Encoder position %d\n", encoder_get_position());
-            //NRF_LOG_FLUSH();
             idle_timer = 0;
         }
 
+        if(batt_flag){
+            // Update BLE Device Characteristic
+            batt_ble_update((uint16_t)batt_get());
+            batt_flag = 0;
+        }
+
         if(clock_tick_flag) {
-            clock_tick_flag = 0;
-            state_on_event(time_update);
+            //state_on_event(time_update);
             if (wake_up){
               // Update BLE Time Characteristic every second
               now = clock_get_timestamp();
               if (now - last >= 1000){
-                //clock_print();
                 time_ble_update();
+                last = now;
                 if(!batt_flag){
                   batt_sample();
                 }
-                last = now;
               }
             }
             idle_timer++;
-        }
-
-        if(batt_flag){
-            batt_ble_update((uint16_t)batt_get());
-            batt_flag = 0;
+            clock_tick_flag = 0;
         }
 
         // If it is nothing to do...
@@ -206,7 +162,7 @@ int main(void)
               state_sleep();
               encoder_disable();
               EPD_Sleep();
-              gpio_set_led(false);
+              //gpio_set_led(false);
             }
             wake_up = 0;
 

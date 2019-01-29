@@ -519,8 +519,8 @@ void GUI_DrawBitMap(const unsigned char* image_buffer)
 void GUI_DrawIcon(UWORD Xstart, UWORD Ystart, const unsigned char* image_buffer, UWORD Color_Background)
 {
   UWORD Xpoint, Ypoint, Height, Width, Memory_Width;
-  Height = 32;
-  Width = 4;
+  Height = 24;
+  Width = 3;
   Memory_Width = (GUI_Image.Memory_Width % 8 == 0)? (GUI_Image.Memory_Width / 8 ): (GUI_Image.Memory_Width / 8 + 1);
   UDOUBLE Addr = 0;
 

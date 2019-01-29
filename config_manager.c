@@ -20,12 +20,12 @@ void config_manager_init(void)
   const char* tmp = "Glucosee";
   strcpy(m_global_conf.name, tmp);
   // Calc
-  m_global_conf.calc_low.mantissa = 60;
+  m_global_conf.calc_low.mantissa = 90;
   m_global_conf.calc_low.exponent = -3;
   m_global_conf.calc_high.mantissa = 150;
   m_global_conf.calc_high.exponent = -3;
   m_global_conf.calc_sens = 15;
-  m_global_conf.calc_corr.mantissa = 15;
+  m_global_conf.calc_corr.mantissa = 50;
   m_global_conf.calc_corr.exponent = -3;
   // Insulin
   m_global_conf.insulin_type = BLE_GLS_CONTEXT_MED_RAPID;
