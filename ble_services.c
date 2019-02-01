@@ -330,8 +330,6 @@ void time_ble_update(void)
 void batt_ble_update(uint16_t v)
 {
     dev_char_update(&m_our_service, v);
-    NRF_LOG_INFO("VCC = %d.%d V\n", v / 1000, v % 1000);
-    NRF_LOG_FLUSH();
 }
 
 /**@brief Function for the Timer initialization.
