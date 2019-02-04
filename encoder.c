@@ -13,6 +13,8 @@
 
 static volatile int32_t m_accdblread;
 static volatile int32_t m_accread;
+static volatile int32_t m_prev_accread;
+static volatile int32_t m_vel;
 static volatile int32_t m_position;
 static volatile int32_t m_report_position;
 static volatile uint8_t* m_encoder_flag;
@@ -25,10 +27,22 @@ static void qdec_event_handler(nrf_drv_qdec_event_t event)
     {
         m_accdblread        = event.data.report.accdbl;
         m_accread           = event.data.report.acc;
+
+        m_vel = m_accread - m_prev_accread;
+        m_prev_accread = m_accread;
+        if (m_vel == 0){
+          m_vel = 1;
+        }
+        if (m_vel < 0){
+          m_vel = - m_vel;
+        }
+        //NRF_LOG_INFO("Vel %d\n", m_vel);
+        //NRF_LOG_FLUSH();
+
         if (m_direction) {
-          m_position          -= m_accread;
+          m_position          -= m_vel * m_accread;
         } else {
-          m_position          += m_accread;
+          m_position          += m_vel * m_accread;
         }
         if (m_accdblread > 0){
           NRF_LOG_INFO("ACCDBL %d\n", m_accdblread);

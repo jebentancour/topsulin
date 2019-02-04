@@ -48,25 +48,13 @@ void gpio_process(void) {
       nrf_delay_ms(1);
 
       if (!new_in){
-        // Falling edge, button pressed
-        //NRF_LOG_INFO("fall\r\n");
-        //NRF_LOG_FLUSH();
-
         pulse_start = now;
       } else {
-        // Rising edge, button released
-        //NRF_LOG_INFO("rise\r\n");
-        //NRF_LOG_FLUSH();
-
         pulse_stop = now;
         pulse_len = pulse_stop - pulse_start;
-
         if (pulse_len < LONG_CLICK_MS){
           *m_gpio_button_flag = 1;
-          NRF_LOG_INFO("button_flag\r\n");
-          NRF_LOG_FLUSH();
         }
-
         long_timeout = 0;
       }
     }
@@ -76,8 +64,6 @@ void gpio_process(void) {
       if (pulse_len > LONG_CLICK_MS){
         *m_gpio_long_button_flag = 1;
         long_timeout = 1;
-        NRF_LOG_INFO("long_button_flag\r\n");
-        NRF_LOG_FLUSH();
       }
     }
 
