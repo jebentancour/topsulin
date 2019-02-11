@@ -25,6 +25,7 @@
 volatile uint8_t clock_tick_flag;
 volatile uint8_t button_flag;
 volatile uint8_t long_button_flag;
+volatile uint8_t double_button_flag;
 volatile uint8_t encoder_flag;
 volatile uint8_t batt_flag;
 
@@ -84,6 +85,8 @@ int main(void)
     gpio_button_set_flag(&button_flag);
     long_button_flag = 0;
     gpio_long_button_set_flag(&long_button_flag);
+    double_button_flag = 0;
+    gpio_double_button_set_flag(&double_button_flag);
     gpio_init();
 
     encoder_flag = 0;
@@ -125,6 +128,12 @@ int main(void)
             idle_timer = 0;
         }
 
+        if(double_button_flag) {
+            double_button_flag = 0;
+            state_on_event(double_button_pressed);
+            idle_timer = 0;
+        }
+
         if(encoder_flag) {
             encoder_flag = 0;
             state_on_event(encoder_update);
@@ -155,7 +164,7 @@ int main(void)
         }
 
         // If it is nothing to do...
-        if((idle_timer >= IDLE_TICKS)&&(!clock_tick_flag)&&(!button_flag)&&(!encoder_flag)&&(!batt_flag)) {
+        if((idle_timer >= IDLE_TICKS)&&(!clock_tick_flag)&&(!button_flag)&&(!long_button_flag)&&(!double_button_flag)&&(!encoder_flag)&&(!batt_flag)) {
             // prepare to sleep
             if (wake_up){
               advertising_stop();

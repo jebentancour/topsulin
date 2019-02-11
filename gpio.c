@@ -10,11 +10,14 @@
 #include "clock.h"
 #include "encoder.h"
 
-#define LONG_CLICK_MS 1500
+#define LONG_CLICK_MS 1250
+#define DOUBLE_CLICK_MS 250
 
 static volatile uint8_t* m_gpio_button_flag;
 static volatile uint8_t* m_gpio_long_button_flag;
+static volatile uint8_t* m_gpio_double_button_flag;
 
+static uint32_t last_click = 0;
 static uint32_t pulse_start = 0;
 static uint32_t pulse_stop = 0;
 static uint32_t now = 0;
@@ -36,6 +39,11 @@ void gpio_button_set_flag(volatile uint8_t* main_button_flag)
 void gpio_long_button_set_flag(volatile uint8_t* main_long_button_flag)
 {
     m_gpio_long_button_flag = main_long_button_flag;
+}
+
+void gpio_double_button_set_flag(volatile uint8_t* main_double_button_flag)
+{
+    m_gpio_double_button_flag = main_double_button_flag;
 }
 
 void gpio_process(void) {
@@ -60,7 +68,12 @@ void gpio_process(void) {
         pulse_stop = now;
         pulse_len = pulse_stop - pulse_start;
         if (pulse_len < LONG_CLICK_MS){
-          *m_gpio_button_flag = 1;
+          if ((now - last_click) <= DOUBLE_CLICK_MS){
+            *m_gpio_double_button_flag = 1;
+          } else {
+            *m_gpio_button_flag = 1;
+          }
+          last_click = now;
         }
         long_timeout = 0;
       }

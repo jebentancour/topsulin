@@ -3,6 +3,7 @@
 typedef enum {
     button_pressed,
     long_button_pressed,
+    double_button_pressed,
     encoder_update,
     time_update,
     ble_on,

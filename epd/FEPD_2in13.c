@@ -9,14 +9,16 @@
 * | Info        :   Basic version
 *
 ******************************************************************************/
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdlib.h>
+
 #include "FEPD_2in13.h"
 #include "GUI_Paint.h"
 #include "GUI_Cache.h"
-#include <stdlib.h>
 #include "Debug.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "../gpio.h"
 
 /**
  * full screen update LUT
@@ -164,15 +166,16 @@ parameter:
 ******************************************************************************/
 static void EPD_WaitUntilIdle(void)
 {
-	DEBUG("BUSY....\r\n");
-    UBYTE busy;
-    do {
-        EPD_SendCommand(0x71);
-        busy = EPD_BUSY_RD;
-        busy =!(busy & 0x01);
-    } while(busy);
-    // DEV_Delay_ms(50);
-		DEBUG("BUSY free....\r\n");
+	//DEBUG("BUSY....\r\n");
+  UBYTE busy;
+  do {
+      EPD_SendCommand(0x71);
+      busy = EPD_BUSY_RD;
+      busy =!(busy & 0x01);
+      gpio_process(); // GPIO polling
+  } while(busy);
+  // DEV_Delay_ms(50);
+	//DEBUG("BUSY free....\r\n");
 }
 
 /******************************************************************************

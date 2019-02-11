@@ -18,9 +18,6 @@
 typedef enum {
     initial,
     sleep,
-    sel_glu,
-    sel_cho,
-    sel_ins,
     input_cho,
     input_glu,
     input_ins
@@ -50,8 +47,6 @@ static internal_state_t       m_state;
 
 static char                   buffer[8];
 static uint8_t                len;
-
-static int32_t                encoder_pos;
 
 static uint8_t                full_refresh;
 static uint8_t                quick_refresh;
@@ -171,243 +166,62 @@ static void state_save_meas(void){
 void state_process_display(void)
 {
   if ((m_state != initial)&&(quick_refresh|full_refresh)){
-    struct tm t;
-    clock_get_time(&t);
-
     GUI_Clear(WHITE);
 
-    if (m_state == input_glu){
-      GUI_DrawRectangle(1, 1, 104, 70, BLACK, DRAW_FILL_FULL, DOT_PIXEL_DFT);
-      GUI_DrawIcon(ICON_V_POS, LEFT_ICON_H_POS, gImage_icon_glu, BLACK);
+    GUI_DrawIcon(ICON_V_POS, LEFT_ICON_H_POS, gImage_icon_glu, WHITE);
+    GUI_DrawIcon(ICON_V_POS, CENTER_ICON_H_POS, gImage_icon_cho, WHITE);
+    GUI_DrawIcon(ICON_V_POS, RIGHT_ICON_H_POS, gImage_icon_ins, WHITE);
+
+    if (m_state == sleep){
       len = sprintf(buffer, "%03ld", m_topsulin_meas.glu);
-      buffer[len] = '\0';
-      GUI_DrawString_EN(11, NUMBER_V_POS, buffer, &Font24, BLACK, WHITE);
-      len = strftime(buffer, sizeof(buffer), "%H:%M", &t);
-      GUI_DrawString_EN(LEFT_TIME_H_POS, TIME_V_POS, buffer, &Font16, BLACK, WHITE);
-    } else {
-      GUI_DrawIcon(ICON_V_POS, LEFT_ICON_H_POS, gImage_icon_glu, WHITE);
-      len = sprintf(buffer, "%03ld", m_topsulin_meas.glu);
-      buffer[len] = '\0';
       GUI_DrawString_EN(11, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-      if (new_glu){
-        len = strftime(buffer, sizeof(buffer), "%H:%M", &t);
-      } else {
-        len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.glu_time);
-      }
+      len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.glu_time);
       GUI_DrawString_EN(LEFT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
-      if (m_state == sel_glu){
+
+      len = sprintf(buffer, "%02ld", m_topsulin_meas.cho);
+      GUI_DrawString_EN(91, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
+      len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.cho_time);
+      GUI_DrawString_EN(CENTER_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
+
+      len = sprintf(buffer, "%02ld", m_topsulin_meas.ins);
+      GUI_DrawString_EN(162, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
+      len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.ins_time);
+      GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
+    } else {
+      if (m_state == input_glu){
         GUI_DrawRectangle(1, 2, 104, 70, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_2X2);
       }
-    }
-
-    if (m_state == input_cho){
-      GUI_DrawRectangle(1, 72, 104, 141, BLACK, DRAW_FILL_FULL, DOT_PIXEL_DFT);
-      GUI_DrawIcon(ICON_V_POS, CENTER_ICON_H_POS, gImage_icon_cho, BLACK);
-      len = sprintf(buffer, "%02ld", m_topsulin_meas.cho);
-      buffer[len] = '\0';
-      GUI_DrawString_EN(91, NUMBER_V_POS, buffer, &Font24, BLACK, WHITE);
-      len = strftime(buffer, sizeof(buffer), "%H:%M", &t);
-      GUI_DrawString_EN(CENTER_TIME_H_POS, TIME_V_POS, buffer, &Font16, BLACK, WHITE);
-    } else {
-      GUI_DrawIcon(ICON_V_POS, CENTER_ICON_H_POS, gImage_icon_cho, WHITE);
-      len = sprintf(buffer, "%02ld", m_topsulin_meas.cho);
-      buffer[len] = '\0';
-      GUI_DrawString_EN(91, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-      if (new_cho){
-        len = strftime(buffer, sizeof(buffer), "%H:%M", &t);
-      } else {
-        len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.cho_time);
-      }
-      GUI_DrawString_EN(CENTER_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
-      if (m_state == sel_cho){
+      if (m_state == input_cho){
         GUI_DrawRectangle(1, 72, 104, 141, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_2X2);
       }
-    }
-
-    if (m_state == input_ins){
-      GUI_DrawRectangle(1, 142, 104, 212, BLACK, DRAW_FILL_FULL, DOT_PIXEL_DFT);
-      GUI_DrawIcon(ICON_V_POS, RIGHT_ICON_H_POS, gImage_icon_ins, BLACK);
-      len = sprintf(buffer, "%02ld", m_topsulin_meas.ins);
-      buffer[len] = '\0';
-      GUI_DrawString_EN(162, NUMBER_V_POS, buffer, &Font24, BLACK, WHITE);
-      len = strftime(buffer, sizeof(buffer), "%H:%M", &t);
-      GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, buffer, &Font16, BLACK, WHITE);
-    } else {
-      GUI_DrawIcon(ICON_V_POS, RIGHT_ICON_H_POS, gImage_icon_ins, WHITE);
-      len = sprintf(buffer, "%02ld", m_topsulin_meas.ins);
-      buffer[len] = '\0';
-      GUI_DrawString_EN(162, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-      if (new_ins){
-        len = strftime(buffer, sizeof(buffer), "%H:%M", &t);
-      } else {
-        len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.ins_time);
-      }
-      GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
-      if (m_state == sel_ins){
+      if (m_state == input_ins){
         GUI_DrawRectangle(1, 142, 104, 211, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_2X2);
       }
+
+      if (new_glu){
+        len = sprintf(buffer, "%03ld", m_topsulin_meas.glu);
+      } else {
+        len = sprintf(buffer, "---");
+      }
+      GUI_DrawString_EN(11, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
+
+      if (new_cho){
+        len = sprintf(buffer, "%02ld", m_topsulin_meas.cho);
+      } else {
+        len = sprintf(buffer, "--");
+      }
+      GUI_DrawString_EN(91, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
+
+      if (new_ins){
+        len = sprintf(buffer, "%02ld", m_topsulin_meas.ins);
+      } else {
+        len = sprintf(buffer, "--");
+      }
+      GUI_DrawString_EN(162, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
+
     }
 
   }
-
-    /*switch(m_state){
-      case initial:
-        break;
-      case sleep:
-          GUI_Clear(WHITE);
-
-          GUI_DrawIcon(ICON_V_POS, LEFT_ICON_H_POS, gImage_icon_glu, WHITE);
-          len = sprintf(buffer, "%03d", m_topsulin_meas.glu);
-          buffer[len] = '\0';
-          GUI_DrawString_EN(11, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-          len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.glu_time);
-          GUI_DrawString_EN(LEFT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
-
-          GUI_DrawIcon(ICON_V_POS, CENTER_ICON_H_POS, gImage_icon_cho, WHITE);
-          len = sprintf(buffer, "%02d", m_topsulin_meas.cho);
-          buffer[len] = '\0';
-          GUI_DrawString_EN(91, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-          len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.cho_time);
-          GUI_DrawString_EN(CENTER_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
-
-          GUI_DrawIcon(ICON_V_POS, RIGHT_ICON_H_POS, gImage_icon_ins, WHITE);
-          len = sprintf(buffer, "%02d", m_topsulin_meas.ins);
-          buffer[len] = '\0';
-          GUI_DrawString_EN(162, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-          len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.ins_time);
-          GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
-        break;
-      case sel_glu:
-          GUI_Clear(WHITE);
-
-          GUI_DrawRectangle(1, 1, 104, 70, BLACK, DRAW_FILL_FULL, DOT_PIXEL_DFT);
-          GUI_DrawIcon(ICON_V_POS, LEFT_ICON_H_POS, gImage_icon_glu, BLACK);
-          len = sprintf(buffer, "%03d", m_topsulin_meas.glu);
-          buffer[len] = '\0';
-          GUI_DrawString_EN(11, NUMBER_V_POS, buffer, &Font24, BLACK, WHITE);
-          len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.glu_time);
-          GUI_DrawString_EN(LEFT_TIME_H_POS, TIME_V_POS, buffer, &Font16, BLACK, WHITE);
-
-          GUI_DrawIcon(ICON_V_POS, CENTER_ICON_H_POS, gImage_icon_cho, WHITE);
-          len = sprintf(buffer, "%02d", m_topsulin_meas.cho);
-          buffer[len] = '\0';
-          GUI_DrawString_EN(91, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-          len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.cho_time);
-          GUI_DrawString_EN(CENTER_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
-
-          GUI_DrawIcon(ICON_V_POS, RIGHT_ICON_H_POS, gImage_icon_ins, WHITE);
-          len = sprintf(buffer, "%02d", m_topsulin_meas.ins);
-          buffer[len] = '\0';
-          GUI_DrawString_EN(162, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-          len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.ins_time);
-          GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
-        break;
-      case sel_cho:
-          GUI_Clear(WHITE);
-
-          GUI_DrawIcon(ICON_V_POS, LEFT_ICON_H_POS, gImage_icon_glu, WHITE);
-          len = sprintf(buffer, "%03d", m_topsulin_meas.glu);
-          buffer[len] = '\0';
-          GUI_DrawString_EN(11, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-          len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.glu_time);
-          GUI_DrawString_EN(LEFT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
-
-          GUI_DrawRectangle(1, 72, 104, 141, BLACK, DRAW_FILL_FULL, DOT_PIXEL_DFT);
-          GUI_DrawIcon(ICON_V_POS, CENTER_ICON_H_POS, gImage_icon_cho, BLACK);
-          len = sprintf(buffer, "%02d", m_topsulin_meas.cho);
-          buffer[len] = '\0';
-          GUI_DrawString_EN(91, NUMBER_V_POS, buffer, &Font24, BLACK, WHITE);
-          len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.cho_time);
-          GUI_DrawString_EN(CENTER_TIME_H_POS, TIME_V_POS, buffer, &Font16, BLACK, WHITE);
-
-          GUI_DrawIcon(ICON_V_POS, RIGHT_ICON_H_POS, gImage_icon_ins, WHITE);
-          len = sprintf(buffer, "%02d", m_topsulin_meas.ins);
-          buffer[len] = '\0';
-          GUI_DrawString_EN(162, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-          len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.ins_time);
-          GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
-        break;
-      case sel_ins:
-          GUI_Clear(WHITE);
-
-          GUI_DrawIcon(ICON_V_POS, LEFT_ICON_H_POS, gImage_icon_glu, WHITE);
-          len = sprintf(buffer, "%03d", m_topsulin_meas.glu);
-          buffer[len] = '\0';
-          GUI_DrawString_EN(11, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-          len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.glu_time);
-          GUI_DrawString_EN(LEFT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
-
-          GUI_DrawIcon(ICON_V_POS, CENTER_ICON_H_POS, gImage_icon_cho, WHITE);
-          len = sprintf(buffer, "%02d", m_topsulin_meas.cho);
-          buffer[len] = '\0';
-          GUI_DrawString_EN(91, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-          len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.cho_time);
-          GUI_DrawString_EN(CENTER_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
-
-          GUI_DrawRectangle(1, 142, 104, 212, BLACK, DRAW_FILL_FULL, DOT_PIXEL_DFT);
-          GUI_DrawIcon(ICON_V_POS, RIGHT_ICON_H_POS, gImage_icon_ins, BLACK);
-          len = sprintf(buffer, "%02d", m_topsulin_meas.ins);
-          buffer[len] = '\0';
-          GUI_DrawString_EN(162, NUMBER_V_POS, buffer, &Font24, BLACK, WHITE);
-          len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.ins_time);
-          GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, buffer, &Font16, BLACK, WHITE);
-        break;
-      case input_glu:
-          GUI_Clear(WHITE);
-
-          GUI_DrawRectangle(1, 1, 104, 141, BLACK, DRAW_FILL_FULL, DOT_PIXEL_DFT);
-          GUI_DrawIcon(ICON_V_POS, CENTER_ICON_H_POS, gImage_icon_glu, BLACK);
-          len = sprintf(buffer, "%03d", m_topsulin_meas.glu);
-          buffer[len] = '\0';
-          GUI_DrawString_EN(11, 56, buffer, &Font24, BLACK, WHITE);
-
-          len = strftime(buffer, sizeof(buffer), "%H:%M", &m_time);
-          GUI_DrawString_EN(LEFT_TIME_H_POS, TIME_V_POS,  buffer, &Font16, BLACK, WHITE);
-
-          GUI_DrawIcon(ICON_V_POS, RIGHT_ICON_H_POS, gImage_icon_ins, WHITE);
-          len = sprintf(buffer, "%02d", m_topsulin_meas.glu_correction);
-          buffer[len] = '\0';
-          GUI_DrawString_EN(162, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-        break;
-      case input_cho:
-          GUI_Clear(WHITE);
-
-          GUI_DrawRectangle(1, 1, 104, 141, BLACK, DRAW_FILL_FULL, DOT_PIXEL_DFT);
-          GUI_DrawIcon(ICON_V_POS, CENTER_ICON_H_POS, gImage_icon_cho, BLACK);
-          len = sprintf(buffer, "%02d", m_topsulin_meas.cho);
-          buffer[len] = '\0';
-          GUI_DrawString_EN(11, 56, buffer, &Font24, BLACK, WHITE);
-
-          len = strftime(buffer, sizeof(buffer), "%H:%M", &m_time);
-          GUI_DrawString_EN(LEFT_TIME_H_POS, TIME_V_POS,  buffer, &Font16, BLACK, WHITE);
-
-          GUI_DrawIcon(ICON_V_POS, RIGHT_ICON_H_POS, gImage_icon_ins, WHITE);
-          len = sprintf(buffer, "%02d", m_topsulin_meas.cho_correction);
-          buffer[len] = '\0';
-          GUI_DrawString_EN(162, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-        break;
-      case input_ins:
-          GUI_Clear(WHITE);
-
-          GUI_DrawRectangle(1, 1, 104, 141, BLACK, DRAW_FILL_FULL, DOT_PIXEL_DFT);
-          GUI_DrawIcon(ICON_V_POS, CENTER_ICON_H_POS, gImage_icon_ins, BLACK);
-          len = sprintf(buffer, "%02d", m_topsulin_meas.ins);
-          buffer[len] = '\0';
-          GUI_DrawString_EN(11, 56, buffer, &Font24, BLACK, WHITE);
-
-          len = strftime(buffer, sizeof(buffer), "%H:%M", &m_time);
-          GUI_DrawString_EN(LEFT_TIME_H_POS, TIME_V_POS,  buffer, &Font16, BLACK, WHITE);
-
-          len = sprintf(buffer, "%02d", m_topsulin_meas.glu_correction);
-          buffer[len] = '\0';
-          GUI_DrawString_EN(162, 50, buffer, &Font24, WHITE, BLACK);
-          len = sprintf(buffer, "%02d", m_topsulin_meas.cho_correction);
-          buffer[len] = '\0';
-          GUI_DrawString_EN(162, 26, buffer, &Font24, WHITE, BLACK);
-        break;
-      default:
-        break;
-    }*/
 
   if (full_refresh){
     EPD_DisplayFull();
@@ -432,13 +246,15 @@ void state_on_event(event_t event)
       break;
     case sleep:
       if (event == button_pressed){
-        encoder_reset_position();
+        glu_correction = 0;
+        cho_correction = 0;
         m_prev_topsulin_meas = m_topsulin_meas;
-        m_state = sel_glu;
+        encoder_set_position(m_topsulin_meas.glu);
+        m_state = input_glu;
         quick_refresh = 1;
       }
       break;
-    case sel_glu:
+    /*case sel_glu:
       if (event == button_pressed){
         encoder_set_position(m_topsulin_meas.glu);
         m_state = input_glu;
@@ -516,54 +332,107 @@ void state_on_event(event_t event)
         m_state = sleep;
         full_refresh = 1;
       }
-      break;
+      break;*/
     case input_glu:
       if (event == button_pressed){
-        new_glu = true;
-        m_state = sel_cho;
+        encoder_set_position(m_topsulin_meas.cho);
+        m_state = input_cho;
         quick_refresh = 1;
       }
       if (event == encoder_update){
+        new_glu = true;
         m_topsulin_meas.glu = encoder_get_position();
         if(m_topsulin_meas.glu < 0){
           encoder_reset_position();
           m_topsulin_meas.glu = 0;
         }
+
+        if (m_topsulin_meas.glu >= config_manager_get_calc_high().mantissa){
+            glu_correction = 1 + (m_topsulin_meas.glu - config_manager_get_calc_high().mantissa) / config_manager_get_calc_corr().mantissa;
+        } else if (m_topsulin_meas.glu <= config_manager_get_calc_low().mantissa) {
+            glu_correction = (m_topsulin_meas.glu - config_manager_get_calc_low().mantissa) / config_manager_get_calc_corr().mantissa - 1;
+        } else {
+            glu_correction = 0;
+        }
+
+        if (glu_correction > 0){
+          new_ins = true;
+          m_topsulin_meas.ins = 0;
+          if (new_glu){
+              m_topsulin_meas.ins += glu_correction;
+          }
+          if (new_cho){
+              m_topsulin_meas.ins += cho_correction;
+          }
+        }
+
         quick_refresh = 1;
       }
       if (event == long_button_pressed){
         m_topsulin_meas.glu = m_prev_topsulin_meas.glu;
-        m_state = sel_glu;
+        new_glu = false;
+        glu_correction = 0;
+        m_topsulin_meas.ins = 0;
+        if (new_cho){
+            m_topsulin_meas.ins += cho_correction;
+        } else {
+          m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
+          new_ins = false;
+        }
         quick_refresh = 1;
       }
       break;
     case input_cho:
       if (event == button_pressed){
-        new_cho = true;
-        m_state = sel_ins;
+        encoder_set_position(m_topsulin_meas.ins);
+        m_state = input_ins;
         quick_refresh = 1;
       }
       if (event == encoder_update){
+        new_cho = true;
         m_topsulin_meas.cho = encoder_get_position();
         if(m_topsulin_meas.cho < 0){
           encoder_reset_position();
           m_topsulin_meas.cho = 0;
         }
+
+        cho_correction = m_topsulin_meas.cho / config_manager_get_calc_sens();
+
+        if (cho_correction > 0){
+          new_ins = true;
+          m_topsulin_meas.ins = 0;
+          if (new_glu){
+              m_topsulin_meas.ins += glu_correction;
+          }
+          if (new_cho){
+              m_topsulin_meas.ins += cho_correction;
+          }
+        }
+
         quick_refresh = 1;
       }
       if (event == long_button_pressed){
         m_topsulin_meas.cho = m_prev_topsulin_meas.cho;
-        m_state = sel_cho;
+        new_cho = false;
+        cho_correction = 0;
+        m_topsulin_meas.ins = 0;
+        if (new_glu){
+          m_topsulin_meas.ins += glu_correction;
+        } else {
+          m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
+          new_ins = false;
+        }
         quick_refresh = 1;
       }
       break;
     case input_ins:
       if (event == button_pressed){
-        new_ins = true;
-        m_state = sleep;
-        full_refresh = 1;
+        encoder_set_position(m_topsulin_meas.glu);
+        m_state = input_glu;
+        quick_refresh = 1;
       }
       if (event == encoder_update){
+        new_ins = true;
         m_topsulin_meas.ins = encoder_get_position();
         if(m_topsulin_meas.ins < 0){
           encoder_reset_position();
@@ -573,7 +442,7 @@ void state_on_event(event_t event)
       }
       if (event == long_button_pressed){
         m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
-        m_state = sel_ins;
+        new_ins = false;
         quick_refresh = 1;
       }
       break;
@@ -581,8 +450,10 @@ void state_on_event(event_t event)
       break;
   }
 
-  if (m_state == sleep){
+  if ((m_state != initial)&&(event == double_button_pressed)){
     state_save_meas();
+    m_state = sleep;
+    full_refresh = 1;
   }
 
   state_process_display();
