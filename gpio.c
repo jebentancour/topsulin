@@ -8,6 +8,7 @@
 #include "nrf_delay.h"
 #include "nrf_gpio.h"
 #include "clock.h"
+#include "encoder.h"
 
 #define LONG_CLICK_MS 1500
 
@@ -40,6 +41,12 @@ void gpio_long_button_set_flag(volatile uint8_t* main_long_button_flag)
 void gpio_process(void) {
 
     new_in = nrf_gpio_pin_read(SW_PIN);
+
+    if (new_in){
+      encoder_play();
+    } else {
+      encoder_pause();
+    }
 
     now = clock_get_timestamp();
 

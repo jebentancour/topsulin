@@ -18,7 +18,8 @@ static volatile int32_t m_vel;
 static volatile int32_t m_position;
 static volatile int32_t m_report_position;
 static volatile uint8_t* m_encoder_flag;
-static bool m_direction;
+static volatile bool m_direction;
+static volatile bool m_play;
 
 
 static void qdec_event_handler(nrf_drv_qdec_event_t event)
@@ -39,19 +40,21 @@ static void qdec_event_handler(nrf_drv_qdec_event_t event)
         //NRF_LOG_INFO("Vel %d\n", m_vel);
         //NRF_LOG_FLUSH();
 
-        if (m_direction) {
-          m_position          -= m_vel * m_accread;
-        } else {
-          m_position          += m_vel * m_accread;
-        }
-        if (m_accdblread > 0){
-          NRF_LOG_INFO("ACCDBL %d\n", m_accdblread);
-          NRF_LOG_INFO("ACC %d\n", m_accread);
-          NRF_LOG_FLUSH();
-        } else {
-          if (m_report_position != (m_position / 4)) {
-            m_report_position   = m_position / 4;
-            *m_encoder_flag     = 1;
+        if (m_play){
+          if (m_direction) {
+            m_position          -= m_vel * m_accread;
+          } else {
+            m_position          += m_vel * m_accread;
+          }
+          if (m_accdblread > 0){
+            NRF_LOG_INFO("ACCDBL %d\n", m_accdblread);
+            NRF_LOG_INFO("ACC %d\n", m_accread);
+            NRF_LOG_FLUSH();
+          } else {
+            if (m_report_position != (m_position / 4)) {
+              m_report_position   = m_position / 4;
+              *m_encoder_flag     = 1;
+            }
           }
         }
     }
@@ -66,6 +69,7 @@ void encoder_init(void)
 {
   m_position = 0;
   m_report_position = 0;
+  m_play = true;
 
   uint32_t err_code;
 
@@ -129,5 +133,19 @@ void encoder_reset_position(void)
   CRITICAL_REGION_ENTER();
   m_position = 0;
   m_report_position = 0;
+  CRITICAL_REGION_EXIT();
+}
+
+void encoder_pause(void)
+{
+  CRITICAL_REGION_ENTER();
+  m_play = false;
+  CRITICAL_REGION_EXIT();
+}
+
+void encoder_play(void)
+{
+  CRITICAL_REGION_ENTER();
+  m_play = true;
   CRITICAL_REGION_EXIT();
 }
