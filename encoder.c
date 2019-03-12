@@ -20,6 +20,7 @@ static volatile int32_t m_report_position;
 static volatile uint8_t* m_encoder_flag;
 static volatile bool m_direction;
 static volatile bool m_play;
+static volatile bool m_direction_change;
 
 
 static void qdec_event_handler(nrf_drv_qdec_event_t event)
@@ -30,29 +31,29 @@ static void qdec_event_handler(nrf_drv_qdec_event_t event)
         m_accread           = event.data.report.acc;
 
         m_vel = m_accread - m_prev_accread;
-        m_prev_accread = m_accread;
         if (m_vel == 0){
           m_vel = 1;
         }
         if (m_vel < 0){
           m_vel = - m_vel;
         }
-        //NRF_LOG_INFO("Vel %d\n", m_vel);
-        //NRF_LOG_FLUSH();
 
-        if (m_play){
+        m_direction_change  = (m_prev_accread * m_accread) < 0;
+
+        m_prev_accread = m_accread;
+
+        if (m_play & !m_direction_change){
           if (m_direction) {
             m_position          -= m_vel * m_accread;
           } else {
             m_position          += m_vel * m_accread;
           }
-          if (m_accdblread > 0){
-            NRF_LOG_INFO("ACCDBL %d\n", m_accdblread);
-            NRF_LOG_INFO("ACC %d\n", m_accread);
-            NRF_LOG_FLUSH();
-          } else {
+          if (!(m_accdblread > 0)){
             if (m_report_position != (m_position / 4)) {
               m_report_position   = m_position / 4;
+              //NRF_LOG_INFO("m_position %d\n", m_position);
+              //NRF_LOG_INFO("m_report_position %d\n", m_report_position);
+              //NRF_LOG_FLUSH();
               *m_encoder_flag     = 1;
             }
           }
@@ -70,6 +71,7 @@ void encoder_init(void)
   m_position = 0;
   m_report_position = 0;
   m_play = true;
+  m_direction_change = false;
 
   uint32_t err_code;
 

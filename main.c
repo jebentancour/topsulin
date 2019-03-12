@@ -19,7 +19,7 @@
 #include "batt.h"
 #include "config_manager.h"
 
-#define IDLE_S          30
+#define IDLE_S          60
 #define IDLE_TICKS      (IDLE_S * 1000)/CLOCK_TICK_MS
 
 volatile uint8_t clock_tick_flag;
@@ -167,7 +167,7 @@ int main(void)
         if((idle_timer >= IDLE_TICKS)&&(!clock_tick_flag)&&(!button_flag)&&(!long_button_flag)&&(!double_button_flag)&&(!encoder_flag)&&(!batt_flag)) {
             // prepare to sleep
             if (wake_up){
-              advertising_stop();
+              //advertising_stop();
               state_sleep();
               encoder_disable();
               EPD_Sleep();

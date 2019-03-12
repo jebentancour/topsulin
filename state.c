@@ -218,7 +218,6 @@ void state_process_display(void)
         len = sprintf(buffer, "--");
       }
       GUI_DrawString_EN(162, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-
     }
 
   }
@@ -240,7 +239,7 @@ void state_on_event(event_t event)
   switch(m_state){
     case initial:
       if (event == ble_on){
-        GUI_DrawIcon(8, 4, gImage_icon_bt, WHITE);
+        GUI_DrawIcon(2, 4, gImage_icon_bt, WHITE);
         quick_refresh = 1;
       }
       break;
@@ -254,88 +253,9 @@ void state_on_event(event_t event)
         quick_refresh = 1;
       }
       break;
-    /*case sel_glu:
-      if (event == button_pressed){
-        encoder_set_position(m_topsulin_meas.glu);
-        m_state = input_glu;
-        quick_refresh = 1;
-      }
-      if (event == encoder_update){
-        encoder_pos = encoder_get_position();
-        if (encoder_pos > 0){
-          m_state = sel_cho;
-          quick_refresh = 1;
-        }
-        encoder_reset_position();
-      }
-      if (event == long_button_pressed){
-        m_state = sleep;
-        full_refresh = 1;
-      }
-      break;
-    case sel_cho:
-      if (event == button_pressed){
-        encoder_set_position(m_topsulin_meas.cho);
-        m_state = input_cho;
-        quick_refresh = 1;
-      }
-      if (event == encoder_update){
-        encoder_pos = encoder_get_position();
-        if (encoder_pos > 0){
-          m_state = sel_ins;
-          quick_refresh = 1;
-        }
-        if (encoder_pos < 0) {
-          m_state = sel_glu;
-          quick_refresh = 1;
-        }
-        encoder_reset_position();
-      }
-      if (event == long_button_pressed){
-        m_state = sleep;
-        full_refresh = 1;
-      }
-      break;
-    case sel_ins:
-      if (event == button_pressed){
-        if (m_topsulin_meas.glu >= config_manager_get_calc_high().mantissa){
-            glu_correction = 1 + (m_topsulin_meas.glu - config_manager_get_calc_high().mantissa) / config_manager_get_calc_corr().mantissa;
-        } else if (m_topsulin_meas.glu <= config_manager_get_calc_low().mantissa) {
-            glu_correction = (m_topsulin_meas.glu - config_manager_get_calc_low().mantissa) / config_manager_get_calc_corr().mantissa - 1;
-        } else {
-            glu_correction = 0;
-        }
-
-        cho_correction = m_topsulin_meas.cho / config_manager_get_calc_sens();
-
-        m_topsulin_meas.ins = 0;
-        if (new_glu){
-            m_topsulin_meas.ins += glu_correction;
-        }
-        if (new_cho){
-            m_topsulin_meas.ins += cho_correction;
-        }
-
-        encoder_set_position(m_topsulin_meas.ins);
-        m_state = input_ins;
-        quick_refresh = 1;
-      }
-      if (event == encoder_update){
-        encoder_pos = encoder_get_position();
-        if (encoder_pos < 0){
-          m_state = sel_cho;
-          quick_refresh = 1;
-        }
-        encoder_reset_position();
-      }
-      if (event == long_button_pressed){
-        m_state = sleep;
-        full_refresh = 1;
-      }
-      break;*/
     case input_glu:
       if (event == button_pressed){
-        encoder_set_position(m_topsulin_meas.cho);
+        encoder_set_position(m_topsulin_meas.cho / 5);
         m_state = input_cho;
         quick_refresh = 1;
       }
@@ -353,6 +273,11 @@ void state_on_event(event_t event)
             glu_correction = (m_topsulin_meas.glu - config_manager_get_calc_low().mantissa) / config_manager_get_calc_corr().mantissa - 1;
         } else {
             glu_correction = 0;
+            if (new_cho && (cho_correction != 0)){
+              m_topsulin_meas.ins = cho_correction;
+            } else {
+              new_ins = false;
+            }
         }
 
         if (glu_correction > 0){
@@ -390,13 +315,21 @@ void state_on_event(event_t event)
       }
       if (event == encoder_update){
         new_cho = true;
-        m_topsulin_meas.cho = encoder_get_position();
+        m_topsulin_meas.cho = encoder_get_position() * 5;
         if(m_topsulin_meas.cho < 0){
           encoder_reset_position();
           m_topsulin_meas.cho = 0;
         }
 
         cho_correction = m_topsulin_meas.cho / config_manager_get_calc_sens();
+
+        if (cho_correction == 0){
+          if (new_glu && (glu_correction != 0)){
+            m_topsulin_meas.ins = glu_correction;
+          } else {
+            new_ins = false;
+          }
+        }
 
         if (cho_correction > 0){
           new_ins = true;
