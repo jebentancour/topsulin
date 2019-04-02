@@ -32,8 +32,8 @@ volatile uint8_t batt_flag;
 uint8_t wake_up;
 uint16_t idle_timer;
 
-int main(void)
-{
+int main(void){
+
     NRF_LOG_INIT(clock_get_timestamp);
     NRF_LOG_INFO("-------------------- MAIN --------------------\n");
     NRF_LOG_FLUSH();
@@ -65,17 +65,22 @@ int main(void)
 
     DEV_ModuleInit();
     EPD_Init();
-    GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_POSITIVE);
+    if(config_manager_get_flags() & CONFIG_COLOR_FLAG){
+      GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_POSITIVE);
+    } else {
+      GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_INVERTED);
+    }
     GUI_DrawBitMap(gImage_IMAGE_0);
     //EPD_DisplayFull();
-    //EPD_Sleep();
 
     batt_flag = 0;
     batt_set_flag(&batt_flag);
     batt_init();
     batt_sample();
 
-    while(!batt_flag){}
+    while(!batt_flag){
+        // wait...
+    }
     batt_flag = 0;
     uint32_t voltage;
     voltage = batt_get();
@@ -91,11 +96,9 @@ int main(void)
 
     encoder_flag = 0;
     encoder_set_flag(&encoder_flag);
-    encoder_set_direction(true);
+    encoder_set_direction((config_manager_get_flags() & CONFIG_FLIP_FLAG) == 0);
     encoder_init();
 
-    //nrf_delay_ms(1000);
-    //gpio_set_led(true);
     NRF_LOG_FLUSH();
 
     wake_up = 1;
@@ -109,13 +112,12 @@ int main(void)
         if(button_flag) {
             button_flag = 0;
             if (!wake_up) {
-                //gpio_set_led(true);
-                EPD_Init();
-                advertising_start();
-                encoder_enable();
                 NRF_LOG_INFO("Wake up!\r\n");
                 NRF_LOG_FLUSH();
                 clock_print();
+                EPD_Init();
+                advertising_start();
+                encoder_enable();
                 wake_up = 1;
             }
             state_on_event(button_pressed);
@@ -140,42 +142,39 @@ int main(void)
             idle_timer = 0;
         }
 
-        if(batt_flag){
-            // Update BLE Device Characteristic
-            batt_ble_update((uint16_t)batt_get());
-            batt_flag = 0;
-        }
-
         if(clock_tick_flag) {
-            //state_on_event(time_update);
+            clock_tick_flag = 0;
             if (wake_up){
-              // Update BLE Time Characteristic every second
+              // Update BLE Time and Voltage Characteristics every second
               now = clock_get_timestamp();
               if (now - last >= 1000){
-                time_ble_update();
                 last = now;
+                time_ble_update();
                 if(!batt_flag){
                   batt_sample();
                 }
+                while(!batt_flag){
+                    // wait...
+                }
+                batt_flag = 0;
+                batt_ble_update((uint16_t)batt_get());
               }
             }
             idle_timer++;
-            clock_tick_flag = 0;
         }
 
         // If it is nothing to do...
         if((idle_timer >= IDLE_TICKS)&&(!clock_tick_flag)&&(!button_flag)&&(!long_button_flag)&&(!double_button_flag)&&(!encoder_flag)&&(!batt_flag)) {
             // prepare to sleep
             if (wake_up){
-              //advertising_stop();
               state_sleep();
-              encoder_disable();
+              advertising_stop();
               EPD_Sleep();
-              //gpio_set_led(false);
+              encoder_disable();
             }
             wake_up = 0;
 
-             // sleep and wait for event...
+            // sleep and wait for event...
             sd_app_evt_wait();
 
             // wake up!

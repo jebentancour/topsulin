@@ -7,6 +7,12 @@
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 
+#include "encoder.h"
+#include "FEPD_2in13.h"
+#include "GUI_Paint.h"
+
+#define VERSION 1
+#define SN      1
 
 static global_conf_t m_global_conf;
 
@@ -14,10 +20,10 @@ void config_manager_init(void)
 {
   memset(&m_global_conf, 0, sizeof(m_global_conf));
   // Config
-  m_global_conf.flags = CONFIG_CHO_FLAG | CONFIG_INSULIN_FLAG | CONFIG_GLUCOSE_FLAG;
+  m_global_conf.flags = CONFIG_COLOR_FLAG | CONFIG_CHO_FLAG | CONFIG_INSULIN_FLAG | CONFIG_GLUCOSE_FLAG;
   m_global_conf.g_portion = 250;
   // Name
-  const char* tmp = "Glucosee";
+  const char* tmp = "Topsulin";
   strcpy(m_global_conf.name, tmp);
   // Calc
   m_global_conf.calc_low.mantissa = 90;
@@ -96,14 +102,20 @@ void config_manager_print(void)
   NRF_LOG_FLUSH();
 
   // Device
-  NRF_LOG_INFO("DEV v %d\n", 1);
-  NRF_LOG_INFO("DEV SN %d\n", 1);
+  NRF_LOG_INFO("DEV v %d\n", VERSION);
+  NRF_LOG_INFO("DEV SN %d\n", SN);
   NRF_LOG_FLUSH();
 }
 
 void config_manager_set_flags(uint8_t flags)
 {
   m_global_conf.flags = flags;
+  encoder_set_direction((config_manager_get_flags() & CONFIG_FLIP_FLAG) == 0);
+  if(flags & CONFIG_COLOR_FLAG){
+    GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_POSITIVE);
+  } else {
+    GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_INVERTED);
+  }
 }
 
 uint8_t config_manager_get_flags(void)
@@ -235,10 +247,10 @@ void config_manager_set_calc_corr(sfloat_t corr)
 
 uint8_t config_manager_get_version()
 {
-  return 1;
+  return VERSION;
 }
 
 uint16_t config_manager_get_serial_number()
 {
-  return 1;
+  return SN;
 }

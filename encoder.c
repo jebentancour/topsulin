@@ -49,8 +49,8 @@ static void qdec_event_handler(nrf_drv_qdec_event_t event)
             m_position          += m_vel * m_accread;
           }
           if (!(m_accdblread > 0)){
-            if (m_report_position != (m_position / 4)) {
-              m_report_position   = m_position / 4;
+            if (m_report_position != (m_position / 2)) {
+              m_report_position   = m_position / 2;
               //NRF_LOG_INFO("m_position %d\n", m_position);
               //NRF_LOG_INFO("m_report_position %d\n", m_report_position);
               //NRF_LOG_FLUSH();
@@ -125,7 +125,7 @@ int32_t encoder_get_position(void)
 void encoder_set_position(int32_t new_position)
 {
   CRITICAL_REGION_ENTER();
-  m_position = new_position * 4;
+  m_position = new_position * 2;
   m_report_position = new_position;
   CRITICAL_REGION_EXIT();
 }
