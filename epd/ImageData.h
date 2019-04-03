@@ -27,6 +27,7 @@
 #define _IMAGEDATA_H_
 
 extern const unsigned char gImage_IMAGE_0[];
+extern const unsigned char gImage_IMAGE_1[];
 
 extern const unsigned char gImage_icon_bt[];
 extern const unsigned char gImage_icon_lock[];
