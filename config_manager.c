@@ -21,6 +21,7 @@ void config_manager_init(void)
   memset(&m_global_conf, 0, sizeof(m_global_conf));
   // Config
   m_global_conf.flags = CONFIG_COLOR_FLAG | CONFIG_CHO_FLAG | CONFIG_INSULIN_FLAG | CONFIG_GLUCOSE_FLAG;
+  //m_global_conf.flags |= CONFIG_FLIP_FLAG;
   m_global_conf.g_portion = 250;
   // Name
   const char* tmp = "Topsulin";
@@ -110,12 +111,20 @@ void config_manager_print(void)
 void config_manager_set_flags(uint8_t flags)
 {
   m_global_conf.flags = flags;
-  encoder_set_direction((config_manager_get_flags() & CONFIG_FLIP_FLAG) == 0);
+  /*encoder_set_direction((config_manager_get_flags() & CONFIG_FLIP_FLAG) == 0);
   if(flags & CONFIG_COLOR_FLAG){
-    GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_POSITIVE);
+    if (flags & CONFIG_FLIP_FLAG){
+      GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_180, IMAGE_COLOR_POSITIVE);
+    } else {
+      GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_POSITIVE);
+    }
   } else {
-    GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_INVERTED);
-  }
+    if (flags & CONFIG_FLIP_FLAG){
+      GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_180, IMAGE_COLOR_INVERTED);
+    } else {
+      GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_INVERTED);
+    }
+  }*/
 }
 
 uint8_t config_manager_get_flags(void)

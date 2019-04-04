@@ -66,9 +66,17 @@ int main(void){
     DEV_ModuleInit();
     EPD_Init();
     if(config_manager_get_flags() & CONFIG_COLOR_FLAG){
-      GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_POSITIVE);
+      if (config_manager_get_flags() & CONFIG_FLIP_FLAG){
+        GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_180, IMAGE_COLOR_POSITIVE);
+      } else {
+        GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_POSITIVE);
+      }
     } else {
-      GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_INVERTED);
+      if (config_manager_get_flags() & CONFIG_FLIP_FLAG){
+        GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_180, IMAGE_COLOR_INVERTED);
+      } else {
+        GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_INVERTED);
+      }
     }
     GUI_DrawBitMap(gImage_IMAGE_0);
     //EPD_DisplayFull();
@@ -149,6 +157,7 @@ int main(void){
               now = clock_get_timestamp();
               if (now - last >= 1000){
                 last = now;
+                state_on_event(time_update);
                 time_ble_update();
                 if(!batt_flag){
                   batt_sample();

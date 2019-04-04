@@ -257,7 +257,11 @@ void state_process_display(void){
         len = sprintf(buffer, "---");
       }
       GUI_DrawString_EN(ins_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-      len = sprintf(buffer, "  U  ");
+      if (m_topsulin_meas.ins != (glu_correction + cho_correction) && new_ins){
+        len = sprintf(buffer, " -U- ");
+      } else {
+        len = sprintf(buffer, "  U  ");
+      }
       GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
     }
 
@@ -462,6 +466,10 @@ void state_on_event(event_t event){
     state_save_meas();
     m_state = sleep;
     full_refresh = 1;
+  }
+
+  if ((m_state != initial)&&(m_state != sleep)&&(event == time_update)){
+    quick_refresh = 1;
   }
 
   state_process_display();
