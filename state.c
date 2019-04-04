@@ -23,8 +23,7 @@ typedef enum {
     input_ins
 } internal_state_t;
 
-typedef struct
-{
+typedef struct {
     int32_t glu;
     struct tm glu_time;
     int32_t cho;
@@ -51,8 +50,7 @@ static uint8_t                len;
 static uint8_t                full_refresh;
 static uint8_t                quick_refresh;
 
-void state_init()
-{
+void state_init(){
   m_state = initial;
 
   memset(&m_prev_topsulin_meas, 0, sizeof(m_prev_topsulin_meas));
@@ -106,10 +104,11 @@ static void state_save_meas(void){
 
     ble_gls_rec_t rec;
 
-    rec.meas.flags = BLE_GLS_MEAS_FLAG_TIME_OFFSET |
-                     BLE_GLS_MEAS_FLAG_CONC_TYPE_LOC |
-                     BLE_GLS_MEAS_FLAG_SENSOR_STATUS |
-                     BLE_GLS_MEAS_FLAG_UNITS_KG_L;
+    rec.meas.flags = BLE_GLS_MEAS_FLAG_UNITS_KG_L | BLE_GLS_MEAS_FLAG_SENSOR_STATUS;
+
+    if (new_glu){
+      rec.meas.flags |= BLE_GLS_MEAS_FLAG_CONC_TYPE_LOC;
+    }
 
     if (new_cho || new_ins){
       rec.meas.flags |= BLE_GLS_MEAS_FLAG_CONTEXT_INFO;
@@ -125,46 +124,55 @@ static void state_save_meas(void){
     if (new_glu){
       rec.meas.glucose_concentration.exponent = -5;
       rec.meas.glucose_concentration.mantissa = m_topsulin_meas.glu;
-    } else {
-      rec.meas.glucose_concentration.exponent = 0;
-      rec.meas.glucose_concentration.mantissa = 0;
+      rec.meas.type                           = BLE_GLS_MEAS_TYPE_CAP_BLOOD;
+      rec.meas.sample_location                = BLE_GLS_MEAS_LOC_NOT_AVAIL;
     }
 
-    rec.meas.time_offset                    = 0;
-    rec.meas.type                           = BLE_GLS_MEAS_TYPE_UNDET_BLOOD;
-    rec.meas.sample_location                = BLE_GLS_MEAS_LOC_NOT_AVAIL;
     rec.meas.sensor_status_annunciation     = 0;
-
     //rec.meas.sensor_status_annunciation     = BLE_GLS_MEAS_STATUS_BATT_LOW;
 
     if (new_cho){
       rec.context.flags |= BLE_GLS_CONTEXT_FLAG_CARB;
-      rec.context.carbohydrate_id = BLE_GLS_CONTEXT_CARB_LUNCH;
-      rec.context.carbohydrate.exponent = 0;
+      if (t.tm_hour <= 4){
+          // cena
+          rec.context.carbohydrate_id = BLE_GLS_CONTEXT_CARB_DINNER;
+      } else {
+          if (t.tm_hour <= 11){
+              // desayuno
+              rec.context.carbohydrate_id = BLE_GLS_CONTEXT_CARB_BREAKFAST;
+          } else {
+              if (t.tm_hour <= 15){
+                  // almuerzo
+                  rec.context.carbohydrate_id = BLE_GLS_CONTEXT_CARB_LUNCH;
+              } else {
+                  if (t.tm_hour <= 19){
+                      // merienda
+                      rec.context.carbohydrate_id =	BLE_GLS_CONTEXT_CARB_SNACK;
+                  } else {
+                      // cena
+                      rec.context.carbohydrate_id = BLE_GLS_CONTEXT_CARB_DINNER;
+                  }
+              }
+          }
+      }
+      rec.context.carbohydrate.exponent = 0; // Exponent: Decimal, -3
       rec.context.carbohydrate.mantissa = m_topsulin_meas.cho;
     }
 
     if (new_ins){
       rec.context.flags |= BLE_GLS_CONTEXT_FLAG_MED;
       rec.context.flags |= BLE_GLS_CONTEXT_FLAG_MED_L;
-      rec.context.medication_id         = BLE_GLS_CONTEXT_MED_RAPID;
-      rec.context.medication.exponent   = 3;
+      rec.context.medication_id         = config_manager_get_insulin_type();
+      // Definimos que 1 U de insulina se representa como 1 ml
+      rec.context.medication.exponent   = 3; // Exponent: Decimal, -3
       rec.context.medication.mantissa   = m_topsulin_meas.ins;
     }
 
     add_glucose_measurement(rec);
-
-    new_glu = false;
-    new_cho = false;
-    new_ins = false;
   }
-
-  glu_correction = 0;
-  cho_correction = 0;
 }
 
-void state_process_display(void)
-{
+void state_process_display(void){
   if ((m_state != initial)&&(quick_refresh|full_refresh)){
     GUI_Clear(WHITE);
 
@@ -267,8 +275,7 @@ void state_process_display(void)
 
 }
 
-void state_on_event(event_t event)
-{
+void state_on_event(event_t event){
   switch(m_state){
     case initial:
       if (event == ble_on){
@@ -279,6 +286,9 @@ void state_on_event(event_t event)
       break;
     case sleep:
       if (event == button_pressed){
+        new_glu = false;
+        new_cho = false;
+        new_ins = false;
         glu_correction = 0;
         cho_correction = 0;
         m_prev_topsulin_meas = m_topsulin_meas;
@@ -335,6 +345,10 @@ void state_on_event(event_t event)
       }
       if (event == long_button_pressed){
         m_topsulin_meas.glu = m_prev_topsulin_meas.glu;
+        if (!new_glu){
+            state_sleep();
+            break;
+        }
         new_glu = false;
         glu_correction = 0;
         m_topsulin_meas.ins = 0;
@@ -391,6 +405,10 @@ void state_on_event(event_t event)
       }
       if (event == long_button_pressed){
         m_topsulin_meas.cho = m_prev_topsulin_meas.cho;
+        if (!new_cho){
+            state_sleep();
+            break;
+        }
         new_cho = false;
         cho_correction = 0;
         m_topsulin_meas.ins = 0;
@@ -428,6 +446,10 @@ void state_on_event(event_t event)
       }
       if (event == long_button_pressed){
         m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
+        if (!new_ins){
+            state_sleep();
+            break;
+        }
         new_ins = false;
         quick_refresh = 1;
       }
@@ -475,15 +497,9 @@ void state_sleep(){
     if (m_state != sleep){
       NRF_LOG_INFO("Going to sleep: m_state != sleep\n");
       NRF_LOG_FLUSH();
-      if (m_state == input_glu){
-        m_topsulin_meas.glu = m_prev_topsulin_meas.glu;
-      }
-      if (m_state == input_cho){
-        m_topsulin_meas.cho = m_prev_topsulin_meas.cho;
-      }
-      if (m_state == input_ins){
-        m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
-      }
+      m_topsulin_meas.glu = m_prev_topsulin_meas.glu;
+      m_topsulin_meas.cho = m_prev_topsulin_meas.cho;
+      m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
       m_state = sleep;
       full_refresh = 1;
       state_process_display();
