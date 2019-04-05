@@ -79,7 +79,6 @@ int main(void){
       }
     }
     GUI_DrawBitMap(gImage_IMAGE_0);
-    //EPD_DisplayFull();
 
     batt_flag = 0;
     batt_set_flag(&batt_flag);

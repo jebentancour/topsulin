@@ -176,9 +176,15 @@ void state_process_display(void){
   if ((m_state != initial)&&(quick_refresh|full_refresh)){
     GUI_Clear(WHITE);
 
-    GUI_DrawIcon(ICON_V_POS, LEFT_ICON_H_POS, gImage_icon_glu, WHITE);
-    GUI_DrawIcon(ICON_V_POS, CENTER_ICON_H_POS, gImage_icon_cho, WHITE);
-    GUI_DrawIcon(ICON_V_POS, RIGHT_ICON_H_POS, gImage_icon_ins, WHITE);
+    if (config_manager_get_flags() & CONFIG_FLIP_FLAG){
+        GUI_DrawIcon(ICON_V_POS, LEFT_ICON_H_POS, gImage_icon_glu_flip, WHITE);
+        GUI_DrawIcon(ICON_V_POS, CENTER_ICON_H_POS, gImage_icon_cho_flip, WHITE);
+        GUI_DrawIcon(ICON_V_POS, RIGHT_ICON_H_POS, gImage_icon_ins_flip, WHITE);
+    } else {
+        GUI_DrawIcon(ICON_V_POS, LEFT_ICON_H_POS, gImage_icon_glu, WHITE);
+        GUI_DrawIcon(ICON_V_POS, CENTER_ICON_H_POS, gImage_icon_cho, WHITE);
+        GUI_DrawIcon(ICON_V_POS, RIGHT_ICON_H_POS, gImage_icon_ins, WHITE);
+    }
 
     uint8_t glu_h_pos = 11;
     if(m_topsulin_meas.glu < 100){
@@ -221,13 +227,13 @@ void state_process_display(void){
       GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
     } else {
       if (m_state == input_glu){
-        GUI_DrawRectangle(1, 2, 104, 70, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_2X2);
+        GUI_DrawRectangle(2, 4, 103, 70, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_2X2);
       }
       if (m_state == input_cho){
-        GUI_DrawRectangle(1, 72, 104, 141, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_2X2);
+        GUI_DrawRectangle(2, 73, 103, 141, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_2X2);
       }
       if (m_state == input_ins){
-        GUI_DrawRectangle(1, 142, 104, 211, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_2X2);
+        GUI_DrawRectangle(2, 143, 103, 210, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_2X2);
       }
 
       if (new_glu){
@@ -437,9 +443,10 @@ void state_on_event(event_t event){
       if (event == encoder_update){
         new_ins = true;
         m_topsulin_meas.ins = encoder_get_position();
-        if(m_topsulin_meas.ins < 0){
+        if(m_topsulin_meas.ins <= 0){
           encoder_reset_position();
           m_topsulin_meas.ins = 0;
+          new_ins = false;
         }
         if(m_topsulin_meas.ins >= 1000){
           //encoder_reset_position();

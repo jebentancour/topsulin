@@ -164,12 +164,14 @@ void GUI_DrawPoint(UWORD Xpoint, UWORD Ypoint, UWORD Color,
         return;
     }
 
+    DEBUG("GUI_DrawPoint\r\n");
+
     int16_t XDir_Num , YDir_Num;
     if (DOT_STYLE == DOT_STYLE_DFT) {
         for (XDir_Num = 0; XDir_Num < 2 * Dot_Pixel - 1; XDir_Num++) {
             for (YDir_Num = 0; YDir_Num < 2 * Dot_Pixel - 1; YDir_Num++) {
                 if(Xpoint + XDir_Num - Dot_Pixel == -1 || Ypoint + XDir_Num - Dot_Pixel == -1) {
-                    //DEBUG("error\r\n");
+                    DEBUG("error\r\n");
                     break;
                 }
                 GUI_SetPixel(Xpoint + XDir_Num - Dot_Pixel, Ypoint + YDir_Num - Dot_Pixel, Color);
@@ -201,6 +203,10 @@ void GUI_DrawLine(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend,
         DEBUG("GUI_DrawLine Input exceeds the normal display range\r\n");
         return;
     }
+
+    DEBUG("GUI_DrawLine\r\n");
+
+    //return;
 
     if (Xstart > Xend)
         GUI_Swop(Xstart, Xend);
@@ -264,12 +270,14 @@ void GUI_DrawRectangle(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend,
         return;
     }
 
+    DEBUG("GUI_DrawRectangle\r\n");
+
     if (Xstart > Xend)
         GUI_Swop(Xstart, Xend);
     if (Ystart > Yend)
         GUI_Swop(Ystart, Yend);
 
-    if (Filled ) {
+    if (Filled) {
         UWORD Ypoint;
         for(Ypoint = Ystart; Ypoint < Yend; Ypoint++) {
             GUI_DrawLine(Xstart, Ypoint, Xend, Ypoint, Color , LINE_STYLE_SOLID, Dot_Pixel);
@@ -524,8 +532,15 @@ void GUI_DrawIcon(UWORD Xstart, UWORD Ystart, const unsigned char* image_buffer,
   Memory_Width = (GUI_Image.Memory_Width % 8 == 0)? (GUI_Image.Memory_Width / 8 ): (GUI_Image.Memory_Width / 8 + 1);
   UDOUBLE Addr = 0;
 
+  if(GUI_Image.Image_Rotate == IMAGE_ROTATE_180) {
+      Xstart = GUI_Image.Image_Width - Xstart - Width;
+      Ystart = GUI_Image.Image_Height - Ystart - Height - 8;
+  }
+
+  //DEBUG("Xstart %d, Ystart %d\r\n", Xstart, Ystart);
+
   for (Ypoint = 0; Ypoint < Height; Ypoint++) {
-      for (Xpoint = 0; Xpoint < Width; Xpoint++) { //8 pixel =  1 byte
+      for (Xpoint = 0; Xpoint < Width; Xpoint++) { // 8 pixel =  1 byte
           Addr = Xpoint + Xstart + (Ypoint + Ystart) * Memory_Width;
           if(GUI_Image.Image_Color == IMAGE_COLOR_POSITIVE) {
             if (Color_Background == WHITE){
