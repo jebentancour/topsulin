@@ -19,12 +19,11 @@
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 
-#define USE_DEBUG 1
+#define USE_DEBUG 0
 #if USE_DEBUG
 	#define DEBUG(__info,...) NRF_LOG_INFO(__info,##__VA_ARGS__)
 #else
-	#define DEBUG(__info,...)  
+	#define DEBUG(__info,...)
 #endif
 
 #endif
-

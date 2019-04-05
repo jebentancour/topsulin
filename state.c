@@ -263,7 +263,7 @@ void state_process_display(void){
         len = sprintf(buffer, "---");
       }
       GUI_DrawString_EN(ins_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-      if (m_topsulin_meas.ins != (glu_correction + cho_correction) && new_ins){
+      if (m_topsulin_meas.ins != (glu_correction + cho_correction) && new_ins && config_manager_get_flags() & CONFIG_BOLO_FLAG){
         len = sprintf(buffer, " -U- ");
       } else {
         len = sprintf(buffer, "  U  ");
@@ -326,29 +326,30 @@ void state_on_event(event_t event){
           encoder_set_position(m_topsulin_meas.glu);
         }
 
-
-        if (m_topsulin_meas.glu >= config_manager_get_calc_high().mantissa){
-            glu_correction = 1 + (m_topsulin_meas.glu - config_manager_get_calc_high().mantissa) / config_manager_get_calc_corr().mantissa;
-        } else if (m_topsulin_meas.glu <= config_manager_get_calc_low().mantissa) {
-            glu_correction = (m_topsulin_meas.glu - config_manager_get_calc_low().mantissa) / config_manager_get_calc_corr().mantissa - 1;
-        } else {
-            glu_correction = 0;
-            if (new_cho && (cho_correction != 0)){
-              m_topsulin_meas.ins = cho_correction;
+        if (config_manager_get_flags() & CONFIG_BOLO_FLAG){
+            if (m_topsulin_meas.glu >= config_manager_get_calc_high().mantissa){
+                glu_correction = 1 + (m_topsulin_meas.glu - config_manager_get_calc_high().mantissa) / config_manager_get_calc_corr().mantissa;
+            } else if (m_topsulin_meas.glu <= config_manager_get_calc_low().mantissa) {
+                glu_correction = (m_topsulin_meas.glu - config_manager_get_calc_low().mantissa) / config_manager_get_calc_corr().mantissa - 1;
             } else {
-              new_ins = false;
+                glu_correction = 0;
+                if (new_cho && (cho_correction != 0)){
+                  m_topsulin_meas.ins = cho_correction;
+                } else {
+                  new_ins = false;
+                }
             }
-        }
 
-        if (glu_correction > 0){
-          new_ins = true;
-          m_topsulin_meas.ins = 0;
-          if (new_glu){
-              m_topsulin_meas.ins += glu_correction;
-          }
-          if (new_cho){
-              m_topsulin_meas.ins += cho_correction;
-          }
+            if (glu_correction > 0){
+              new_ins = true;
+              m_topsulin_meas.ins = 0;
+              if (new_glu){
+                  m_topsulin_meas.ins += glu_correction;
+              }
+              if (new_cho){
+                  m_topsulin_meas.ins += cho_correction;
+              }
+            }
         }
 
         quick_refresh = 1;
@@ -383,6 +384,7 @@ void state_on_event(event_t event){
         if(m_topsulin_meas.cho < 0){
           encoder_reset_position();
           m_topsulin_meas.cho = 0;
+          new_cho = false;
         }
         if(m_topsulin_meas.cho >= 1000){
           //encoder_reset_position();
@@ -390,25 +392,27 @@ void state_on_event(event_t event){
           encoder_set_position(m_topsulin_meas.cho / 5);
         }
 
-        cho_correction = m_topsulin_meas.cho / config_manager_get_calc_sens();
+        if (config_manager_get_flags() & CONFIG_BOLO_FLAG){
+            cho_correction = m_topsulin_meas.cho / config_manager_get_calc_sens();
 
-        if (cho_correction == 0){
-          if (new_glu && (glu_correction != 0)){
-            m_topsulin_meas.ins = glu_correction;
-          } else {
-            new_ins = false;
-          }
-        }
+            if (cho_correction == 0){
+              if (new_glu && (glu_correction != 0)){
+                m_topsulin_meas.ins = glu_correction;
+              } else {
+                new_ins = false;
+              }
+            }
 
-        if (cho_correction > 0){
-          new_ins = true;
-          m_topsulin_meas.ins = 0;
-          if (new_glu){
-              m_topsulin_meas.ins += glu_correction;
-          }
-          if (new_cho){
-              m_topsulin_meas.ins += cho_correction;
-          }
+            if (cho_correction > 0){
+              new_ins = true;
+              m_topsulin_meas.ins = 0;
+              if (new_glu){
+                  m_topsulin_meas.ins += glu_correction;
+              }
+              if (new_cho){
+                  m_topsulin_meas.ins += cho_correction;
+              }
+            }
         }
 
         quick_refresh = 1;
