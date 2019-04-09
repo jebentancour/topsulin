@@ -269,7 +269,7 @@ void state_process_display(void){
       }
       GUI_DrawString_EN(ins_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
       if (m_topsulin_meas.ins != (glu_correction + cho_correction) && new_ins && config_manager_get_flags() & CONFIG_BOLO_FLAG){
-        len = sprintf(buffer, " -U- ");
+        len = sprintf(buffer, "  U .");
       } else {
         len = sprintf(buffer, "  U  ");
       }
@@ -375,9 +375,16 @@ void state_on_event(event_t event){
               if (new_cho){
                   m_topsulin_meas.ins += cho_correction;
               }
-            }
+          } else {
+              if (glu_correction < 0){
+                  new_cho = true;
+                  m_topsulin_meas.cho = - glu_correction * config_manager_get_calc_sens();
+              } else {
+                  new_cho = false;
+                  m_topsulin_meas.cho = 0;
+              }
+          }
         }
-
         quick_refresh = 1;
       }
       if (event == long_button_pressed){
@@ -436,6 +443,10 @@ void state_on_event(event_t event){
               }
               if (new_cho){
                   m_topsulin_meas.ins += cho_correction;
+              }
+              if (m_topsulin_meas.ins <= 0){
+                  new_ins = false;
+                  m_topsulin_meas.ins = 0;
               }
             }
         }
