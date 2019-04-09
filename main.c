@@ -78,7 +78,6 @@ int main(void){
         GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_INVERTED);
       }
     }
-    GUI_DrawBitMap(gImage_IMAGE_0);
 
     batt_flag = 0;
     batt_set_flag(&batt_flag);

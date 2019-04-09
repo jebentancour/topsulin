@@ -7,6 +7,8 @@
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 
+#include "ble_gls_db.h"
+
 #include "encoder.h"
 #include "FEPD_2in13.h"
 #include "GUI_Paint.h"
@@ -20,7 +22,8 @@ typedef enum {
     sleep,
     input_cho,
     input_glu,
-    input_ins
+    input_ins,
+    warning
 } internal_state_t;
 
 typedef struct {
@@ -49,6 +52,8 @@ static uint8_t                len;
 
 static uint8_t                full_refresh;
 static uint8_t                quick_refresh;
+
+static uint8_t                warning_time;
 
 void state_init(){
   m_state = initial;
@@ -173,7 +178,7 @@ static void state_save_meas(void){
 }
 
 void state_process_display(void){
-  if ((m_state != initial)&&(quick_refresh|full_refresh)){
+  if ((m_state != initial)&&((m_state != warning))&&(quick_refresh|full_refresh)){
     GUI_Clear(WHITE);
 
     if (config_manager_get_flags() & CONFIG_FLIP_FLAG){
@@ -289,22 +294,44 @@ void state_on_event(event_t event){
   switch(m_state){
     case initial:
       if (event == ble_on){
-        //GUI_DrawIcon(2, 4, gImage_icon_bt, WHITE);
         GUI_DrawBitMap(gImage_IMAGE_1);
         full_refresh = 1;
       }
       break;
     case sleep:
       if (event == button_pressed){
-        new_glu = false;
-        new_cho = false;
-        new_ins = false;
-        glu_correction = 0;
-        cho_correction = 0;
-        m_prev_topsulin_meas = m_topsulin_meas;
-        encoder_set_position(m_topsulin_meas.glu);
-        m_state = input_glu;
-        quick_refresh = 1;
+        bool memory_full;
+        memory_full = ble_gls_db_num_records_get() == BLE_GLS_DB_MAX_RECORDS;
+        bool low_batt = false;
+        if (memory_full | low_batt){
+            if (memory_full){
+                if (config_manager_get_flags() & CONFIG_FLIP_FLAG){
+                    GUI_DrawBitMap(gImage_IMAGE_4);
+                } else {
+                    GUI_DrawBitMap(gImage_IMAGE_2);
+                }
+            }
+            if (low_batt){
+                if (config_manager_get_flags() & CONFIG_FLIP_FLAG){
+                    GUI_DrawBitMap(gImage_IMAGE_5);
+                } else {
+                    GUI_DrawBitMap(gImage_IMAGE_3);
+                }
+            }
+            warning_time = 0;
+            m_state = warning;
+            full_refresh = 1;
+        } else {
+            new_glu = false;
+            new_cho = false;
+            new_ins = false;
+            glu_correction = 0;
+            cho_correction = 0;
+            m_prev_topsulin_meas = m_topsulin_meas;
+            encoder_set_position(m_topsulin_meas.glu);
+            m_state = input_glu;
+            quick_refresh = 1;
+        }
       }
       break;
     case input_glu:
@@ -321,7 +348,6 @@ void state_on_event(event_t event){
           m_topsulin_meas.glu = 0;
         }
         if(m_topsulin_meas.glu >= 1000){
-          //encoder_reset_position();
           m_topsulin_meas.glu = 999;
           encoder_set_position(m_topsulin_meas.glu);
         }
@@ -387,7 +413,6 @@ void state_on_event(event_t event){
           new_cho = false;
         }
         if(m_topsulin_meas.cho >= 1000){
-          //encoder_reset_position();
           m_topsulin_meas.cho = 995;
           encoder_set_position(m_topsulin_meas.cho / 5);
         }
@@ -453,7 +478,6 @@ void state_on_event(event_t event){
           new_ins = false;
         }
         if(m_topsulin_meas.ins >= 1000){
-          //encoder_reset_position();
           m_topsulin_meas.ins = 999;
           encoder_set_position(m_topsulin_meas.ins);
         }
@@ -467,6 +491,14 @@ void state_on_event(event_t event){
         }
         new_ins = false;
         quick_refresh = 1;
+      }
+      break;
+    case warning:
+      if (event == time_update){
+          warning_time++;
+          if (warning_time >= 5){
+              state_sleep();
+          }
       }
       break;
     default:
@@ -488,9 +520,6 @@ void state_on_event(event_t event){
 
 void state_show_pin(char* pin){
   //if (m_state == initial){
-    //GUI_ClearWindows(1, 1, 51, 212, WHITE);
-    //GUI_DrawIcon(2, 4, gImage_icon_lock, WHITE);
-    //GUI_DrawString_EN(40, 12, pin, &Font24, WHITE, BLACK);
     GUI_ClearWindows(1, 1, 104, 212, WHITE);
     GUI_DrawIcon(5, LEFT_ICON_H_POS, gImage_icon_lock, WHITE);
     GUI_DrawString_EN(CENTER_TIME_H_POS, NUMBER_V_POS, pin, &Font24, WHITE, BLACK);

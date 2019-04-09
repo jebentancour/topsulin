@@ -26,10 +26,15 @@
 #ifndef _IMAGEDATA_H_
 #define _IMAGEDATA_H_
 
-extern const unsigned char gImage_IMAGE_0[];
-extern const unsigned char gImage_IMAGE_1[];
+extern const unsigned char gImage_IMAGE_0[];    // Topsulin
+extern const unsigned char gImage_IMAGE_1[];    // Connect
+extern const unsigned char gImage_IMAGE_2[];    // Memory full
+extern const unsigned char gImage_IMAGE_3[];    // Low battery
+extern const unsigned char gImage_IMAGE_4[];    // Memory full flip
+extern const unsigned char gImage_IMAGE_5[];    // Low battery flip
 
 extern const unsigned char gImage_icon_lock[];
+
 extern const unsigned char gImage_icon_glu[];
 extern const unsigned char gImage_icon_cho[];
 extern const unsigned char gImage_icon_ins[];
