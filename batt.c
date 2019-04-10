@@ -31,14 +31,13 @@ void batt_init(void)
 {
   voltage = 0;
   ret_code_t ret_code;
-
   nrf_drv_adc_config_t config = NRF_DRV_ADC_DEFAULT_CONFIG;
-
   ret_code = nrf_drv_adc_init(&config, adc_event_handler);
   APP_ERROR_CHECK(ret_code);
 }
 
-void batt_sample(void){
+void batt_sample(void)
+{
     nrf_drv_adc_channel_t m_channel_config =
     {{{
       .resolution = NRF_ADC_CONFIG_RES_8BIT,

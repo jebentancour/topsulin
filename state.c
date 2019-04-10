@@ -15,7 +15,10 @@
 #include "ImageData.h"
 #include "ble_services.h"
 #include "clock.h"
+#include "batt.h"
 #include "config_manager.h"
+
+#define LOW_VOLT    2600
 
 typedef enum {
     initial,
@@ -302,20 +305,24 @@ void state_on_event(event_t event){
       if (event == button_pressed){
         bool memory_full;
         memory_full = ble_gls_db_num_records_get() == BLE_GLS_DB_MAX_RECORDS;
-        bool low_batt = false;
+        bool low_batt;
+        uint32_t voltage;
+        voltage = batt_get();
+        NRF_LOG_INFO("VCC = %d.%d V\n", voltage / 1000, voltage % 1000);
+        NRF_LOG_FLUSH();
+        low_batt = voltage <= LOW_VOLT;
         if (memory_full | low_batt){
-            if (memory_full){
-                if (config_manager_get_flags() & CONFIG_FLIP_FLAG){
-                    GUI_DrawBitMap(gImage_IMAGE_4);
-                } else {
-                    GUI_DrawBitMap(gImage_IMAGE_2);
-                }
-            }
             if (low_batt){
                 if (config_manager_get_flags() & CONFIG_FLIP_FLAG){
                     GUI_DrawBitMap(gImage_IMAGE_5);
                 } else {
                     GUI_DrawBitMap(gImage_IMAGE_3);
+                }
+            } else {
+                if (config_manager_get_flags() & CONFIG_FLIP_FLAG){
+                    GUI_DrawBitMap(gImage_IMAGE_4);
+                } else {
+                    GUI_DrawBitMap(gImage_IMAGE_2);
                 }
             }
             warning_time = 0;
