@@ -388,7 +388,7 @@ void state_on_event(event_t event){
                   m_topsulin_meas.cho = - glu_correction * config_manager_get_calc_sens();
               } else {
                   new_cho = false;
-                  m_topsulin_meas.cho = 0;
+                  m_topsulin_meas.cho = m_prev_topsulin_meas.cho;
               }
           }
         }
