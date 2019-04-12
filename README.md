@@ -250,7 +250,7 @@ SoC [nRF51822](https://www.nordicsemi.com/eng/nordic/download_resource/62726/14/
 |15 |0x4000F000   |AAR         |AAR         |Accelerated Address Resolver.                |SoftDevice        |
 |16 |0x40010000   |WDT         |WDT         |Watchdog Timer.                              |                  |
 |17 |0x40011000   |RTC         |RTC1        |Real Time Counter 1.                         |Timer library     |
-|18 |0x40012000   |QDEC        |QDEC        |Quadrature Decoder.                          |                  |
+|18 |0x40012000   |QDEC        |QDEC        |Quadrature Decoder.                          |Encoder           |
 |19 |0x40013000   |LPCOMP      |LPCOMP      |Low Power Comparator.                        |                  |
 |20 |0x40014000   |SWI         |SWI0        |Software interrupt.                          |Timer library     |
 |21 |0x40015000   |SWI         |SWI1        |Software interrupt.                          |SoftDevice        |
@@ -260,6 +260,6 @@ SoC [nRF51822](https://www.nordicsemi.com/eng/nordic/download_resource/62726/14/
 |25 |0x40019000   |SWI         |SWI5        |Software interrupt.                          |SoftDevice        |
 |30 |0x4001E000   |NVMC        |NVMC        |Non-Volatile Memory Controller.              |SoftDevice        |
 |31 |0x4001F000   |PPI         |PPI         |Programmable Peripheral Interconnect.        |                  |
-|NA |0x50000000   |GPIO        |GPIO        |General Purpose Input and Output.            |GPIO              |
+|NA |0x50000000   |GPIO        |GPIO        |General Purpose Input and Output.            |Gpio              |
 |NA |0x10000000   |FICR        |FICR        |Factory Information Configuration Registers. |SoftDevice        |
 |NA |0x10001000   |UICR        |UICR        |User Information Configuration Registers.    |SoftDevice        |

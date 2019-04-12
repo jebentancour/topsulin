@@ -100,12 +100,16 @@ void encoder_init(void)
 
 void encoder_enable(void)
 {
+  nrf_gpio_cfg_input(B_PIN,NRF_GPIO_PIN_PULLUP);     /**< Needed when you don't have external pullups*/
+  nrf_gpio_cfg_input(A_PIN,NRF_GPIO_PIN_PULLUP);     /**< Needed when you don't have external pullups*/
   nrf_drv_qdec_enable();
 }
 
 void encoder_disable(void)
 {
   nrf_drv_qdec_disable();
+  nrf_gpio_cfg_input(B_PIN,NRF_GPIO_PIN_PULLDOWN);     /**< Needed when you don't have external pullups*/
+  nrf_gpio_cfg_input(A_PIN,NRF_GPIO_PIN_PULLDOWN);     /**< Needed when you don't have external pullups*/
 }
 
 void encoder_set_flag(volatile uint8_t* main_encoder_flag)

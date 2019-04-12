@@ -19,7 +19,7 @@
 #include "batt.h"
 #include "config_manager.h"
 
-#define IDLE_S          60
+#define IDLE_S          30
 #define IDLE_TICKS      (IDLE_S * 1000)/CLOCK_TICK_MS
 
 volatile uint8_t clock_tick_flag;
@@ -166,8 +166,8 @@ int main(void){
                 batt_flag = 0;
                 batt_ble_update((uint16_t)batt_get());
               }
+              idle_timer++;
             }
-            idle_timer++;
         }
 
         // If it is nothing to do...
@@ -185,7 +185,7 @@ int main(void){
             sd_app_evt_wait();
 
             // wake up!
-            idle_timer = IDLE_TICKS;
+            //idle_timer = IDLE_TICKS;
         }
     }
 }

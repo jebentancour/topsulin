@@ -83,7 +83,7 @@
 
 #define DEVICE_NAME                     "Topsulin"                                  /**< Name of device. Will be included in the advertising data. */
 
-#define APP_ADV_INTERVAL                40                                          /**< The advertising interval (in units of 0.625 ms. This value corresponds to 25 ms). */
+#define APP_ADV_INTERVAL                80                                          /**< The advertising interval (in units of 0.625 ms. This value corresponds to 50 ms). */
 #define APP_ADV_TIMEOUT_IN_SECONDS      120                                         /**< The advertising timeout in units of seconds. */
 
 #define APP_TIMER_PRESCALER             0                                           /**< Value of the RTC1 PRESCALER register. */
@@ -817,6 +817,7 @@ void ble_services_init(void)
     ble_stack_init();
     peer_manager_init();
     services_init();
+    sd_ble_gap_tx_power_set(-20);
     gap_params_init();
     advertising_init();
     conn_params_init();

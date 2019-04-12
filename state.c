@@ -18,7 +18,7 @@
 #include "batt.h"
 #include "config_manager.h"
 
-#define LOW_VOLT    2600
+#define LOW_VOLT    2300
 
 typedef enum {
     initial,
@@ -370,6 +370,7 @@ void state_on_event(event_t event){
                   m_topsulin_meas.ins = cho_correction;
                 } else {
                   new_ins = false;
+                  m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
                 }
             }
 
@@ -439,6 +440,7 @@ void state_on_event(event_t event){
                 m_topsulin_meas.ins = glu_correction;
               } else {
                 new_ins = false;
+                m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
               }
             }
 
@@ -453,7 +455,7 @@ void state_on_event(event_t event){
               }
               if (m_topsulin_meas.ins <= 0){
                   new_ins = false;
-                  m_topsulin_meas.ins = 0;
+                  m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
               }
             }
         }
@@ -473,6 +475,7 @@ void state_on_event(event_t event){
           m_topsulin_meas.ins += glu_correction;
           if (m_topsulin_meas.ins == 0){
               new_ins = false;
+              m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
           }
         } else {
           m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
@@ -492,7 +495,7 @@ void state_on_event(event_t event){
         m_topsulin_meas.ins = encoder_get_position();
         if(m_topsulin_meas.ins <= 0){
           encoder_reset_position();
-          m_topsulin_meas.ins = 0;
+          m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
           new_ins = false;
         }
         if(m_topsulin_meas.ins >= 1000){
