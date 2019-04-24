@@ -59,7 +59,7 @@ void gpio_process(void) {
 
     if (old_in != new_in){
 
-      nrf_delay_ms(1);
+      nrf_delay_ms(2);
 
       if (!new_in){
         pulse_start = now;

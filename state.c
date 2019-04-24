@@ -177,6 +177,18 @@ static void state_save_meas(void){
     }
 
     add_glucose_measurement(rec);
+
+    if(!new_glu){
+        m_topsulin_meas.glu = m_prev_topsulin_meas.glu;
+    }
+
+    if(!new_cho || m_topsulin_meas.cho == 0){
+        m_topsulin_meas.cho = m_prev_topsulin_meas.cho;
+    }
+
+    if(!new_ins || m_topsulin_meas.ins == 0){
+        m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
+    }
   }
 }
 
@@ -532,9 +544,9 @@ void state_on_event(event_t event){
     full_refresh = 1;
   }
 
-  if ((m_state != initial)&&(m_state != sleep)&&(event == time_update)){
-    quick_refresh = 1;
-  }
+  //if ((m_state != initial)&&(m_state != sleep)&&(event == time_update)){
+    //quick_refresh = 1;
+  //}
 
   state_process_display();
 }
