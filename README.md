@@ -1,7 +1,5 @@
 # Topsulin
 
-![topsulin](images/topsulin.png)
-
 ## Software
 
 ### BLE Services and Characteristics
