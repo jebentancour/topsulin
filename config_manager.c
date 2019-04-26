@@ -23,7 +23,7 @@ void config_manager_init(void)
   m_global_conf.flags = CONFIG_CHO_FLAG | CONFIG_INSULIN_FLAG | CONFIG_GLUCOSE_FLAG;
   m_global_conf.flags |= CONFIG_COLOR_FLAG;
   //m_global_conf.flags |= CONFIG_FLIP_FLAG;
-  m_global_conf.flags |= CONFIG_BOLO_FLAG;
+  //m_global_conf.flags |= CONFIG_BOLO_FLAG;
   m_global_conf.g_portion = 250;
   // Name
   const char* tmp = "Topsulin";

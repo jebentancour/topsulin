@@ -19,7 +19,7 @@
 #include "batt.h"
 #include "config_manager.h"
 
-#define IDLE_S          30
+#define IDLE_S          60
 #define IDLE_TICKS      (IDLE_S * 1000)/CLOCK_TICK_MS
 
 volatile uint8_t clock_tick_flag;
@@ -171,7 +171,17 @@ int main(void){
         }
 
         // If it is nothing to do...
-        if((idle_timer >= IDLE_TICKS)&&(!clock_tick_flag)&&(!button_flag)&&(!long_button_flag)&&(!double_button_flag)&&(!encoder_flag)&&(!batt_flag)) {
+        //if((idle_timer >= IDLE_TICKS)&&(!clock_tick_flag)&&(!button_flag)&&(!long_button_flag)&&(!double_button_flag)&&(!encoder_flag)&&(!batt_flag)) {
+
+        if(idle_timer >= IDLE_TICKS) {
+
+            clock_tick_flag = 0;
+            button_flag = 0;
+            double_button_flag = 0;
+            long_button_flag = 0;
+            encoder_flag = 0;
+            batt_flag = 0;
+
             // prepare to sleep
             if (wake_up){
               state_sleep();

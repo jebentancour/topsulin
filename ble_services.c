@@ -161,7 +161,7 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
             err_code = app_timer_start(m_sec_req_timer_id, SECURITY_REQUEST_DELAY, NULL);
             APP_ERROR_CHECK(err_code);
 
-            state_begin();
+            //state_begin();
         } break;
 
         case PM_EVT_CONN_SEC_SUCCEEDED:
@@ -179,7 +179,7 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
                              p_evt->conn_handle,
                              p_evt->params.conn_sec_succeeded.procedure);
 
-                state_begin();
+                //state_begin();
             }
             else
             {

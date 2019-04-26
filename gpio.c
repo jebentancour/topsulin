@@ -48,6 +48,8 @@ void gpio_double_button_set_flag(volatile uint8_t* main_double_button_flag)
 void gpio_process(void) {
 
     new_in = nrf_gpio_pin_read(SW_PIN);
+    nrf_delay_ms(1);
+    new_in |= nrf_gpio_pin_read(SW_PIN);
 
     if (new_in){
       encoder_play();
@@ -58,8 +60,6 @@ void gpio_process(void) {
     now = clock_get_timestamp();
 
     if (old_in != new_in){
-
-      nrf_delay_ms(2);
 
       if (!new_in){
         pulse_start = now;

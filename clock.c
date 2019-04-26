@@ -78,7 +78,7 @@ void clock_set_time(struct tm * timeptr)
     if( ret == -1 ) {
        NRF_LOG_INFO("Error: unable to make time using mktime\n");
     } else {
-       NRF_LOG_INFO("time_t = %ld\n", ret);
+       //NRF_LOG_INFO("time_t = %ld\n", ret);
        clock_ms_counter = ret * 1000;
     }
     CRITICAL_REGION_EXIT();

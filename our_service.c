@@ -42,6 +42,7 @@
 #include "app_error.h"
 #include "clock.h"
 #include "batt.h"
+#include "state.h"
 
 #include "SEGGER_RTT.h"
 
@@ -77,7 +78,7 @@ static void on_config_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p_
     uint16_t offset = p_evt_write->offset;
 
     NRF_LOG_INFO("Write to CONFIG (len = %d, offset = %d)\n", data_len, offset);
-    NRF_LOG_HEXDUMP_INFO(p_data, data_len);
+    //NRF_LOG_HEXDUMP_INFO(p_data, data_len);
 
     if (data_len == 3 && offset == 0)
     {
@@ -97,7 +98,7 @@ static void on_name_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p_ev
     uint16_t offset = p_evt_write->offset;
 
     NRF_LOG_INFO("Write to NAME (len = %d, offset = %d)\n", data_len, offset);
-    NRF_LOG_HEXDUMP_INFO(p_data, data_len);
+    //NRF_LOG_HEXDUMP_INFO(p_data, data_len);
 
     if (data_len <= 20 && offset == 0)
     {
@@ -116,7 +117,7 @@ static void on_time_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p_ev
     uint16_t offset = p_evt_write->offset;
 
     NRF_LOG_INFO("Write to TIME (len = %d, offset = %d)\n", data_len, offset);
-    NRF_LOG_HEXDUMP_INFO(p_data, data_len);
+    //NRF_LOG_HEXDUMP_INFO(p_data, data_len);
 
     if (data_len == 7 && offset == 0)
     {
@@ -143,10 +144,13 @@ static void on_time_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p_ev
         clock_set_time(&t);
 
         //NRF_LOG_INFO("New date\n");
-        //clock_print();
+        clock_print();
 
         // Update
         time_char_update(p_our_service);
+
+        // Init operation
+        state_begin();
     }
 }
 
@@ -157,7 +161,7 @@ static void on_calc_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p_ev
     uint16_t offset = p_evt_write->offset;
 
     NRF_LOG_INFO("Write to CALC (len = %d, offset = %d)\n", data_len, offset);
-    NRF_LOG_HEXDUMP_INFO(p_data, data_len);
+    //NRF_LOG_HEXDUMP_INFO(p_data, data_len);
 
     if (data_len == 8 && offset == 0)
     {
@@ -179,7 +183,7 @@ static void on_insulin_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p
     uint16_t offset = p_evt_write->offset;
 
     NRF_LOG_INFO("Write to INSULIN (len = %d, offset = %d)\n", data_len, offset);
-    NRF_LOG_HEXDUMP_INFO(p_data, data_len);
+    //NRF_LOG_HEXDUMP_INFO(p_data, data_len);
 
     if (data_len == 11 && offset == 0)
     {
@@ -212,31 +216,31 @@ static void on_write(ble_os_t * p_our_service, ble_evt_t * p_ble_evt)
     if (p_evt_write->handle == p_our_service->config_char_handles.value_handle)
     {
         on_config_write(p_our_service, p_evt_write);
-        print = 1;
+        //print = 1;
     }
 
     if (p_evt_write->handle == p_our_service->name_char_handles.value_handle)
     {
         on_name_write(p_our_service, p_evt_write);
-        print = 1;
+        //print = 1;
     }
 
     if (p_evt_write->handle == p_our_service->time_char_handles.value_handle)
     {
         on_time_write(p_our_service, p_evt_write);
-        print = 1;
+        //print = 1;
     }
 
     if (p_evt_write->handle == p_our_service->calc_char_handles.value_handle)
     {
         on_calc_write(p_our_service, p_evt_write);
-        print = 1;
+        //print = 1;
     }
 
     if (p_evt_write->handle == p_our_service->ins_char_handles.value_handle)
     {
         on_insulin_write(p_our_service, p_evt_write);
-        print = 1;
+        //print = 1;
     }
 
     if (print){

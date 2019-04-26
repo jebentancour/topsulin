@@ -62,9 +62,9 @@ void state_init(){
   m_state = initial;
 
   memset(&m_prev_topsulin_meas, 0, sizeof(m_prev_topsulin_meas));
-  m_prev_topsulin_meas.glu = 105;
-  m_prev_topsulin_meas.cho = 10;
-  m_prev_topsulin_meas.ins = 2;
+  m_prev_topsulin_meas.glu = 0;
+  m_prev_topsulin_meas.cho = 0;
+  m_prev_topsulin_meas.ins = 0;
   struct tm t;
   clock_get_time(&t);
   m_prev_topsulin_meas.glu_time = t;
@@ -72,9 +72,9 @@ void state_init(){
   m_prev_topsulin_meas.ins_time = t;
 
   memset(&m_topsulin_meas, 0, sizeof(m_topsulin_meas));
-  m_topsulin_meas.glu = 105;
-  m_topsulin_meas.cho = 10;
-  m_topsulin_meas.ins = 2;
+  m_topsulin_meas.glu = 0;
+  m_topsulin_meas.cho = 0;
+  m_topsulin_meas.ins = 0;
   m_topsulin_meas.glu_time = t;
   m_topsulin_meas.cho_time = t;
   m_topsulin_meas.ins_time = t;
@@ -562,6 +562,8 @@ void state_show_pin(char* pin){
 
 void state_begin(){
   if (m_state == initial){
+    NRF_LOG_INFO("state_begin\n");
+    NRF_LOG_FLUSH();
     m_state = sleep;
     full_refresh = 1;
     state_process_display();
