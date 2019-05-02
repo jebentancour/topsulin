@@ -174,14 +174,14 @@ sfloat_t decode_sfloat(uint16_t u)
 |Unidades de CHO                                     |bit7   |0 CHO en g, 1 CHO en porciones     |CHO en g                  |
 |Equivalencia entre gramos y porciones               |uint16 |Peso en g de una porción           |250 g                     |
 |**Name**                                            |       |                                   |0x476C75636F736565        |
-|Nombre para mostrar                                 |uint8  |String de largo máximo 20 UTF-8    |Glucose                   |
+|Nombre para mostrar                                 |uint8  |String de largo máximo 20 UTF-8    |Glucosee                   |
 |**Time**                                            |       |                                   |0xE3070101060120          |
 |Hora y fecha del dispositivo                        |time   |[Time Characteristic](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.date_time.xml) |01/01/19 12:00:00 |
 |**Calculator**                                      |       |                                   |0x3CD096D00F000FD0        |
-|Nivel bajo                                          |sfloat |Nivel de glucemia baja en kg/L     |60x10^-3 kg/L             |
-|Nivel alto                                          |sfloat |Nivel de glucemia alta en kg/L     |150x10^-3 kg/L            |
+|Nivel bajo                                          |sfloat |Nivel de glucemia baja en kg/L     |60x10^-5 kg/L             |
+|Nivel alto                                          |sfloat |Nivel de glucemia alta en kg/L     |150x10^-5 kg/L            |
 |Sensibilidad                                        |uint16 |Cada cuántos CHO en g sumo 1U      |15 g                      |
-|Corrección de hiperglucemia                         |sfloat |Cada cuántos kg/L de hiper sumo 1U |15x10^-3 kg/L             |
+|Corrección de hiperglucemia                         |sfloat |Cada cuántos kg/L de hiper sumo 1U |15x10^-5 kg/L             |
 |**Insulin**                                         |       |                                   |0x012C0178001E0078006801  |
 |Tipo de insulina                                    |uint8  |Medication ID from Glucose Service |BLE_GLS_CONTEXT_MED_RAPID |
 |Capacidad de la lapicera                            |uint16 |U de insulina en una lapicera nueva|300 U                     |
@@ -198,7 +198,7 @@ sfloat_t decode_sfloat(uint16_t u)
 
 ![pinout](images/Core51822-B-pin.jpg)
 
-Encoder
+## Encoder
 
 |nRF pin|Use  |
 |-------|-----|
@@ -206,7 +206,7 @@ Encoder
 |00     |B    |
 |30     |SW   |
 
-Display
+## Display
 
 |nRF pin|Use  |
 |-------|-----|

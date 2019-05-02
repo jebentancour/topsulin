@@ -2,7 +2,7 @@ PROJECT_NAME     := ble_app_beacon_pca20006_s130
 TARGETS          := nrf51422_xxac
 OUTPUT_DIRECTORY := _build
 
-SDK_ROOT := C:/Users/joseb/Documents/nRF5_SDK_12.3.0_d7731ad
+SDK_ROOT := nRF5_SDK_12.3.0
 
 $(OUTPUT_DIRECTORY)/nrf51422_xxac.out: \
   LINKER_SCRIPT  := ble_app_beacon_gcc_nrf51.ld
