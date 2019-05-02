@@ -111,11 +111,11 @@ int main(void){
     idle_timer = IDLE_TICKS;
     last = clock_get_timestamp();
 
-    while (true)
-    {
+    while (true){
+        
         gpio_process(); // GPIO polling
 
-        if(button_flag) {
+        if(button_flag){
             button_flag = 0;
             if (!wake_up) {
                 NRF_LOG_INFO("Wake up!\r\n");
@@ -130,25 +130,25 @@ int main(void){
             idle_timer = 0;
         }
 
-        if(long_button_flag) {
+        if(long_button_flag){
             long_button_flag = 0;
-            state_on_event(long_button_pressed);
+            if (wake_up) state_on_event(long_button_pressed);
             idle_timer = 0;
         }
 
-        if(double_button_flag) {
+        if(double_button_flag){
             double_button_flag = 0;
-            state_on_event(double_button_pressed);
+            if (wake_up) state_on_event(double_button_pressed);
             idle_timer = 0;
         }
 
-        if(encoder_flag) {
+        if(encoder_flag){
             encoder_flag = 0;
-            state_on_event(encoder_update);
+            if (wake_up) state_on_event(encoder_update);
             idle_timer = 0;
         }
 
-        if(clock_tick_flag) {
+        if(clock_tick_flag){
             clock_tick_flag = 0;
             if (wake_up){
               // Update BLE Time and Voltage Characteristics every second
@@ -171,17 +171,7 @@ int main(void){
         }
 
         // If it is nothing to do...
-        //if((idle_timer >= IDLE_TICKS)&&(!clock_tick_flag)&&(!button_flag)&&(!long_button_flag)&&(!double_button_flag)&&(!encoder_flag)&&(!batt_flag)) {
-
-        if(idle_timer >= IDLE_TICKS) {
-
-            clock_tick_flag = 0;
-            button_flag = 0;
-            double_button_flag = 0;
-            long_button_flag = 0;
-            encoder_flag = 0;
-            batt_flag = 0;
-
+        if(idle_timer >= IDLE_TICKS){
             // prepare to sleep
             if (wake_up){
               state_sleep();
@@ -195,7 +185,7 @@ int main(void){
             sd_app_evt_wait();
 
             // wake up!
-            //idle_timer = IDLE_TICKS;
+            idle_timer = IDLE_TICKS;
         }
     }
 }

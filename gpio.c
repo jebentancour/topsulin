@@ -21,7 +21,7 @@ static uint32_t last_click = 0;
 static uint32_t pulse_start = 0;
 static uint32_t pulse_stop = 0;
 static uint32_t now = 0;
-static int      pulse_len = 0;
+static uint32_t pulse_len = 0;
 static uint8_t  long_timeout = 0;
 static uint8_t  old_in = 1;
 static uint8_t  new_in = 1;
@@ -49,7 +49,9 @@ void gpio_process(void) {
 
     new_in = nrf_gpio_pin_read(SW_PIN);
     nrf_delay_ms(1);
-    new_in |= nrf_gpio_pin_read(SW_PIN);
+    if (new_in != nrf_gpio_pin_read(SW_PIN)){
+        return;
+    }
 
     if (new_in){
       encoder_play();
@@ -60,9 +62,9 @@ void gpio_process(void) {
     now = clock_get_timestamp();
 
     if (old_in != new_in){
-
       if (!new_in){
         pulse_start = now;
+        long_timeout = 0;
       } else {
         pulse_stop = now;
         pulse_len = pulse_stop - pulse_start;
