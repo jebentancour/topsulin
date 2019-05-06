@@ -8,6 +8,7 @@
 #include "nrf_log_ctrl.h"
 
 #include "encoder.h"
+#include "state.h"
 #include "FEPD_2in13.h"
 #include "GUI_Paint.h"
 
@@ -127,6 +128,7 @@ void config_manager_set_flags(uint8_t flags)
       GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_INVERTED);
     }
   }
+  state_process_display();
 }
 
 uint8_t config_manager_get_flags(void)

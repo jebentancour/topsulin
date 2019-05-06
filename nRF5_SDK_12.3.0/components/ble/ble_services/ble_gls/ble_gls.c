@@ -356,7 +356,7 @@ static uint32_t glucose_measurement_context_char_add(ble_gls_t * p_gls)
     ble_gls_rec_t       initial_gls_rec_value;
     uint8_t             encoded_gls_meas[MAX_GLM_LEN];
     uint8_t             num_recs;
-    
+
     memset(&initial_gls_rec_value, 0, sizeof(initial_gls_rec_value));
 
     num_recs = ble_gls_db_num_records_get();
@@ -368,7 +368,7 @@ static uint32_t glucose_measurement_context_char_add(ble_gls_t * p_gls)
             return err_code;
         }
     }
-    
+
     attr_char_value.init_len  = gls_meas_context_encode(&initial_gls_rec_value, encoded_gls_meas);
     attr_char_value.init_offs = 0;
     attr_char_value.max_len   = MAX_GLM_LEN;
@@ -579,10 +579,10 @@ static void racp_send(ble_gls_t * p_gls, ble_racp_value_t * p_racp_val)
     uint8_t                len;
     uint16_t               hvx_len;
     ble_gatts_hvx_params_t hvx_params;
-    
+
     //NRF_LOG_INFO("racp_send opcode\r\n");
     //NRF_LOG_HEXDUMP_INFO(p_racp_val->p_operand, p_racp_val->operand_len);
-    
+
     if (
         (m_gls_state != STATE_RACP_RESPONSE_PENDING)
         &&
@@ -1186,6 +1186,8 @@ uint32_t ble_gls_are_cccd_configured(ble_gls_t * p_gls, bool * p_are_cccd_config
                                       &gatts_value);
     if (err_code != NRF_SUCCESS)
     {
+        NRF_LOG_INFO("sd_ble_gatts_value_get (glm_handles.cccd_handle) != NRF_SUCCESS\r\n");
+        NRF_LOG_FLUSH();
         return err_code;
     }
     is_glm_notif_enabled = ble_srv_is_notification_enabled(cccd_value_buf);
@@ -1195,6 +1197,8 @@ uint32_t ble_gls_are_cccd_configured(ble_gls_t * p_gls, bool * p_are_cccd_config
                                       &gatts_value);
     if (err_code != NRF_SUCCESS)
     {
+        NRF_LOG_INFO("sd_ble_gatts_value_get (racp_handles.cccd_handle) != NRF_SUCCESS\r\n");
+        NRF_LOG_FLUSH();
         return err_code;
     }
     is_racp_indic_enabled = ble_srv_is_indication_enabled(cccd_value_buf);
@@ -1220,7 +1224,7 @@ static void on_racp_value_write(ble_gls_t * p_gls, ble_gatts_evt_write_t * p_evt
     NRF_LOG_INFO("on_racp_value_write\r\n");
     NRF_LOG_HEXDUMP_INFO(p_evt_write->data, p_evt_write->len);
     NRF_LOG_FLUSH();
-    
+
     ble_racp_value_t                      racp_request;
     uint8_t                               response_code;
     ble_gatts_rw_authorize_reply_params_t auth_reply;
@@ -1235,6 +1239,8 @@ static void on_racp_value_write(ble_gls_t * p_gls, ble_gatts_evt_write_t * p_evt
     err_code = ble_gls_are_cccd_configured(p_gls, &are_cccd_configured);
     if (err_code != NRF_SUCCESS)
     {
+        NRF_LOG_INFO("ble_gls_are_cccd_configured != NRF_SUCCESS\r\n");
+        NRF_LOG_FLUSH();
         if (p_gls->error_handler != NULL)
         {
             p_gls->error_handler(err_code);
@@ -1250,19 +1256,23 @@ static void on_racp_value_write(ble_gls_t * p_gls, ble_gatts_evt_write_t * p_evt
 
         if (err_code != NRF_SUCCESS)
         {
+            NRF_LOG_INFO("sd_ble_gatts_rw_authorize_reply != NRF_SUCCESS\r\n");
+            NRF_LOG_FLUSH();
             if (p_gls->error_handler != NULL)
             {
                 p_gls->error_handler(err_code);
             }
         }
-        
+
         NRF_LOG_INFO("are_cccd_configured false!\r\n");
         NRF_LOG_FLUSH();
-        
+
         return;
     }
 
     // Decode request.
+    NRF_LOG_INFO("Decode request.\r\n");
+    NRF_LOG_FLUSH();
     ble_racp_decode(p_evt_write->len, p_evt_write->data, &racp_request);
 
     // Check if request is to be executed.
@@ -1458,7 +1468,7 @@ static void on_rw_authorize_request(ble_gls_t * p_gls, ble_gatts_evt_t * p_gatts
 {
     NRF_LOG_INFO("on_rw_authorize_request\r\n");
     NRF_LOG_FLUSH();
-    
+
     ble_gatts_evt_rw_authorize_request_t * p_auth_req = &p_gatts_evt->params.authorize_request;
     if (p_auth_req->type == BLE_GATTS_AUTHORIZE_TYPE_WRITE)
     {

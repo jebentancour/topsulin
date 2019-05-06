@@ -19,7 +19,7 @@
 #include "batt.h"
 #include "config_manager.h"
 
-#define IDLE_S          60
+#define IDLE_S          90
 #define IDLE_TICKS      (IDLE_S * 1000)/CLOCK_TICK_MS
 
 volatile uint8_t clock_tick_flag;
@@ -43,7 +43,7 @@ int main(void){
     m_tm.tm_mon = 1 - 1;
     m_tm.tm_mday = 1;
     m_tm.tm_hour = 12;
-    m_tm.tm_min = 0;
+    m_tm.tm_min = 00;
     m_tm.tm_sec = 0;
     clock_set_time(&m_tm);
 
@@ -112,7 +112,7 @@ int main(void){
     last = clock_get_timestamp();
 
     while (true){
-        
+
         gpio_process(); // GPIO polling
 
         if(button_flag){

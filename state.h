@@ -12,9 +12,15 @@ typedef enum {
 
 void state_init(void);
 
+void state_process_display(void);
+
 void state_on_event(event_t event);
 
 void state_show_pin(char* pin);
+
+void state_show_pin_error(void);
+
+void state_show_pin_ok(void);
 
 void state_begin(void);
 

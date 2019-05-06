@@ -81,7 +81,7 @@
 
 #define IS_SRVC_CHANGED_CHARACT_PRESENT 0                                           /**< Include or not the service_changed characteristic. if not enabled, the server's database cannot be changed for the lifetime of the device*/
 
-#define DEVICE_NAME                     "Topsulin"                                  /**< Name of device. Will be included in the advertising data. */
+//#define DEVICE_NAME                     "Topsulin"                                  /**< Name of device. Will be included in the advertising data. */
 
 #define APP_ADV_INTERVAL                80                                          /**< The advertising interval (in units of 0.625 ms. This value corresponds to 50 ms). */
 #define APP_ADV_TIMEOUT_IN_SECONDS      120                                         /**< The advertising timeout in units of seconds. */
@@ -179,6 +179,10 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
                              p_evt->conn_handle,
                              p_evt->params.conn_sec_succeeded.procedure);
 
+                if (p_evt->params.conn_sec_succeeded.procedure == 1)
+                {
+                  state_show_pin_ok();
+                }
                 //state_begin();
             }
             else
@@ -199,6 +203,7 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
             m_conn_handle = BLE_CONN_HANDLE_INVALID;
             err_code = sd_ble_gap_disconnect(m_conn_handle,
                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+            state_show_pin_error();
             //APP_ERROR_CHECK(err_code);
         } break;
 
@@ -280,7 +285,8 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
  */
 static void service_error_handler(uint32_t nrf_error)
 {
-    APP_ERROR_HANDLER(nrf_error);
+    //APP_ERROR_HANDLER(nrf_error);
+    NRF_LOG_INFO("service_error_handler %d\n", nrf_error);
 }
 
 
@@ -364,9 +370,18 @@ static void gap_params_init(void)
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
 
-    err_code = sd_ble_gap_device_name_set(&sec_mode,
+    NRF_LOG_INFO("DEVICE_NAME: Topsulin-%04X\n", NRF_FICR->DEVICEADDR[0] & 0xFFFF);
+    NRF_LOG_FLUSH();
+
+    char b[16];
+    int l;
+    l = sprintf(b, "Topsulin-%04X", (uint16_t) NRF_FICR->DEVICEADDR[0] & 0xFFFF);
+
+    err_code = sd_ble_gap_device_name_set(&sec_mode, (const uint8_t *)b, l);
+
+    /*err_code = sd_ble_gap_device_name_set(&sec_mode,
                                           (const uint8_t *)DEVICE_NAME,
-                                          strlen(DEVICE_NAME));
+                                          strlen(DEVICE_NAME));*/
     APP_ERROR_CHECK(err_code);
 
     err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_GENERIC_GLUCOSE_METER);
@@ -441,7 +456,8 @@ static void on_conn_params_evt(ble_conn_params_evt_t * p_evt)
  */
 static void conn_params_error_handler(uint32_t nrf_error)
 {
-    APP_ERROR_HANDLER(nrf_error);
+    //APP_ERROR_HANDLER(nrf_error);
+    NRF_LOG_INFO("conn_params_error_handler %d\n", nrf_error);
 }
 
 

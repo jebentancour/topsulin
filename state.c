@@ -310,6 +310,11 @@ void state_on_event(event_t event){
     case initial:
       if (event == ble_on){
         GUI_DrawBitMap(gImage_IMAGE_1);
+        char b[16];
+        int l;
+        l = sprintf(b, "Topsulin-%04X", (uint16_t) NRF_FICR->DEVICEADDR[0] & 0xFFFF);
+        b[l] = 0x00;
+        GUI_DrawString_EN(32, 8, b, &Font16, WHITE, BLACK);
         full_refresh = 1;
       }
       break;
@@ -556,6 +561,24 @@ void state_show_pin(char* pin){
     GUI_ClearWindows(1, 1, 104, 212, WHITE);
     GUI_DrawIcon(5, LEFT_ICON_H_POS, gImage_icon_lock, WHITE);
     GUI_DrawString_EN(CENTER_TIME_H_POS, NUMBER_V_POS, pin, &Font24, WHITE, BLACK);
+    EPD_DisplayFull();
+  //}
+}
+
+void state_show_pin_error(void){
+  //if (m_state == initial){
+    GUI_ClearWindows(1, 1, 104, 212, WHITE);
+    GUI_DrawIcon(5, LEFT_ICON_H_POS, gImage_icon_lock, WHITE);
+    GUI_DrawString_EN(CENTER_TIME_H_POS, NUMBER_V_POS, "ERROR", &Font24, WHITE, BLACK);
+    EPD_DisplayFull();
+  //}
+}
+
+void state_show_pin_ok(void){
+  //if (m_state == initial){
+    GUI_ClearWindows(1, 1, 104, 212, WHITE);
+    GUI_DrawIcon(5, LEFT_ICON_H_POS, gImage_icon_lock, WHITE);
+    GUI_DrawString_EN(CENTER_TIME_H_POS, NUMBER_V_POS, "OK", &Font24, WHITE, BLACK);
     EPD_DisplayFull();
   //}
 }
