@@ -1,6 +1,6 @@
 EESchema Schematic File Version 4
 LIBS:pcb_topsulin-cache
-EELAYER 26 0
+EELAYER 29 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
@@ -14,17 +14,6 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-$Comp
-L topsulin_library:nRF51822_module_waveshare U1
-U 1 1 5BCF52CE
-P 2050 1800
-F 0 "U1" H 2050 2865 50  0000 C CNN
-F 1 "nRF51822_module_waveshare" H 2050 2774 50  0000 C CNN
-F 2 "pcb_topsulin:nRF51822_module_waveshare_footprint" H 2050 1800 50  0001 C CNN
-F 3 "" H 2050 1800 50  0001 C CNN
-	1    2050 1800
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	1350 1100 1100 1100
 Wire Wire Line
@@ -913,4 +902,15 @@ Wire Wire Line
 Connection ~ 1650 5200
 Wire Wire Line
 	1650 5200 1850 5200
+$Comp
+L topsulin:topsulin_topsulin_topsulin_topsulin_library_nRF51822_module_waveshare U1
+U 1 1 5CD142A6
+P 2050 1800
+F 0 "U1" H 2050 2915 50  0000 C CNN
+F 1 "topsulin_topsulin_library_nRF51822_module_waveshare" H 2050 2824 50  0000 C CNN
+F 2 "" H 2050 1800 50  0001 C CNN
+F 3 "" H 2050 1800 50  0001 C CNN
+	1    2050 1800
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
