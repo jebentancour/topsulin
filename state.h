@@ -25,3 +25,5 @@ void state_show_pin_ok(void);
 void state_begin(void);
 
 void state_sleep(void);
+
+void state_set_bt_state(uint8_t state);

@@ -58,6 +58,9 @@ static uint8_t                quick_refresh;
 
 static uint8_t                warning_time;
 
+uint32_t voltage;
+static uint8_t bt_state;
+
 void state_init(){
   m_state = initial;
 
@@ -79,16 +82,18 @@ void state_init(){
   m_topsulin_meas.cho_time = t;
   m_topsulin_meas.ins_time = t;
 
+  bt_state = 0;
+
   full_refresh = 0;
   quick_refresh = 0;
 }
 
-#define ICON_V_POS            9
-#define LEFT_ICON_H_POS       23
-#define CENTER_ICON_H_POS     94
-#define RIGHT_ICON_H_POS      165
-#define NUMBER_V_POS          36
-#define TIME_V_POS            10
+#define ICON_V_POS            8       // 9
+#define LEFT_ICON_H_POS       23      // 23
+#define CENTER_ICON_H_POS     94      // 94
+#define RIGHT_ICON_H_POS      165     // 165
+#define NUMBER_V_POS          28      // 36
+#define TIME_V_POS            10      // 10
 #define LEFT_TIME_H_POS       8
 #define CENTER_TIME_H_POS     79
 #define RIGHT_TIME_H_POS      151
@@ -192,9 +197,42 @@ static void state_save_meas(void){
   }
 }
 
+void state_set_bt_state(uint8_t state){
+  if (bt_state == state){
+    return;
+  }
+  bt_state = state;
+  if ((m_state != initial)&&(m_state != warning)){
+    if (m_state == sleep){
+      EPD_Init();
+      full_refresh = 1;
+    } else {
+      quick_refresh = 1;
+    }
+    state_process_display();
+  }
+}
+
 void state_process_display(void){
   if ((m_state != initial)&&((m_state != warning))&&(quick_refresh|full_refresh)){
     GUI_Clear(WHITE);
+
+    // TODO: copiar el string guardado
+    GUI_DrawString_EN(8, 92, "Glucosee", &Font12, WHITE, BLACK);
+
+    voltage = batt_get();
+    len = sprintf(buffer, "%ld.%ldV", voltage / 1000, (voltage % 1000) / 100);
+    GUI_DrawString_EN(20*7, 92, buffer, &Font12, WHITE, BLACK);
+
+    if (bt_state == 0){
+      GUI_DrawString_EN(25*7, 92, "BToff", &Font12, WHITE, BLACK);
+    }
+    if (bt_state == 1){
+      GUI_DrawString_EN(25*7, 92, "BTon ", &Font12, WHITE, BLACK);
+    }
+    if (bt_state == 2){
+      GUI_DrawString_EN(25*7, 92, "BTcon", &Font12, WHITE, BLACK);
+    }
 
     if (config_manager_get_flags() & CONFIG_FLIP_FLAG){
         GUI_DrawIcon(ICON_V_POS, LEFT_ICON_H_POS, gImage_icon_glu_flip, WHITE);
@@ -222,12 +260,23 @@ void state_process_display(void){
         cho_h_pos += 9;
     }
 
-    uint8_t ins_h_pos = 154;
-    if(m_topsulin_meas.ins < 100){
-        ins_h_pos += 8;
-    }
-    if(m_topsulin_meas.ins < 10){
-        ins_h_pos += 9;
+    uint8_t ins_h_pos;
+    if (config_manager_get_ins_interval() >= 10){
+      ins_h_pos = 154;
+      if(m_topsulin_meas.ins < 100){
+          ins_h_pos += 8;
+      }
+      if(m_topsulin_meas.ins < 10){
+          ins_h_pos += 9;
+      }
+    } else {
+      ins_h_pos = 137;
+      if(m_topsulin_meas.ins < 1000){
+          ins_h_pos += 7;
+      }
+      if(m_topsulin_meas.ins < 100){
+          ins_h_pos += 9;
+      }
     }
 
     if (m_state == sleep){
@@ -241,26 +290,33 @@ void state_process_display(void){
       len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.cho_time);
       GUI_DrawString_EN(CENTER_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
 
-      len = sprintf(buffer, "%ld", m_topsulin_meas.ins);
+      if (config_manager_get_ins_interval() >= 10){
+        len = sprintf(buffer, "%ld", m_topsulin_meas.ins / 10);
+      } else {
+        len = sprintf(buffer, "%ld.%ld", m_topsulin_meas.ins / 10, m_topsulin_meas.ins % 10);
+      }
       GUI_DrawString_EN(ins_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
       len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.ins_time);
       GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
     } else {
       if (m_state == input_glu){
-        GUI_DrawRectangle(2, 4, 103, 70, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_2X2);
+        //GUI_DrawRectangle(2, 4, 103, 70, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_2X2);
+        GUI_DrawRectangle(2, 4, 93, 70, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
       }
       if (m_state == input_cho){
-        GUI_DrawRectangle(2, 73, 103, 141, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_2X2);
+        //GUI_DrawRectangle(2, 73, 103, 141, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_2X2);
+        GUI_DrawRectangle(2, 73, 93, 141, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
       }
       if (m_state == input_ins){
-        GUI_DrawRectangle(2, 143, 103, 210, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_2X2);
+        //GUI_DrawRectangle(2, 143, 103, 210, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_2X2);
+        GUI_DrawRectangle(2, 143, 93, 210, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
       }
 
       if (new_glu){
         len = sprintf(buffer, "%ld", m_topsulin_meas.glu);
       } else {
         glu_h_pos = 11;
-        len = sprintf(buffer, "---");
+        len = sprintf(buffer, " - ");
       }
       GUI_DrawString_EN(glu_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
       len = sprintf(buffer, "mg/dL");
@@ -270,17 +326,21 @@ void state_process_display(void){
         len = sprintf(buffer, "%ld", m_topsulin_meas.cho);
       } else {
         cho_h_pos = 83;
-        len = sprintf(buffer, "---");
+        len = sprintf(buffer, " - ");
       }
       GUI_DrawString_EN(cho_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
       len = sprintf(buffer, " grs ");
       GUI_DrawString_EN(CENTER_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
 
       if (new_ins){
-        len = sprintf(buffer, "%ld", m_topsulin_meas.ins);
+        if (config_manager_get_ins_interval() >= 10){
+          len = sprintf(buffer, "%ld", m_topsulin_meas.ins / 10);
+        } else {
+          len = sprintf(buffer, "%ld.%ld", m_topsulin_meas.ins / 10, m_topsulin_meas.ins % 10);
+        }
       } else {
         ins_h_pos = 154;
-        len = sprintf(buffer, "---");
+        len = sprintf(buffer, " - ");
       }
       GUI_DrawString_EN(ins_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
       if (m_topsulin_meas.ins != (glu_correction + cho_correction) && new_ins && config_manager_get_flags() & CONFIG_BOLO_FLAG){
@@ -323,7 +383,6 @@ void state_on_event(event_t event){
         bool memory_full;
         memory_full = ble_gls_db_num_records_get() == BLE_GLS_DB_MAX_RECORDS;
         bool low_batt;
-        uint32_t voltage;
         voltage = batt_get();
         NRF_LOG_INFO("VCC = %d.%d V\n", voltage / 1000, voltage % 1000);
         NRF_LOG_FLUSH();
@@ -360,7 +419,7 @@ void state_on_event(event_t event){
       break;
     case input_glu:
       if (event == button_pressed){
-        encoder_set_position(m_topsulin_meas.cho / 5);
+        encoder_set_position(m_topsulin_meas.cho / config_manager_get_cho_interval());
         m_state = input_cho;
         quick_refresh = 1;
       }
@@ -384,7 +443,7 @@ void state_on_event(event_t event){
             } else {
                 glu_correction = 0;
                 if (new_cho && (cho_correction != 0)){
-                  m_topsulin_meas.ins = cho_correction;
+                  m_topsulin_meas.ins = 10 * cho_correction;
                 } else {
                   new_ins = false;
                   m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
@@ -395,10 +454,10 @@ void state_on_event(event_t event){
               new_ins = true;
               m_topsulin_meas.ins = 0;
               if (new_glu){
-                  m_topsulin_meas.ins += glu_correction;
+                  m_topsulin_meas.ins += 10 * glu_correction;
               }
               if (new_cho){
-                  m_topsulin_meas.ins += cho_correction;
+                  m_topsulin_meas.ins += 10 * cho_correction;
               }
           } else {
               if (glu_correction < 0){
@@ -422,7 +481,7 @@ void state_on_event(event_t event){
         glu_correction = 0;
         m_topsulin_meas.ins = 0;
         if (new_cho){
-            m_topsulin_meas.ins += cho_correction;
+            m_topsulin_meas.ins += 10 * cho_correction;
         } else {
           m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
           new_ins = false;
@@ -432,21 +491,21 @@ void state_on_event(event_t event){
       break;
     case input_cho:
       if (event == button_pressed){
-        encoder_set_position(m_topsulin_meas.ins);
+        encoder_set_position(m_topsulin_meas.ins / config_manager_get_ins_interval());
         m_state = input_ins;
         quick_refresh = 1;
       }
       if (event == encoder_update){
         new_cho = true;
-        m_topsulin_meas.cho = encoder_get_position() * 5;
-        if(m_topsulin_meas.cho < 0){
+        m_topsulin_meas.cho = encoder_get_position() * config_manager_get_cho_interval();
+        if(m_topsulin_meas.cho <= 0){
           encoder_reset_position();
           m_topsulin_meas.cho = 0;
           new_cho = false;
         }
         if(m_topsulin_meas.cho >= 1000){
-          m_topsulin_meas.cho = 995;
-          encoder_set_position(m_topsulin_meas.cho / 5);
+          m_topsulin_meas.cho = 1000 - config_manager_get_cho_interval();
+          encoder_set_position(m_topsulin_meas.cho / config_manager_get_cho_interval());
         }
 
         if (config_manager_get_flags() & CONFIG_BOLO_FLAG){
@@ -454,7 +513,7 @@ void state_on_event(event_t event){
 
             if (cho_correction == 0){
               if (new_glu && (glu_correction != 0)){
-                m_topsulin_meas.ins = glu_correction;
+                m_topsulin_meas.ins = 10 * glu_correction;
               } else {
                 new_ins = false;
                 m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
@@ -465,10 +524,10 @@ void state_on_event(event_t event){
               new_ins = true;
               m_topsulin_meas.ins = 0;
               if (new_glu){
-                  m_topsulin_meas.ins += glu_correction;
+                  m_topsulin_meas.ins += 10 * glu_correction;
               }
               if (new_cho){
-                  m_topsulin_meas.ins += cho_correction;
+                  m_topsulin_meas.ins += 10 * cho_correction;
               }
               if (m_topsulin_meas.ins <= 0){
                   new_ins = false;
@@ -489,7 +548,7 @@ void state_on_event(event_t event){
         cho_correction = 0;
         m_topsulin_meas.ins = 0;
         if (new_glu){
-          m_topsulin_meas.ins += glu_correction;
+          m_topsulin_meas.ins += 10 * glu_correction;
           if (m_topsulin_meas.ins == 0){
               new_ins = false;
               m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
@@ -509,15 +568,15 @@ void state_on_event(event_t event){
       }
       if (event == encoder_update){
         new_ins = true;
-        m_topsulin_meas.ins = encoder_get_position();
+        m_topsulin_meas.ins = encoder_get_position() * config_manager_get_ins_interval();
         if(m_topsulin_meas.ins <= 0){
           encoder_reset_position();
           m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
           new_ins = false;
         }
         if(m_topsulin_meas.ins >= 1000){
-          m_topsulin_meas.ins = 999;
-          encoder_set_position(m_topsulin_meas.ins);
+          m_topsulin_meas.ins = 1000 - config_manager_get_ins_interval();
+          encoder_set_position(m_topsulin_meas.ins / config_manager_get_ins_interval());
         }
         quick_refresh = 1;
       }
@@ -557,30 +616,27 @@ void state_on_event(event_t event){
 }
 
 void state_show_pin(char* pin){
-  //if (m_state == initial){
-    GUI_ClearWindows(1, 1, 104, 212, WHITE);
-    GUI_DrawIcon(5, LEFT_ICON_H_POS, gImage_icon_lock, WHITE);
-    GUI_DrawString_EN(CENTER_TIME_H_POS, NUMBER_V_POS, pin, &Font24, WHITE, BLACK);
-    EPD_DisplayFull();
-  //}
+  // TODO: dar vuelta el icono con la flag flip
+  GUI_ClearWindows(1, 1, 104, 212, WHITE);
+  GUI_DrawIcon(5, 23, gImage_icon_lock, WHITE);
+  GUI_DrawString_EN(79, 36, pin, &Font24, WHITE, BLACK);
+  EPD_DisplayFull();
 }
 
 void state_show_pin_error(void){
-  //if (m_state == initial){
-    GUI_ClearWindows(1, 1, 104, 212, WHITE);
-    GUI_DrawIcon(5, LEFT_ICON_H_POS, gImage_icon_lock, WHITE);
-    GUI_DrawString_EN(CENTER_TIME_H_POS, NUMBER_V_POS, "ERROR", &Font24, WHITE, BLACK);
-    EPD_DisplayFull();
-  //}
+  // TODO: dar vuelta el icono con la flag flip
+  GUI_ClearWindows(1, 1, 104, 212, WHITE);
+  GUI_DrawIcon(5, 23, gImage_icon_lock, WHITE);
+  GUI_DrawString_EN(79, 36, "ERROR", &Font24, WHITE, BLACK);
+  EPD_DisplayFull();
 }
 
 void state_show_pin_ok(void){
-  //if (m_state == initial){
-    GUI_ClearWindows(1, 1, 104, 212, WHITE);
-    GUI_DrawIcon(5, LEFT_ICON_H_POS, gImage_icon_lock, WHITE);
-    GUI_DrawString_EN(CENTER_TIME_H_POS, NUMBER_V_POS, "OK", &Font24, WHITE, BLACK);
-    EPD_DisplayFull();
-  //}
+  // TODO: dar vuelta el icono con la flag flip
+  GUI_ClearWindows(1, 1, 104, 212, WHITE);
+  GUI_DrawIcon(5, 23, gImage_icon_lock, WHITE);
+  GUI_DrawString_EN(79, 36, "OK", &Font24, WHITE, BLACK);
+  EPD_DisplayFull();
 }
 
 void state_begin(){

@@ -26,6 +26,8 @@ void config_manager_init(void)
   //m_global_conf.flags |= CONFIG_FLIP_FLAG;
   //m_global_conf.flags |= CONFIG_BOLO_FLAG;
   m_global_conf.g_portion = 250;
+  m_global_conf.cho_interval = 2;
+  m_global_conf.ins_interval = 5;
   // Name
   const char* tmp = "Topsulin";
   strcpy(m_global_conf.name, tmp);
@@ -144,6 +146,26 @@ void config_manager_set_portion(uint16_t portion)
 uint16_t config_manager_get_portion(void)
 {
   return m_global_conf.g_portion;
+}
+
+void config_manager_set_cho_interval(uint8_t cho_interval)
+{
+  m_global_conf.cho_interval = cho_interval;
+}
+
+uint8_t config_manager_get_cho_interval(void)
+{
+  return m_global_conf.cho_interval;
+}
+
+void config_manager_set_ins_interval(uint8_t ins_interval)
+{
+  m_global_conf.ins_interval = ins_interval;
+}
+
+uint8_t config_manager_get_ins_interval(void)
+{
+  return m_global_conf.ins_interval;
 }
 
 void config_manager_set_insulin_type(uint8_t type)

@@ -497,11 +497,13 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
         case BLE_ADV_EVT_FAST:
             NRF_LOG_INFO("Fast advertising\n");
             state_on_event(ble_on);
+            state_set_bt_state(1);
             break; // BLE_ADV_EVT_FAST
 
         case BLE_ADV_EVT_IDLE:
             NRF_LOG_INFO("Idle advertising\n");
             //state_on_event(ble_off);
+            state_set_bt_state(0);
             break; // BLE_ADV_EVT_IDLE
 
         default:
@@ -524,6 +526,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
         case BLE_GAP_EVT_DISCONNECTED:
         {
             NRF_LOG_INFO("Disconnected\n");
+            state_set_bt_state(1);
             m_conn_handle = BLE_CONN_HANDLE_INVALID;
             /*check if the last connected peer had not used MITM, if so, delete its bond information*/
             if (m_peer_to_be_deleted != PM_PEER_ID_INVALID)
@@ -539,6 +542,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
         {
             m_peer_to_be_deleted = PM_PEER_ID_INVALID;
             NRF_LOG_INFO("Connected\n");
+            state_set_bt_state(2);
             //err_code           = bsp_indication_set(BSP_INDICATE_CONNECTED);
             //APP_ERROR_CHECK(err_code);
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
@@ -819,6 +823,7 @@ void advertising_stop(void)
         APP_ERROR_CHECK(err_code);
     }
 
+    state_set_bt_state(0);
     NRF_LOG_INFO("Advertising stop\n");
     NRF_LOG_FLUSH();
 }

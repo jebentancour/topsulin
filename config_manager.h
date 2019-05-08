@@ -15,6 +15,8 @@ typedef struct
 {
     uint8_t   flags;
     uint16_t  g_portion;
+    uint8_t   cho_interval;
+    uint8_t   ins_interval;
     char      name[20];
     sfloat_t  calc_low;
     sfloat_t  calc_high;
@@ -39,6 +41,14 @@ uint8_t config_manager_get_flags(void);
 void config_manager_set_portion(uint16_t portion);
 
 uint16_t config_manager_get_portion(void);
+
+void config_manager_set_cho_interval(uint8_t cho_interval);
+
+uint8_t config_manager_get_cho_interval(void);
+
+void config_manager_set_ins_interval(uint8_t ins_interval);
+
+uint8_t config_manager_get_ins_interval(void);
 
 void config_manager_set_insulin_type(uint8_t type);
 
