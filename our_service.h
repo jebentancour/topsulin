@@ -91,7 +91,7 @@ void ble_our_service_on_ble_evt(ble_evt_t * p_ble_evt, void * p_context);
  * @param[in]   p_our_service            Our Service structure.
  * @param[in]   characteristic_value     New characteristic value.
  */
-void config_char_update(ble_os_t *p_our_service, uint8_t *characteristic_value);
+void config_char_update(ble_os_t *p_our_service, uint8_t *characteristic_value, uint16_t data_len);
 
 void name_char_update(ble_os_t * p_our_service, uint8_t * p_data, uint16_t data_len);
 

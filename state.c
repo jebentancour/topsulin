@@ -93,7 +93,7 @@ void state_init(){
 #define CENTER_ICON_H_POS     94      // 94
 #define RIGHT_ICON_H_POS      165     // 165
 #define NUMBER_V_POS          28      // 36
-#define TIME_V_POS            10      // 10
+#define TIME_V_POS            6       // 10
 #define LEFT_TIME_H_POS       8
 #define CENTER_TIME_H_POS     79
 #define RIGHT_TIME_H_POS      151

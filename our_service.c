@@ -87,7 +87,18 @@ static void on_config_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p_
         config_manager_set_portion(uint16_decode(&p_data[1]));
 
         // Update
-        config_char_update(p_our_service, p_data);
+        config_char_update(p_our_service, p_data, data_len);
+    }
+
+    if (data_len == 4 && offset == 0)
+    {
+        // Decode and save
+        config_manager_set_flags(p_data[0]);
+        config_manager_set_portion(uint16_decode(&p_data[1]));
+        config_manager_set_cho_interval(p_data[3]);
+
+        // Update
+        config_char_update(p_our_service, p_data, data_len);
     }
 }
 
@@ -319,11 +330,12 @@ static uint32_t config_char_add(ble_os_t * p_our_service)
     attr_char_value.p_attr_md   = &attr_md;
 
     // Set characteristic length in number of bytes
-    attr_char_value.max_len     = 3;
-    attr_char_value.init_len    = 3;
-    uint8_t value[3];
+    attr_char_value.max_len     = 4;
+    attr_char_value.init_len    = 4;
+    uint8_t value[4];
     value[0] = config_manager_get_flags();
     uint16_encode(config_manager_get_portion(), &value[1]);
+    value[3] = config_manager_get_cho_interval();
     //NRF_LOG_HEXDUMP_INFO(value, sizeof(value));
     attr_char_value.p_value     = value;
 
@@ -695,12 +707,12 @@ void our_service_init(ble_os_t * p_our_service)
  *
  * @param[in]   p_our_service        Our Service structure.
  */
-void config_char_update(ble_os_t * p_our_service, uint8_t * characteristic_value)
+void config_char_update(ble_os_t * p_our_service, uint8_t * characteristic_value, uint16_t data_len)
 {
     // Update characteristic value
     //if (p_our_service->conn_handle != BLE_CONN_HANDLE_INVALID)
     //{
-      uint16_t               len = 3;
+      uint16_t               len = data_len;
       ble_gatts_hvx_params_t hvx_params;
       memset(&hvx_params, 0, sizeof(hvx_params));
 
