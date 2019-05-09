@@ -76,6 +76,8 @@ uint16_t config_manager_get_insulin_duration(void);
 
 void config_manager_set_name(uint8_t* data, uint8_t data_len);
 
+uint8_t config_manager_get_name(char* data);
+
 sfloat_t config_manager_get_calc_low(void);
 
 void config_manager_set_calc_low(sfloat_t low);

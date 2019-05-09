@@ -217,8 +217,8 @@ void state_process_display(void){
   if ((m_state != initial)&&((m_state != warning))&&(quick_refresh|full_refresh)){
     GUI_Clear(WHITE);
 
-    // TODO: copiar el string guardado
-    GUI_DrawString_EN(8, 92, "Glucosee", &Font12, WHITE, BLACK);
+    len = config_manager_get_name(buffer);
+    GUI_DrawString_EN(8, 92, buffer, &Font12, WHITE, BLACK);
 
     voltage = batt_get();
     len = sprintf(buffer, "%ld.%ldV", voltage / 1000, (voltage % 1000) / 100);

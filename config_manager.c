@@ -17,6 +17,8 @@
 
 static global_conf_t m_global_conf;
 
+static uint8_t name_len;
+
 void config_manager_init(void)
 {
   memset(&m_global_conf, 0, sizeof(m_global_conf));
@@ -31,6 +33,7 @@ void config_manager_init(void)
   // Name
   const char* tmp = "Topsulin";
   strcpy(m_global_conf.name, tmp);
+  name_len = 8;
   // Calc
   m_global_conf.calc_low.mantissa = 90;
   m_global_conf.calc_low.exponent = -3;
@@ -238,6 +241,17 @@ void config_manager_set_name(uint8_t* data, uint8_t data_len)
       m_global_conf.name[i] = '\0';
     }
   }
+  name_len = data_len;
+}
+
+uint8_t config_manager_get_name(char* data)
+{
+  uint8_t i;
+  for(i = 0; i < name_len; i++){
+    data[i] = (char)m_global_conf.name[i];
+  }
+  data[name_len] = '\0';
+  return name_len;
 }
 
 sfloat_t config_manager_get_calc_low(void)
