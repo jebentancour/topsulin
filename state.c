@@ -213,12 +213,32 @@ void state_set_bt_state(uint8_t state){
   }
 }
 
+void state_update_mem(void){
+  NRF_LOG_INFO("state_update_mem\n");
+  NRF_LOG_FLUSH();
+  if ((m_state != initial)&&(m_state != warning)){
+    if (m_state == sleep){
+      EPD_Init();
+      full_refresh = 1;
+    } else {
+      quick_refresh = 1;
+    }
+    state_process_display();
+  }
+}
+
+
+
 void state_process_display(void){
   if ((m_state != initial)&&((m_state != warning))&&(quick_refresh|full_refresh)){
     GUI_Clear(WHITE);
 
     len = config_manager_get_name(buffer);
     GUI_DrawString_EN(8, 92, buffer, &Font12, WHITE, BLACK);
+
+    uint16_t num_records = ble_gls_db_num_records_get();
+    len = sprintf(buffer, "M%03d", num_records);
+    GUI_DrawString_EN(15*7, 92, buffer, &Font12, WHITE, BLACK);
 
     voltage = batt_get();
     len = sprintf(buffer, "%ld.%ldV", voltage / 1000, (voltage % 1000) / 100);

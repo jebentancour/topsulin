@@ -50,6 +50,8 @@
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 
+#include "../../../../../state.h"
+
 #include "ble_gls.h"
 #include <string.h>
 #include "ble_srv_common.h"
@@ -1308,10 +1310,16 @@ static void on_racp_value_write(ble_gls_t * p_gls, ble_gatts_evt_write_t * p_evt
             NRF_LOG_FLUSH();
             if (racp_request.operator == RACP_OPERATOR_ALL)
             {
+                NRF_LOG_INFO("RACP_OPERATOR_ALL\r\n");
+                NRF_LOG_FLUSH();
+
                 // Delete all
                 ble_gls_db_init();
+
                 //racp_response_code_send(p_gls, RACP_OPCODE_DELETE_RECS, RACP_RESPONSE_SUCCESS);
                 racp_response_code_send(p_gls, RACP_OPCODE_REPORT_RECS, RACP_RESPONSE_SUCCESS);
+
+                state_update_mem();
             }
             else
             {
