@@ -173,8 +173,9 @@ sfloat_t decode_sfloat(uint16_t u)
 |Orientación de pantalla                             |bit6   |0 Diestro, 1 Zurdo                 |Diestro                   |
 |Unidades de CHO                                     |bit7   |0 CHO en g, 1 CHO en porciones     |CHO en g                  |
 |Equivalencia entre gramos y porciones               |uint16 |Peso en g de una porción           |250 g                     |
+|Incremento de CHO                                   |uint8  |Paso mínimo de ingreso de CHO en g |2 g                       |
 |**Name**                                            |       |                                   |0x476C75636F736565        |
-|Nombre para mostrar                                 |uint8  |String de largo máximo 20 UTF-8    |Glucosee                   |
+|Nombre para mostrar                                 |uint8  |String de largo máximo 20 UTF-8    |Glucosee                  |
 |**Time**                                            |       |                                   |0xE3070101060120          |
 |Hora y fecha del dispositivo                        |time   |[Time Characteristic](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.date_time.xml) |01/01/19 12:00:00 |
 |**Calculator**                                      |       |                                   |0x3CD096D00F000FD0        |
