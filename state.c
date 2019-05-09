@@ -89,9 +89,9 @@ void state_init(){
 }
 
 #define ICON_V_POS            8       // 9
-#define LEFT_ICON_H_POS       23      // 23
-#define CENTER_ICON_H_POS     94      // 94
-#define RIGHT_ICON_H_POS      165     // 165
+#define LEFT_ICON_H_POS       11      // 23
+#define CENTER_ICON_H_POS     82      // 94
+#define RIGHT_ICON_H_POS      153     // 165
 #define NUMBER_V_POS          28      // 36
 #define TIME_V_POS            6       // 10
 #define LEFT_TIME_H_POS       8
@@ -236,12 +236,12 @@ void state_process_display(void){
     len = config_manager_get_name(buffer);
     GUI_DrawString_EN(8, 92, buffer, &Font12, WHITE, BLACK);
 
-    uint16_t num_records = ble_gls_db_num_records_get();
-    len = sprintf(buffer, "M%03d", num_records);
-    GUI_DrawString_EN(15*7, 92, buffer, &Font12, WHITE, BLACK);
-
     voltage = batt_get();
     len = sprintf(buffer, "%ld.%ldV", voltage / 1000, (voltage % 1000) / 100);
+    GUI_DrawString_EN(15*7, 92, buffer, &Font12, WHITE, BLACK);
+
+    uint16_t num_records = ble_gls_db_num_records_get();
+    len = sprintf(buffer, "M%03d", num_records);
     GUI_DrawString_EN(20*7, 92, buffer, &Font12, WHITE, BLACK);
 
     if (bt_state == 0){
@@ -263,6 +263,13 @@ void state_process_display(void){
         GUI_DrawIcon(ICON_V_POS, CENTER_ICON_H_POS, gImage_icon_cho, WHITE);
         GUI_DrawIcon(ICON_V_POS, RIGHT_ICON_H_POS, gImage_icon_ins, WHITE);
     }
+
+    GUI_DrawString_EN(LEFT_ICON_H_POS + 28, 76, "mg", &Font12, WHITE, BLACK);
+    GUI_DrawString_EN(LEFT_ICON_H_POS + 28, 64, "dL", &Font12, WHITE, BLACK);
+
+    GUI_DrawString_EN(CENTER_ICON_H_POS + 28, 64, "grs", &Font12, WHITE, BLACK);
+
+    GUI_DrawString_EN(RIGHT_ICON_H_POS + 28, 64, "U", &Font12, WHITE, BLACK);
 
     uint8_t glu_h_pos = 11;
     if(m_topsulin_meas.glu < 100){
@@ -339,8 +346,8 @@ void state_process_display(void){
         len = sprintf(buffer, " - ");
       }
       GUI_DrawString_EN(glu_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-      len = sprintf(buffer, "mg/dL");
-      GUI_DrawString_EN(LEFT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
+      //len = sprintf(buffer, "mg/dL");
+      //GUI_DrawString_EN(LEFT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
 
       if (new_cho){
         len = sprintf(buffer, "%ld", m_topsulin_meas.cho);
@@ -349,8 +356,8 @@ void state_process_display(void){
         len = sprintf(buffer, " - ");
       }
       GUI_DrawString_EN(cho_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-      len = sprintf(buffer, " grs ");
-      GUI_DrawString_EN(CENTER_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
+      //len = sprintf(buffer, " grs ");
+      //GUI_DrawString_EN(CENTER_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
 
       if (new_ins){
         if (config_manager_get_ins_interval() >= 10){
@@ -363,12 +370,12 @@ void state_process_display(void){
         len = sprintf(buffer, " - ");
       }
       GUI_DrawString_EN(ins_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-      if (m_topsulin_meas.ins != (glu_correction + cho_correction) && new_ins && config_manager_get_flags() & CONFIG_BOLO_FLAG){
-        len = sprintf(buffer, "  U .");
-      } else {
-        len = sprintf(buffer, "  U  ");
-      }
-      GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
+      //if (m_topsulin_meas.ins != (glu_correction + cho_correction) && new_ins && config_manager_get_flags() & CONFIG_BOLO_FLAG){
+      //  len = sprintf(buffer, "  U .");
+      //} else {
+      //  len = sprintf(buffer, "  U  ");
+      //}
+      //GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
     }
 
   }
