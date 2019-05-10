@@ -50,7 +50,7 @@ static topsulin_meas_t        m_prev_topsulin_meas;
 
 static internal_state_t       m_state;
 
-static char                   buffer[8];
+static char                   buffer[16];
 static uint8_t                len;
 
 static uint8_t                full_refresh;
@@ -58,8 +58,8 @@ static uint8_t                quick_refresh;
 
 static uint8_t                warning_time;
 
-uint32_t voltage;
-static uint8_t bt_state;
+static uint32_t               voltage;
+static uint8_t                bt_state;
 
 void state_init(){
   m_state = initial;
@@ -82,6 +82,7 @@ void state_init(){
   m_topsulin_meas.cho_time = t;
   m_topsulin_meas.ins_time = t;
 
+  voltage = 0;
   bt_state = 0;
 
   full_refresh = 0;
@@ -187,11 +188,11 @@ static void state_save_meas(void){
         m_topsulin_meas.glu = m_prev_topsulin_meas.glu;
     }
 
-    if(!new_cho || m_topsulin_meas.cho == 0){
+    if(!new_cho || m_topsulin_meas.cho <= 0){
         m_topsulin_meas.cho = m_prev_topsulin_meas.cho;
     }
 
-    if(!new_ins || m_topsulin_meas.ins == 0){
+    if(!new_ins || m_topsulin_meas.ins <= 0){
         m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
     }
   }
@@ -214,8 +215,6 @@ void state_set_bt_state(uint8_t state){
 }
 
 void state_update_mem(void){
-  NRF_LOG_INFO("state_update_mem\n");
-  NRF_LOG_FLUSH();
   if ((m_state != initial)&&(m_state != warning)){
     if (m_state == sleep){
       EPD_Init();
@@ -264,12 +263,16 @@ void state_process_display(void){
         GUI_DrawIcon(ICON_V_POS, RIGHT_ICON_H_POS, gImage_icon_ins, WHITE);
     }
 
-    GUI_DrawString_EN(LEFT_ICON_H_POS + 28, 76, "mg", &Font12, WHITE, BLACK);
-    GUI_DrawString_EN(LEFT_ICON_H_POS + 28, 64, "dL", &Font12, WHITE, BLACK);
+    GUI_DrawString_EN(LEFT_ICON_H_POS + 32, 72, "mg", &Font12, WHITE, BLACK);
+    GUI_DrawString_EN(LEFT_ICON_H_POS + 32, 60, "dL", &Font12, WHITE, BLACK);
 
-    GUI_DrawString_EN(CENTER_ICON_H_POS + 28, 64, "grs", &Font12, WHITE, BLACK);
+    len = sprintf(buffer, "%d", config_manager_get_cho_interval());
+    GUI_DrawString_EN(CENTER_ICON_H_POS + 32, 72, buffer, &Font12, WHITE, BLACK);
+    GUI_DrawString_EN(CENTER_ICON_H_POS + 32, 60, "grs", &Font12, WHITE, BLACK);
 
-    GUI_DrawString_EN(RIGHT_ICON_H_POS + 28, 64, "U", &Font12, WHITE, BLACK);
+    len = sprintf(buffer, "%d.%d", config_manager_get_ins_interval() / 10, config_manager_get_ins_interval() % 10);
+    GUI_DrawString_EN(RIGHT_ICON_H_POS + 32, 72, buffer, &Font12, WHITE, BLACK);
+    GUI_DrawString_EN(RIGHT_ICON_H_POS + 32, 60, "U", &Font12, WHITE, BLACK);
 
     uint8_t glu_h_pos = 11;
     if(m_topsulin_meas.glu < 100){
@@ -327,15 +330,12 @@ void state_process_display(void){
       GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
     } else {
       if (m_state == input_glu){
-        //GUI_DrawRectangle(2, 4, 103, 70, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_2X2);
         GUI_DrawRectangle(2, 4, 93, 70, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
       }
       if (m_state == input_cho){
-        //GUI_DrawRectangle(2, 73, 103, 141, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_2X2);
         GUI_DrawRectangle(2, 73, 93, 141, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
       }
       if (m_state == input_ins){
-        //GUI_DrawRectangle(2, 143, 103, 210, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_2X2);
         GUI_DrawRectangle(2, 143, 93, 210, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
       }
 
@@ -346,8 +346,10 @@ void state_process_display(void){
         len = sprintf(buffer, " - ");
       }
       GUI_DrawString_EN(glu_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-      //len = sprintf(buffer, "mg/dL");
-      //GUI_DrawString_EN(LEFT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
+      len = sprintf(buffer, "%d", config_manager_get_calc_corr().mantissa);
+      GUI_DrawString_EN(LEFT_TIME_H_POS, TIME_V_POS, buffer, &Font12, WHITE, BLACK);
+      len = sprintf(buffer, "%d-%d", config_manager_get_calc_low().mantissa, config_manager_get_calc_high().mantissa);
+      GUI_DrawString_EN(LEFT_TIME_H_POS, TIME_V_POS + 12, buffer, &Font12, WHITE, BLACK);
 
       if (new_cho){
         len = sprintf(buffer, "%ld", m_topsulin_meas.cho);
@@ -356,8 +358,8 @@ void state_process_display(void){
         len = sprintf(buffer, " - ");
       }
       GUI_DrawString_EN(cho_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-      //len = sprintf(buffer, " grs ");
-      //GUI_DrawString_EN(CENTER_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
+      len = sprintf(buffer, "%d", config_manager_get_calc_sens());
+      GUI_DrawString_EN(CENTER_TIME_H_POS, TIME_V_POS, buffer, &Font12, WHITE, BLACK);
 
       if (new_ins){
         if (config_manager_get_ins_interval() >= 10){
@@ -370,12 +372,11 @@ void state_process_display(void){
         len = sprintf(buffer, " - ");
       }
       GUI_DrawString_EN(ins_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
-      //if (m_topsulin_meas.ins != (glu_correction + cho_correction) && new_ins && config_manager_get_flags() & CONFIG_BOLO_FLAG){
-      //  len = sprintf(buffer, "  U .");
-      //} else {
-      //  len = sprintf(buffer, "  U  ");
-      //}
-      //GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
+      if (config_manager_get_flags() & CONFIG_BOLO_FLAG){
+        GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, "Calc ON", &Font12, WHITE, BLACK);
+      } else {
+        GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, "Calc OFF", &Font12, WHITE, BLACK);
+      }
     }
 
   }
@@ -397,11 +398,8 @@ void state_on_event(event_t event){
     case initial:
       if (event == ble_on){
         GUI_DrawBitMap(gImage_IMAGE_1);
-        char b[16];
-        int l;
-        l = sprintf(b, "Topsulin-%04X", (uint16_t) NRF_FICR->DEVICEADDR[0] & 0xFFFF);
-        b[l] = 0x00;
-        GUI_DrawString_EN(32, 8, b, &Font16, WHITE, BLACK);
+        sprintf(buffer, "Topsulin-%04X", (uint16_t) NRF_FICR->DEVICEADDR[0] & 0xFFFF);
+        GUI_DrawString_EN(32, 8, buffer, &Font16, WHITE, BLACK);
         full_refresh = 1;
       }
       break;
@@ -453,10 +451,13 @@ void state_on_event(event_t event){
       if (event == encoder_update){
         new_glu = true;
         m_topsulin_meas.glu = encoder_get_position();
-        if(m_topsulin_meas.glu < 0){
-          encoder_reset_position();
+
+        if(m_topsulin_meas.glu <= 0){
+          new_glu = false;
           m_topsulin_meas.glu = 0;
+          encoder_reset_position();
         }
+
         if(m_topsulin_meas.glu >= 1000){
           m_topsulin_meas.glu = 999;
           encoder_set_position(m_topsulin_meas.glu);
@@ -470,7 +471,8 @@ void state_on_event(event_t event){
             } else {
                 glu_correction = 0;
                 if (new_cho && (cho_correction != 0)){
-                  m_topsulin_meas.ins = 10 * cho_correction;
+                  new_ins = true;
+                  m_topsulin_meas.ins = cho_correction * config_manager_get_ins_interval();
                 } else {
                   new_ins = false;
                   m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
@@ -481,20 +483,20 @@ void state_on_event(event_t event){
               new_ins = true;
               m_topsulin_meas.ins = 0;
               if (new_glu){
-                  m_topsulin_meas.ins += 10 * glu_correction;
+                  m_topsulin_meas.ins += glu_correction * config_manager_get_ins_interval();
               }
               if (new_cho){
-                  m_topsulin_meas.ins += 10 * cho_correction;
+                  m_topsulin_meas.ins += cho_correction * config_manager_get_ins_interval();
               }
-          } else {
-              if (glu_correction < 0){
-                  new_cho = true;
-                  m_topsulin_meas.cho = - glu_correction * config_manager_get_calc_sens();
-              } else {
-                  new_cho = false;
-                  m_topsulin_meas.cho = m_prev_topsulin_meas.cho;
-              }
-          }
+            } else {
+                if (glu_correction < 0){
+                    new_cho = true;
+                    m_topsulin_meas.cho = - glu_correction * config_manager_get_calc_sens();
+                } else {
+                    new_cho = false;
+                    m_topsulin_meas.cho = m_prev_topsulin_meas.cho;
+                }
+            }
         }
         quick_refresh = 1;
       }
@@ -508,7 +510,7 @@ void state_on_event(event_t event){
         glu_correction = 0;
         m_topsulin_meas.ins = 0;
         if (new_cho){
-            m_topsulin_meas.ins += 10 * cho_correction;
+            m_topsulin_meas.ins += cho_correction * config_manager_get_ins_interval();
         } else {
           m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
           new_ins = false;
@@ -540,7 +542,7 @@ void state_on_event(event_t event){
 
             if (cho_correction == 0){
               if (new_glu && (glu_correction != 0)){
-                m_topsulin_meas.ins = 10 * glu_correction;
+                m_topsulin_meas.ins = glu_correction * config_manager_get_ins_interval();
               } else {
                 new_ins = false;
                 m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
@@ -551,10 +553,10 @@ void state_on_event(event_t event){
               new_ins = true;
               m_topsulin_meas.ins = 0;
               if (new_glu){
-                  m_topsulin_meas.ins += 10 * glu_correction;
+                  m_topsulin_meas.ins += glu_correction * config_manager_get_ins_interval();
               }
               if (new_cho){
-                  m_topsulin_meas.ins += 10 * cho_correction;
+                  m_topsulin_meas.ins += cho_correction * config_manager_get_ins_interval();
               }
               if (m_topsulin_meas.ins <= 0){
                   new_ins = false;
@@ -634,10 +636,6 @@ void state_on_event(event_t event){
     m_state = sleep;
     full_refresh = 1;
   }
-
-  //if ((m_state != initial)&&(m_state != sleep)&&(event == time_update)){
-    //quick_refresh = 1;
-  //}
 
   state_process_display();
 }

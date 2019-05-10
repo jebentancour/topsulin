@@ -100,6 +100,18 @@ static void on_config_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p_
         // Update
         config_char_update(p_our_service, p_data, data_len);
     }
+
+    if (data_len == 5 && offset == 0)
+    {
+        // Decode and save
+        config_manager_set_flags(p_data[0]);
+        config_manager_set_portion(uint16_decode(&p_data[1]));
+        config_manager_set_cho_interval(p_data[3]);
+        config_manager_set_ins_interval(p_data[4]);
+
+        // Update
+        config_char_update(p_our_service, p_data, data_len);
+    }
 }
 
 static void on_name_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p_evt_write)
@@ -330,12 +342,13 @@ static uint32_t config_char_add(ble_os_t * p_our_service)
     attr_char_value.p_attr_md   = &attr_md;
 
     // Set characteristic length in number of bytes
-    attr_char_value.max_len     = 4;
-    attr_char_value.init_len    = 4;
-    uint8_t value[4];
+    attr_char_value.max_len     = 5;
+    attr_char_value.init_len    = 5;
+    uint8_t value[5];
     value[0] = config_manager_get_flags();
     uint16_encode(config_manager_get_portion(), &value[1]);
     value[3] = config_manager_get_cho_interval();
+    value[4] = config_manager_get_ins_interval();
     //NRF_LOG_HEXDUMP_INFO(value, sizeof(value));
     attr_char_value.p_value     = value;
 
