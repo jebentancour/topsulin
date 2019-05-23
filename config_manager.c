@@ -29,7 +29,7 @@ void config_manager_init(void)
   //m_global_conf.flags |= CONFIG_BOLO_FLAG;
   m_global_conf.g_portion = 250;
   m_global_conf.cho_interval = 5;
-  m_global_conf.ins_interval = 5;
+  m_global_conf.ins_interval = 10;
   // Name
   const char* tmp = "Glucosee";
   strcpy(m_global_conf.name, tmp);
@@ -39,8 +39,8 @@ void config_manager_init(void)
   m_global_conf.calc_low.exponent = -5;
   m_global_conf.calc_high.mantissa = 150;
   m_global_conf.calc_high.exponent = -5;
-  m_global_conf.calc_sens = 20;
-  m_global_conf.calc_corr.mantissa = 20;
+  m_global_conf.calc_sens = 15;
+  m_global_conf.calc_corr.mantissa = 50;
   m_global_conf.calc_corr.exponent = -5;
   // Insulin
   m_global_conf.insulin_type = BLE_GLS_CONTEXT_MED_RAPID;

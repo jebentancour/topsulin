@@ -138,7 +138,7 @@ typedef struct
 
 Los enteros de 16 bits se codifican de manera que el byte más alto va primero. El número 250 en hexadecimal es 0x00FA, sin embargo en BLE se lee el byte 0xFA00.
 
-El sfloat se usa para guardar un número con coma en 16 bits, los primeros 12 bits son la mantisa y los otros 4 el exponente. 
+El sfloat se usa para guardar un número con coma en 16 bits, los primeros 12 bits son la mantisa y los otros 4 el exponente.
 
 ```c
 uint16_t encode_sfloat(sfloat_t sf)
@@ -161,9 +161,11 @@ sfloat_t decode_sfloat(uint16_t u)
 
 [Characteristic Format Types](https://www.bluetooth.com/specifications/assigned-numbers/format-types)
 
+Definimos que 1 U de insulina se representa como 10 ml.
+
 |Characteristic                                      |Format |Value                              |Default                   |
 |----------------------------------------------------|-------|-----------------------------------|--------------------------|
-|**Configuration**                                   |       |                                   |0x07FA00                  |
+|**Configuration**                                   |       |                                   |                          |
 |Registro de glucemia                                |bit0   |0 No, 1 Si                         |Si                        |
 |Registro de insulina                                |bit1   |0 No, 1 Si                         |Si                        |
 |Registro de CHO                                     |bit2   |0 No, 1 Si                         |Si                        |
@@ -173,24 +175,25 @@ sfloat_t decode_sfloat(uint16_t u)
 |Orientación de pantalla                             |bit6   |0 Diestro, 1 Zurdo                 |Diestro                   |
 |Unidades de CHO                                     |bit7   |0 CHO en g, 1 CHO en porciones     |CHO en g                  |
 |Equivalencia entre gramos y porciones               |uint16 |Peso en g de una porción           |250 g                     |
-|Incremento de CHO                                   |uint8  |Paso mínimo de ingreso de CHO en g |2 g                       |
-|**Name**                                            |       |                                   |0x476C75636F736565        |
+|Incremento de CHO                                   |uint8  |Paso de ingreso de CHO en g        |5 g                       |
+|Incremento de insulina                              |uint8  |Paso de ingreso de insulina x10    |10 (equivale a 1U)        |
+|**Name**                                            |       |                                   |                          |
 |Nombre para mostrar                                 |uint8  |String de largo máximo 20 UTF-8    |Glucosee                  |
-|**Time**                                            |       |                                   |0xE3070101060120          |
+|**Time**                                            |       |                                   |                          |
 |Hora y fecha del dispositivo                        |time   |[Time Characteristic](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.date_time.xml) |01/01/19 12:00:00 |
-|**Calculator**                                      |       |                                   |0x3CD096D00F000FD0        |
-|Nivel bajo                                          |sfloat |Nivel de glucemia baja en kg/L     |60x10^-5 kg/L             |
+|**Calculator**                                      |       |                                   |                          |
+|Nivel bajo                                          |sfloat |Nivel de glucemia baja en kg/L     |90x10^-5 kg/L             |
 |Nivel alto                                          |sfloat |Nivel de glucemia alta en kg/L     |150x10^-5 kg/L            |
-|Sensibilidad                                        |uint16 |Cada cuántos CHO en g sumo 1U      |15 g                      |
-|Corrección de hiperglucemia                         |sfloat |Cada cuántos kg/L de hiper sumo 1U |15x10^-5 kg/L             |
-|**Insulin**                                         |       |                                   |0x012C0178001E0078006801  |
+|Sensibilidad                                        |uint16 |Cada cuántos CHO en g incremento insulina |15 g               |
+|Corrección de hiperglucemia                         |sfloat |Cada cuántos kg/L de hiper incremento insulina |50x10^-5 kg/L |
+|**Insulin**                                         |       |                                   |                          |
 |Tipo de insulina                                    |uint8  |Medication ID from Glucose Service |BLE_GLS_CONTEXT_MED_RAPID |
 |Capacidad de la lapicera                            |uint16 |U de insulina en una lapicera nueva|300 U                     |
 |Capacidad restante de la lapicera                   |uint16 |U de insulina restantes            |120 U                     |
 |Comienzo de acción                                  |uint16 |En minutos                         |30 m                      |
 |Acción máxima                                       |uint16 |En minutos                         |120 m                     |
 |Duración de la acción                               |uint16 |En minutos                         |360 m                     |
-|**Device**                                          |       |                                   |0x010100D90C              |
+|**Device**                                          |       |                                   |                          |
 |Firmware                                            |uint8  |Versión de firmware                |1                         |
 |Serial Number                                       |uint16 |Número de serie                    |1                         |
 |Battery                                             |uint16 |Voltaje de la batería en mV        |Cerca de 3300 mV          |
@@ -224,7 +227,7 @@ SoC [nRF51822](https://www.nordicsemi.com/eng/nordic/download_resource/62726/14/
 
 [INFOCENTER](http://infocenter.nordicsemi.com)
 
-|ID |Base address |Peripheral  |Instance    |Description                                  |Used by           | 
+|ID |Base address |Peripheral  |Instance    |Description                                  |Used by           |
 |---|-------------|------------|------------|---------------------------------------------|------------------|
 |0  |0x40000000   |POWER       |POWER       |Power Control.                               |SoftDevice        |
 |0  |0x40000000   |CLOCK       |CLOCK       |Clock Control.                               |SoftDevice        |

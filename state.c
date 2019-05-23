@@ -177,7 +177,7 @@ static void state_save_meas(void){
       rec.context.flags |= BLE_GLS_CONTEXT_FLAG_MED;
       rec.context.flags |= BLE_GLS_CONTEXT_FLAG_MED_L;
       rec.context.medication_id         = config_manager_get_insulin_type();
-      // Definimos que 1 U de insulina se representa como 1 ml
+      // Definimos que 1 U de insulina se representa como 10 ml
       rec.context.medication.exponent   = 3; // Exponent: Decimal, -3
       rec.context.medication.mantissa   = m_topsulin_meas.ins;
     }
