@@ -25,6 +25,8 @@ Base UUID para Topsulin Services y Characteristics 0x3419-XXXX-1505-31A7-EC4D-44
 
 Según el servicio estándar [Glucose Service Specification](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.glucose.xml)
 
+Definimos que 1 U de insulina se representa como 10 ml.
+
 ```c
 /**@brief Glucose feature */
 #define BLE_GLS_FEATURE_LOW_BATT                       0x0001  /**< Low Battery Detection During Measurement Supported */
@@ -160,8 +162,6 @@ sfloat_t decode_sfloat(uint16_t u)
 #### Topsulin Service
 
 [Characteristic Format Types](https://www.bluetooth.com/specifications/assigned-numbers/format-types)
-
-Definimos que 1 U de insulina se representa como 10 ml.
 
 |Characteristic                                      |Format |Value                              |Default                   |
 |----------------------------------------------------|-------|-----------------------------------|--------------------------|
