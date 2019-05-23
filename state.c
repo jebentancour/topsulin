@@ -293,10 +293,10 @@ void state_process_display(void){
     uint8_t ins_h_pos;
     if (config_manager_get_ins_interval() >= 10){
       ins_h_pos = 154;
-      if(m_topsulin_meas.ins < 100){
+      if(m_topsulin_meas.ins < 1000){
           ins_h_pos += 8;
       }
-      if(m_topsulin_meas.ins < 10){
+      if(m_topsulin_meas.ins < 100){
           ins_h_pos += 9;
       }
     } else {
