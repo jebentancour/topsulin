@@ -10,6 +10,7 @@
 
 #include "FEPD_2in13.h"
 #include "GUI_Paint.h"
+#include "GUI_Cache.h"
 #include "ImageData.h"
 #include "clock.h"
 #include "gpio.h"
@@ -64,8 +65,48 @@ int main(void){
     uint32_t now = 0;
 
     DEV_ModuleInit();
-    EPD_Init();
-    if(config_manager_get_flags() & CONFIG_COLOR_FLAG){
+    EPD_Init(FULL_UPDATE);
+
+    EPD_Clear();
+    nrf_delay_ms(1000);
+
+    Paint_NewImage(ImageBuff, EPD_WIDTH, EPD_HEIGHT, ROTATE_0, WHITE);
+
+    Paint_Clear(0xff);
+
+    Paint_DrawPoint(5, 10, BLACK, DOT_PIXEL_1X1, DOT_STYLE_DFT);
+    Paint_DrawPoint(5, 20, BLACK, DOT_PIXEL_2X2, DOT_STYLE_DFT);
+    Paint_DrawPoint(5, 30, BLACK, DOT_PIXEL_3X3, DOT_STYLE_DFT);
+    Paint_DrawPoint(5, 40, BLACK, DOT_PIXEL_4X4, DOT_STYLE_DFT);
+
+    Paint_DrawLine(20, 10, 60, 50, BLACK, LINE_STYLE_SOLID, DOT_PIXEL_1X1);
+    Paint_DrawLine(60, 10, 20, 50, BLACK, LINE_STYLE_SOLID, DOT_PIXEL_1X1);
+    Paint_DrawRectangle(20, 10, 60, 50, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
+    Paint_DrawRectangle(80, 10, 120, 50, BLACK, DRAW_FILL_FULL, DOT_PIXEL_1X1);
+
+    EPD_DisplayWindows(ImageBuff, 0, 0, EPD_WIDTH, EPD_HEIGHT);
+
+    Paint_Clear(0xff);
+
+    Paint_DrawLine(30, 10, 30, 50, BLACK, LINE_STYLE_DOTTED, DOT_PIXEL_1X1);
+    Paint_DrawLine(10, 30, 50, 30, BLACK, LINE_STYLE_DOTTED, DOT_PIXEL_1X1);
+    Paint_DrawCircle(30, 30, 20, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
+    Paint_DrawRectangle(60, 10, 100, 50, BLACK, DRAW_FILL_FULL, DOT_PIXEL_1X1);
+    Paint_DrawCircle(80, 30, 20, WHITE, DRAW_FILL_FULL, DOT_PIXEL_1X1);
+
+    EPD_DisplayWindows(ImageBuff, 0, 50, EPD_WIDTH, EPD_HEIGHT);
+
+    Paint_Clear(0xff);
+
+    Paint_DrawString_EN(0, 0, "waveshare", &Font12, BLACK, WHITE);
+    Paint_DrawNum(0, 20, 1234567, &Font24, WHITE, BLACK);
+
+    EPD_DisplayWindows(ImageBuff, 0, 110, 122, 160);
+
+    EPD_TurnOnDisplay();
+    nrf_delay_ms(1000);
+
+    /*if(config_manager_get_flags() & CONFIG_COLOR_FLAG){
       if (config_manager_get_flags() & CONFIG_FLIP_FLAG){
         GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_180, IMAGE_COLOR_POSITIVE);
       } else {
@@ -77,7 +118,7 @@ int main(void){
       } else {
         GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_INVERTED);
       }
-    }
+    }*/
 
     batt_flag = 0;
     batt_set_flag(&batt_flag);
@@ -121,7 +162,7 @@ int main(void){
                 NRF_LOG_INFO("Wake up!\r\n");
                 NRF_LOG_FLUSH();
                 clock_print();
-                EPD_Init();
+                EPD_Init(FULL_UPDATE);
                 advertising_start();
                 encoder_enable();
                 wake_up = 1;

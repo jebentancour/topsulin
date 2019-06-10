@@ -15,13 +15,19 @@
 #include "DEV_Config.h"
 
 // Display resolution
-#define EPD_WIDTH   104
-#define EPD_HEIGHT  212
+#define EPD_WIDTH       122
+#define EPD_HEIGHT      250
 
-UBYTE EPD_Init(void);
+#define FULL_UPDATE 0
+#define PART_UPDATE 1
+
+UBYTE EPD_Init(UBYTE update);
 void EPD_Clear(void);
-void EPD_DisplayFull(void);
-void EPD_DisplayPartial(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend);
+void EPD_TurnOnDisplay(void);
+void EPD_Display(UBYTE *Image);
+void EPD_DisplayWindows(UBYTE *Image, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend);
+void EPD_DisplayPart(UBYTE *Image);
+void EPD_DisplayPartWindows(UBYTE *Image, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend);
 void EPD_Sleep(void);
 
 #endif /* EPD2IN13_H */

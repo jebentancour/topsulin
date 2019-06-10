@@ -15,6 +15,6 @@
 #include "DEV_Config.h"
 #include "FEPD_2in13.h"
 
-extern UBYTE ImageBuff[EPD_HEIGHT * EPD_WIDTH / 8];
+extern UBYTE ImageBuff[((EPD_WIDTH % 8 == 0) ? (EPD_WIDTH / 8 ) : (EPD_WIDTH / 8 + 1)) * EPD_HEIGHT];
 
 #endif /* GUI_CACHE_H */

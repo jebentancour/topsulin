@@ -205,7 +205,7 @@ void state_set_bt_state(uint8_t state){
   bt_state = state;
   if ((m_state != initial)&&(m_state != warning)){
     if (m_state == sleep){
-      EPD_Init();
+      EPD_Init(FULL_UPDATE);
       full_refresh = 1;
     } else {
       quick_refresh = 1;
@@ -217,7 +217,7 @@ void state_set_bt_state(uint8_t state){
 void state_update_mem(void){
   if ((m_state != initial)&&(m_state != warning)){
     if (m_state == sleep){
-      EPD_Init();
+      EPD_Init(FULL_UPDATE);
       full_refresh = 1;
     } else {
       quick_refresh = 1;
@@ -230,49 +230,49 @@ void state_update_mem(void){
 
 void state_process_display(void){
   if ((m_state != initial)&&((m_state != warning))&&(quick_refresh|full_refresh)){
-    GUI_Clear(WHITE);
+    //GUI_Clear(WHITE);
 
     len = config_manager_get_name(buffer);
-    GUI_DrawString_EN(8, 92, buffer, &Font12, WHITE, BLACK);
+    //GUI_DrawString_EN(8, 92, buffer, &Font12, WHITE, BLACK);
 
     voltage = batt_get();
     len = sprintf(buffer, "%ld.%ldV", voltage / 1000, (voltage % 1000) / 100);
-    GUI_DrawString_EN(15*7, 92, buffer, &Font12, WHITE, BLACK);
+    //GUI_DrawString_EN(15*7, 92, buffer, &Font12, WHITE, BLACK);
 
     uint16_t num_records = ble_gls_db_num_records_get();
     len = sprintf(buffer, "M%03d", num_records);
-    GUI_DrawString_EN(20*7, 92, buffer, &Font12, WHITE, BLACK);
+    //GUI_DrawString_EN(20*7, 92, buffer, &Font12, WHITE, BLACK);
 
     if (bt_state == 0){
-      GUI_DrawString_EN(25*7, 92, "BToff", &Font12, WHITE, BLACK);
+      //GUI_DrawString_EN(25*7, 92, "BToff", &Font12, WHITE, BLACK);
     }
     if (bt_state == 1){
-      GUI_DrawString_EN(25*7, 92, "BTon ", &Font12, WHITE, BLACK);
+      //GUI_DrawString_EN(25*7, 92, "BTon ", &Font12, WHITE, BLACK);
     }
     if (bt_state == 2){
-      GUI_DrawString_EN(25*7, 92, "BTcon", &Font12, WHITE, BLACK);
+      //GUI_DrawString_EN(25*7, 92, "BTcon", &Font12, WHITE, BLACK);
     }
 
     if (config_manager_get_flags() & CONFIG_FLIP_FLAG){
-        GUI_DrawIcon(ICON_V_POS, LEFT_ICON_H_POS, gImage_icon_glu_flip, WHITE);
-        GUI_DrawIcon(ICON_V_POS, CENTER_ICON_H_POS, gImage_icon_cho_flip, WHITE);
-        GUI_DrawIcon(ICON_V_POS, RIGHT_ICON_H_POS, gImage_icon_ins_flip, WHITE);
+        //GUI_DrawIcon(ICON_V_POS, LEFT_ICON_H_POS, gImage_icon_glu_flip, WHITE);
+        //GUI_DrawIcon(ICON_V_POS, CENTER_ICON_H_POS, gImage_icon_cho_flip, WHITE);
+        //GUI_DrawIcon(ICON_V_POS, RIGHT_ICON_H_POS, gImage_icon_ins_flip, WHITE);
     } else {
-        GUI_DrawIcon(ICON_V_POS, LEFT_ICON_H_POS, gImage_icon_glu, WHITE);
-        GUI_DrawIcon(ICON_V_POS, CENTER_ICON_H_POS, gImage_icon_cho, WHITE);
-        GUI_DrawIcon(ICON_V_POS, RIGHT_ICON_H_POS, gImage_icon_ins, WHITE);
+        //GUI_DrawIcon(ICON_V_POS, LEFT_ICON_H_POS, gImage_icon_glu, WHITE);
+        //GUI_DrawIcon(ICON_V_POS, CENTER_ICON_H_POS, gImage_icon_cho, WHITE);
+        //GUI_DrawIcon(ICON_V_POS, RIGHT_ICON_H_POS, gImage_icon_ins, WHITE);
     }
 
-    GUI_DrawString_EN(LEFT_ICON_H_POS + 32, 72, "mg", &Font12, WHITE, BLACK);
-    GUI_DrawString_EN(LEFT_ICON_H_POS + 32, 60, "dL", &Font12, WHITE, BLACK);
+    //GUI_DrawString_EN(LEFT_ICON_H_POS + 32, 72, "mg", &Font12, WHITE, BLACK);
+    //GUI_DrawString_EN(LEFT_ICON_H_POS + 32, 60, "dL", &Font12, WHITE, BLACK);
 
     len = sprintf(buffer, "%d", config_manager_get_cho_interval());
-    GUI_DrawString_EN(CENTER_ICON_H_POS + 32, 72, buffer, &Font12, WHITE, BLACK);
-    GUI_DrawString_EN(CENTER_ICON_H_POS + 32, 60, "grs", &Font12, WHITE, BLACK);
+    //GUI_DrawString_EN(CENTER_ICON_H_POS + 32, 72, buffer, &Font12, WHITE, BLACK);
+    //GUI_DrawString_EN(CENTER_ICON_H_POS + 32, 60, "grs", &Font12, WHITE, BLACK);
 
     len = sprintf(buffer, "%d.%d", config_manager_get_ins_interval() / 10, config_manager_get_ins_interval() % 10);
-    GUI_DrawString_EN(RIGHT_ICON_H_POS + 32, 72, buffer, &Font12, WHITE, BLACK);
-    GUI_DrawString_EN(RIGHT_ICON_H_POS + 32, 60, "U", &Font12, WHITE, BLACK);
+    //GUI_DrawString_EN(RIGHT_ICON_H_POS + 32, 72, buffer, &Font12, WHITE, BLACK);
+    //GUI_DrawString_EN(RIGHT_ICON_H_POS + 32, 60, "U", &Font12, WHITE, BLACK);
 
     uint8_t glu_h_pos = 11;
     if(m_topsulin_meas.glu < 100){
@@ -311,32 +311,32 @@ void state_process_display(void){
 
     if (m_state == sleep){
       len = sprintf(buffer, "%ld", m_topsulin_meas.glu);
-      GUI_DrawString_EN(glu_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
+      //GUI_DrawString_EN(glu_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
       len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.glu_time);
-      GUI_DrawString_EN(LEFT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
+      //GUI_DrawString_EN(LEFT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
 
       len = sprintf(buffer, "%ld", m_topsulin_meas.cho);
-      GUI_DrawString_EN(cho_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
+      //GUI_DrawString_EN(cho_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
       len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.cho_time);
-      GUI_DrawString_EN(CENTER_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
+      //GUI_DrawString_EN(CENTER_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
 
       if (config_manager_get_ins_interval() >= 10){
         len = sprintf(buffer, "%ld", m_topsulin_meas.ins / 10);
       } else {
         len = sprintf(buffer, "%ld.%ld", m_topsulin_meas.ins / 10, m_topsulin_meas.ins % 10);
       }
-      GUI_DrawString_EN(ins_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
+      //GUI_DrawString_EN(ins_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
       len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.ins_time);
-      GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
+      //GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
     } else {
       if (m_state == input_glu){
-        GUI_DrawRectangle(2, 4, 93, 70, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
+        //GUI_DrawRectangle(2, 4, 93, 70, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
       }
       if (m_state == input_cho){
-        GUI_DrawRectangle(2, 73, 93, 141, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
+        //GUI_DrawRectangle(2, 73, 93, 141, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
       }
       if (m_state == input_ins){
-        GUI_DrawRectangle(2, 143, 93, 210, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
+        //GUI_DrawRectangle(2, 143, 93, 210, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
       }
 
       if (new_glu){
@@ -345,11 +345,11 @@ void state_process_display(void){
         glu_h_pos = 11;
         len = sprintf(buffer, " - ");
       }
-      GUI_DrawString_EN(glu_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
+      //GUI_DrawString_EN(glu_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
       len = sprintf(buffer, "%d", config_manager_get_calc_corr().mantissa);
-      GUI_DrawString_EN(LEFT_TIME_H_POS, TIME_V_POS, buffer, &Font12, WHITE, BLACK);
+      //GUI_DrawString_EN(LEFT_TIME_H_POS, TIME_V_POS, buffer, &Font12, WHITE, BLACK);
       len = sprintf(buffer, "%d-%d", config_manager_get_calc_low().mantissa, config_manager_get_calc_high().mantissa);
-      GUI_DrawString_EN(LEFT_TIME_H_POS, TIME_V_POS + 12, buffer, &Font12, WHITE, BLACK);
+      //GUI_DrawString_EN(LEFT_TIME_H_POS, TIME_V_POS + 12, buffer, &Font12, WHITE, BLACK);
 
       if (new_cho){
         len = sprintf(buffer, "%ld", m_topsulin_meas.cho);
@@ -357,9 +357,9 @@ void state_process_display(void){
         cho_h_pos = 83;
         len = sprintf(buffer, " - ");
       }
-      GUI_DrawString_EN(cho_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
+      //GUI_DrawString_EN(cho_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
       len = sprintf(buffer, "%d", config_manager_get_calc_sens());
-      GUI_DrawString_EN(CENTER_TIME_H_POS, TIME_V_POS, buffer, &Font12, WHITE, BLACK);
+      //GUI_DrawString_EN(CENTER_TIME_H_POS, TIME_V_POS, buffer, &Font12, WHITE, BLACK);
 
       if (new_ins){
         if (config_manager_get_ins_interval() >= 10){
@@ -371,23 +371,23 @@ void state_process_display(void){
         ins_h_pos = 154;
         len = sprintf(buffer, " - ");
       }
-      GUI_DrawString_EN(ins_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
+      //GUI_DrawString_EN(ins_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
       if (config_manager_get_flags() & CONFIG_BOLO_FLAG){
-        GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, "Calc ON", &Font12, WHITE, BLACK);
+        //GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, "Calc ON", &Font12, WHITE, BLACK);
       } else {
-        GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, "Calc OFF", &Font12, WHITE, BLACK);
+        //GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, "Calc OFF", &Font12, WHITE, BLACK);
       }
     }
 
   }
 
   if (full_refresh){
-    EPD_DisplayFull();
+    EPD_Init(FULL_UPDATE);
     full_refresh = 0;
   }
 
   if (quick_refresh){
-    EPD_DisplayPartial(1, 1, 104, 212);
+    EPD_Init(PART_UPDATE);
     quick_refresh = 0;
   }
 
@@ -397,9 +397,9 @@ void state_on_event(event_t event){
   switch(m_state){
     case initial:
       if (event == ble_on){
-        GUI_DrawBitMap(gImage_IMAGE_1);
+        //GUI_DrawBitMap(gImage_IMAGE_1);
         sprintf(buffer, "Topsulin-%04X", (uint16_t) NRF_FICR->DEVICEADDR[0] & 0xFFFF);
-        GUI_DrawString_EN(32, 8, buffer, &Font16, WHITE, BLACK);
+        //GUI_DrawString_EN(32, 8, buffer, &Font16, WHITE, BLACK);
         full_refresh = 1;
       }
       break;
@@ -415,15 +415,15 @@ void state_on_event(event_t event){
         if (memory_full | low_batt){
             if (low_batt){
                 if (config_manager_get_flags() & CONFIG_FLIP_FLAG){
-                    GUI_DrawBitMap(gImage_IMAGE_5);
+                    //GUI_DrawBitMap(gImage_IMAGE_5);
                 } else {
-                    GUI_DrawBitMap(gImage_IMAGE_3);
+                    //GUI_DrawBitMap(gImage_IMAGE_3);
                 }
             } else {
                 if (config_manager_get_flags() & CONFIG_FLIP_FLAG){
-                    GUI_DrawBitMap(gImage_IMAGE_4);
+                    //GUI_DrawBitMap(gImage_IMAGE_4);
                 } else {
-                    GUI_DrawBitMap(gImage_IMAGE_2);
+                    //GUI_DrawBitMap(gImage_IMAGE_2);
                 }
             }
             warning_time = 0;
@@ -642,26 +642,26 @@ void state_on_event(event_t event){
 
 void state_show_pin(char* pin){
   // TODO: dar vuelta el icono con la flag flip
-  GUI_ClearWindows(1, 1, 104, 212, WHITE);
-  GUI_DrawIcon(5, 23, gImage_icon_lock, WHITE);
-  GUI_DrawString_EN(79, 36, pin, &Font24, WHITE, BLACK);
-  EPD_DisplayFull();
+  //GUI_ClearWindows(1, 1, 104, 212, WHITE);
+  //GUI_DrawIcon(5, 23, gImage_icon_lock, WHITE);
+  //GUI_DrawString_EN(79, 36, pin, &Font24, WHITE, BLACK);
+  EPD_Init(FULL_UPDATE);
 }
 
 void state_show_pin_error(void){
   // TODO: dar vuelta el icono con la flag flip
-  GUI_ClearWindows(1, 1, 104, 212, WHITE);
-  GUI_DrawIcon(5, 23, gImage_icon_lock, WHITE);
-  GUI_DrawString_EN(79, 36, "ERROR", &Font24, WHITE, BLACK);
-  EPD_DisplayFull();
+  //GUI_ClearWindows(1, 1, 104, 212, WHITE);
+  //GUI_DrawIcon(5, 23, gImage_icon_lock, WHITE);
+  //GUI_DrawString_EN(79, 36, "ERROR", &Font24, WHITE, BLACK);
+  EPD_Init(FULL_UPDATE);
 }
 
 void state_show_pin_ok(void){
   // TODO: dar vuelta el icono con la flag flip
-  GUI_ClearWindows(1, 1, 104, 212, WHITE);
-  GUI_DrawIcon(5, 23, gImage_icon_lock, WHITE);
-  GUI_DrawString_EN(79, 36, "OK", &Font24, WHITE, BLACK);
-  EPD_DisplayFull();
+  //GUI_ClearWindows(1, 1, 104, 212, WHITE);
+  //GUI_DrawIcon(5, 23, gImage_icon_lock, WHITE);
+  //GUI_DrawString_EN(79, 36, "OK", &Font24, WHITE, BLACK);
+  EPD_Init(FULL_UPDATE);
 }
 
 void state_begin(){
@@ -678,8 +678,8 @@ void state_sleep(){
   if (m_state == initial){
     NRF_LOG_INFO("Going to sleep in initial state\n");
     NRF_LOG_FLUSH();
-    GUI_DrawBitMap(gImage_IMAGE_0);
-    EPD_DisplayFull();
+    //GUI_DrawBitMap(gImage_IMAGE_0);
+    EPD_Init(FULL_UPDATE);
   } else {
     if (m_state != sleep){
       NRF_LOG_INFO("Going to sleep: m_state != sleep\n");

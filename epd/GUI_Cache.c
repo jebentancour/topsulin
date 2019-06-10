@@ -1,7 +1,7 @@
 /*****************************************************************************
 * | File      	:   GUI_Cache.c
 * | Author      :   Waveshare team
-* | Function    :	  When the controller's memory is sufficient, open up a part 
+* | Function    :	  When the controller's memory is sufficient, open up a part
 *                   of the memory for the image cache
 *----------------
 * |	This version:   V1.0
@@ -11,4 +11,4 @@
 ******************************************************************************/
 #include "GUI_Cache.h"
 
-UBYTE ImageBuff[EPD_HEIGHT * EPD_WIDTH / 8];
+UBYTE ImageBuff[((EPD_WIDTH % 8 == 0) ? (EPD_WIDTH / 8 ) : (EPD_WIDTH / 8 + 1)) * EPD_HEIGHT];

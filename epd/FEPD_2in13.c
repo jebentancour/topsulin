@@ -20,109 +20,46 @@
 
 #include "../gpio.h"
 
-/**
- * full screen update LUT
-**/
-const unsigned char lut_vcomDC[] = {
-    0x00, 0x08, 0x00, 0x00, 0x00, 0x02,
-    0x60, 0x28, 0x28, 0x00, 0x00, 0x01,
-    0x00, 0x14, 0x00, 0x00, 0x00, 0x01,
-    0x00, 0x12, 0x12, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00,
-};
-const unsigned char lut_ww[] = {
-    0x40, 0x08, 0x00, 0x00, 0x00, 0x02,
-    0x90, 0x28, 0x28, 0x00, 0x00, 0x01,
-    0x40, 0x14, 0x00, 0x00, 0x00, 0x01,
-    0xA0, 0x12, 0x12, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-};
-const unsigned char lut_bw[] = {
-    0x40, 0x17, 0x00, 0x00, 0x00, 0x02,
-    0x90, 0x0F, 0x0F, 0x00, 0x00, 0x03,
-    0x40, 0x0A, 0x01, 0x00, 0x00, 0x01,
-    0xA0, 0x0E, 0x0E, 0x00, 0x00, 0x02,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-};
-const unsigned char lut_wb[] = {
-    0x80, 0x08, 0x00, 0x00, 0x00, 0x02,
-    0x90, 0x28, 0x28, 0x00, 0x00, 0x01,
-    0x80, 0x14, 0x00, 0x00, 0x00, 0x01,
-    0x50, 0x12, 0x12, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-};
-const unsigned char lut_bb[] = {
-    0x80, 0x08, 0x00, 0x00, 0x00, 0x02,
-    0x90, 0x28, 0x28, 0x00, 0x00, 0x01,
-    0x80, 0x14, 0x00, 0x00, 0x00, 0x01,
-    0x50, 0x12, 0x12, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+const unsigned char lut_full_update[] = {
+    0x80, 0x60, 0x40, 0x00, 0x00, 0x00, 0x00,       //LUT0: BB:     VS 0 ~7
+    0x10, 0x60, 0x20, 0x00, 0x00, 0x00, 0x00,       //LUT1: BW:     VS 0 ~7
+    0x80, 0x60, 0x40, 0x00, 0x00, 0x00, 0x00,       //LUT2: WB:     VS 0 ~7
+    0x10, 0x60, 0x20, 0x00, 0x00, 0x00, 0x00,       //LUT3: WW:     VS 0 ~7
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,       //LUT4: VCOM:   VS 0 ~7
+
+    0x03, 0x03, 0x00, 0x00, 0x02,                   // TP0 A~D RP0
+    0x09, 0x09, 0x00, 0x00, 0x02,                   // TP1 A~D RP1
+    0x03, 0x03, 0x00, 0x00, 0x02,                   // TP2 A~D RP2
+    0x00, 0x00, 0x00, 0x00, 0x00,                   // TP3 A~D RP3
+    0x00, 0x00, 0x00, 0x00, 0x00,                   // TP4 A~D RP4
+    0x00, 0x00, 0x00, 0x00, 0x00,                   // TP5 A~D RP5
+    0x00, 0x00, 0x00, 0x00, 0x00,                   // TP6 A~D RP6
+
+    0x15, 0x41, 0xA8, 0x32, 0x30, 0x0A,
 };
 
-/**
- * partial screen update LUT
-**/
-const unsigned char lut_vcom1[] = {
-    0x00, 0x19, 0x01, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00,
+const unsigned char lut_partial_update[] = { //20 bytes
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,       //LUT0: BB:     VS 0 ~7
+    0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,       //LUT1: BW:     VS 0 ~7
+    0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,       //LUT2: WB:     VS 0 ~7
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,       //LUT3: WW:     VS 0 ~7
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,       //LUT4: VCOM:   VS 0 ~7
+
+    0x0A, 0x00, 0x00, 0x00, 0x00,                   // TP0 A~D RP0
+    0x00, 0x00, 0x00, 0x00, 0x00,                   // TP1 A~D RP1
+    0x00, 0x00, 0x00, 0x00, 0x00,                   // TP2 A~D RP2
+    0x00, 0x00, 0x00, 0x00, 0x00,                   // TP3 A~D RP3
+    0x00, 0x00, 0x00, 0x00, 0x00,                   // TP4 A~D RP4
+    0x00, 0x00, 0x00, 0x00, 0x00,                   // TP5 A~D RP5
+    0x00, 0x00, 0x00, 0x00, 0x00,                   // TP6 A~D RP6
+
+    0x15, 0x41, 0xA8, 0x32, 0x30, 0x0A,
 };
-const unsigned char lut_ww1[] = {
-    0x00, 0x19, 0x01, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-};
-const unsigned char lut_bw1[] = {
-    0x80, 0x19, 0x01, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-};
-const unsigned char lut_wb1[] = {
-    0x40, 0x19, 0x01, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-};
-const unsigned char lut_bb1[] = {
-    0x00, 0x19, 0x01, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-};
+
 
 /******************************************************************************
-function :	Software reset
-parameter:
+  function :	Software reset
+  parameter:
 ******************************************************************************/
 static void EPD_Reset(void)
 {
@@ -135,9 +72,9 @@ static void EPD_Reset(void)
 }
 
 /******************************************************************************
-function :	send command
-parameter:
-    Reg : Command register
+  function :	send command
+  parameter:
+     Reg : Command register
 ******************************************************************************/
 static void EPD_SendCommand(UBYTE Reg)
 {
@@ -148,8 +85,8 @@ static void EPD_SendCommand(UBYTE Reg)
 }
 
 /******************************************************************************
-function :	send data
-parameter:
+  function :	send data
+  parameter:
     Data : Write data
 ******************************************************************************/
 static void EPD_SendData(UBYTE Data)
@@ -161,285 +98,268 @@ static void EPD_SendData(UBYTE Data)
 }
 
 /******************************************************************************
-function :	Wait until the busy_pin goes LOW
-parameter:
+  function :	Wait until the busy_pin goes LOW
+  parameter:
 ******************************************************************************/
-static void EPD_WaitUntilIdle(void)
+void EPD_WaitUntilIdle(void)
 {
-	//DEBUG("BUSY....\r\n");
-  UBYTE busy;
-  do {
-      EPD_SendCommand(0x71);
-      busy = EPD_BUSY_RD;
-      busy =!(busy & 0x01);
-      gpio_process(); // GPIO polling
-  } while(busy);
-  // DEV_Delay_ms(50);
-	//DEBUG("BUSY free....\r\n");
+    DEBUG("e-Paper busy\r\n");
+    while (EPD_BUSY_RD == 1) {     //LOW: idle, HIGH: busy
+        DEV_Delay_ms(100);
+    }
+    DEBUG("e-Paper busy release\r\n");
 }
 
 /******************************************************************************
-function :	LUT download
-parameter:
-******************************************************************************/
-static void EPD_SetFullReg(void)
-{
-    EPD_SendCommand(0X50);			 //VCOM AND DATA INTERVAL SETTING
-    EPD_SendData(0x97);		       //WBmode:VBDF 17|D7 VBDW 97 VBDB 57		WBRmode:VBDF F7 VBDW 77 VBDB 37  VBDR B7
-
-    unsigned int count;
-    EPD_SendCommand(0x20);
-    for(count=0; count<44; count++) {
-        EPD_SendData(lut_vcomDC[count]);
-    }
-
-    EPD_SendCommand(0x21);
-    for(count=0; count<42; count++) {
-        EPD_SendData(lut_ww[count]);
-    }
-
-    EPD_SendCommand(0x22);
-    for(count=0; count<42; count++) {
-        EPD_SendData(lut_bw[count]);
-    }
-
-    EPD_SendCommand(0x23);
-    for(count=0; count<42; count++) {
-        EPD_SendData(lut_wb[count]);
-    }
-
-    EPD_SendCommand(0x24);
-    for(count=0; count<42; count++) {
-        EPD_SendData(lut_bb[count]);
-    }
-}
-
-/******************************************************************************
-function :	LUT download
-parameter:
-******************************************************************************/
-static void EPD_SetPartReg(void)
-{
-    EPD_SendCommand(0x82);			//vcom_DC setting
-    EPD_SendData(0x03);
-    EPD_SendCommand(0X50);
-    EPD_SendData(0x47);
-
-    unsigned int count;
-    EPD_SendCommand(0x20);
-    for(count=0; count<44; count++) {
-        EPD_SendData(lut_vcom1[count]);
-    }
-
-    EPD_SendCommand(0x21);
-    for(count=0; count<42; count++) {
-        EPD_SendData(lut_ww1[count]);
-    }
-
-    EPD_SendCommand(0x22);
-    for(count=0; count<42; count++) {
-        EPD_SendData(lut_bw1[count]);
-    }
-
-    EPD_SendCommand(0x23);
-    for(count=0; count<42; count++) {
-        EPD_SendData(lut_wb1[count]);
-    }
-
-    EPD_SendCommand(0x24);
-    for(count=0; count<42; count++) {
-        EPD_SendData(lut_bb1[count]);
-    }
-}
-
-/******************************************************************************
-function :	Initialize the e-Paper register
-parameter:
-******************************************************************************/
-UBYTE EPD_Init()
-{
-    EPD_Reset();
-
-    EPD_SendCommand(0x01);	//POWER SETTING
-    EPD_SendData(0x03);
-    EPD_SendData(0x00);
-    EPD_SendData(0x2b);
-    EPD_SendData(0x2b);
-    EPD_SendData(0x03);
-
-    EPD_SendCommand(0x06);	//boost soft start
-    EPD_SendData(0x17);     //A
-    EPD_SendData(0x17);     //B
-    EPD_SendData(0x17);     //C
-
-    EPD_SendCommand(0x04);
-    // EPD_WaitUntilIdle();
-
-    EPD_SendCommand(0x00);	//panel setting
-    EPD_SendData(0xbf);     //LUT from OTP 128x296
-    EPD_SendData(0x0d);     //VCOM to 0V fast
-
-    EPD_SendCommand(0x30);	//PLL setting
-    EPD_SendData(0x3a);     // 3a 100HZ /29 150Hz /39 200HZ	/31 171HZ /3c 50hz
-
-    EPD_SendCommand(0x61);	//resolution setting
-    EPD_SendData(EPD_WIDTH);
-    EPD_SendData((EPD_HEIGHT >> 8) & 0xff);
-    EPD_SendData(EPD_HEIGHT& 0xff);
-
-    EPD_SendCommand(0x82);	//vcom_DC setting
-    EPD_SendData(0x28);
-
-    return 0;
-}
-
-/******************************************************************************
-function :	Turn On Display
-parameter:
+  function :	Turn On Display
+  parameter:
 ******************************************************************************/
 void EPD_TurnOnDisplay(void)
 {
-    EPD_SendCommand(0x12);		  //DISPLAY REFRESH
-    DEV_Delay_ms(1);            //!!!The delay here is necessary, 200uS at least!!!
-
+    EPD_SendCommand(0x22);
+    EPD_SendData(0xC7);
+    //EPD_SendData(0x0c);
+    EPD_SendCommand(0x20);
     EPD_WaitUntilIdle();
 }
 
+/******************************************************************************
+  function :	Initialize the e-Paper register
+  parameter:
+******************************************************************************/
+UBYTE EPD_Init(UBYTE update)
+{
+    UBYTE count;
+    EPD_Reset();
+
+    if (update == FULL_UPDATE) {
+        EPD_WaitUntilIdle();
+        EPD_SendCommand(0x12); // soft reset
+        EPD_WaitUntilIdle();
+
+        EPD_SendCommand(0x74); //set analog block control
+        EPD_SendData(0x54);
+        EPD_SendCommand(0x7E); //set digital block control
+        EPD_SendData(0x3B);
+
+        EPD_SendCommand(0x01); //Driver output control
+        EPD_SendData(0xF9);
+        EPD_SendData(0x00);
+        EPD_SendData(0x00);
+
+        EPD_SendCommand(0x11); //data entry mode
+        EPD_SendData(0x01);
+
+        EPD_SendCommand(0x44); //set Ram-X address start/end position
+        EPD_SendData(0x00);
+        EPD_SendData(0x0F);    //0x0C-->(15+1)*8=128
+
+        EPD_SendCommand(0x45); //set Ram-Y address start/end position
+        EPD_SendData(0xF9);   //0xF9-->(249+1)=250
+        EPD_SendData(0x00);
+        EPD_SendData(0x00);
+        EPD_SendData(0x00);
+
+        EPD_SendCommand(0x3C); //BorderWavefrom
+        EPD_SendData(0x03);
+
+        EPD_SendCommand(0x2C);     //VCOM Voltage
+        EPD_SendData(0x55);    //
+
+        EPD_SendCommand(0x03);
+        EPD_SendData(lut_full_update[70]);
+
+        EPD_SendCommand(0x04); //
+        EPD_SendData(lut_full_update[71]);
+        EPD_SendData(lut_full_update[72]);
+        EPD_SendData(lut_full_update[73]);
+
+        EPD_SendCommand(0x3A);     //Dummy Line
+        EPD_SendData(lut_full_update[74]);
+        EPD_SendCommand(0x3B);     //Gate time
+        EPD_SendData(lut_full_update[75]);
+
+        EPD_SendCommand(0x32);
+        for (count = 0; count < 70; count++)
+            EPD_SendData(lut_full_update[count]);
+
+        EPD_SendCommand(0x4E);   // set RAM x address count to 0;
+        EPD_SendData(0x00);
+        EPD_SendCommand(0x4F);   // set RAM y address count to 0X127;
+        EPD_SendData(0xF9);
+        EPD_SendData(0x00);
+        EPD_WaitUntilIdle();
+    } else {
+        EPD_SendCommand(0x2C);     //VCOM Voltage
+        EPD_SendData(0x26);
+
+        EPD_WaitUntilIdle();
+
+        EPD_SendCommand(0x32);
+        for (count = 0; count < 70; count++)
+            EPD_SendData(lut_partial_update[count]);
+
+        EPD_SendCommand(0x37);
+        EPD_SendData(0x00);
+        EPD_SendData(0x00);
+        EPD_SendData(0x00);
+        EPD_SendData(0x00);
+        EPD_SendData(0x40);
+        EPD_SendData(0x00);
+        EPD_SendData(0x00);
+
+        EPD_SendCommand(0x22);
+        EPD_SendData(0xC0);
+        EPD_SendCommand(0x20);
+        EPD_WaitUntilIdle();
+
+        EPD_SendCommand(0x3C); //BorderWavefrom
+        EPD_SendData(0x01);
+    }
+    return 0;
+}
+
+/**
+    @brief: private function to specify the memory area for data R/W
+*/
+static void EPD_SetWindows(int x_start, int y_start, int x_end, int y_end)
+{
+    EPD_SendCommand(0x44);
+    /* x point must be the multiple of 8 or the last 3 bits will be ignored */
+    EPD_SendData((x_start >> 3) & 0xFF);
+    EPD_SendData((x_end >> 3) & 0xFF);
+    EPD_SendCommand(0x45);
+    EPD_SendData(y_start & 0xFF);
+    EPD_SendData((y_start >> 8) & 0xFF);
+    EPD_SendData(y_end & 0xFF);
+    EPD_SendData((y_end >> 8) & 0xFF);
+}
+
+/**
+    @brief: private function to specify the start point for data R/W
+*/
+static void EPD_SetCursor(int x, int y)
+{
+    EPD_SendCommand(0x4E);
+    /* x point must be the multiple of 8 or the last 3 bits will be ignored */
+    EPD_SendData((x >> 3) & 0xFF);
+    EPD_SendCommand(0X4F);
+    EPD_SendData(y & 0xFF);
+    EPD_SendData((y >> 8) & 0xFF);
+    EPD_WaitUntilIdle();
+}
 
 /******************************************************************************
-function :	Clear screen
-parameter:
+  function :	Clear screen
+  parameter:
 ******************************************************************************/
 void EPD_Clear(void)
 {
     UWORD Width, Height;
-    Width = (EPD_WIDTH % 8 == 0)? (EPD_WIDTH / 8 ): (EPD_WIDTH / 8 + 1);
+    Width = (EPD_WIDTH % 8 == 0) ? (EPD_WIDTH / 8 ) : (EPD_WIDTH / 8 + 1);
+    Height = EPD_HEIGHT;
+    EPD_SendCommand(0x24);
+    for (UWORD j = 0; j < Height; j++) {
+        for (UWORD i = 0; i < Width; i++) {
+            EPD_SendData(0XFF);
+        }
+    }
+    EPD_TurnOnDisplay();
+}
+
+/******************************************************************************
+  function :	Sends the image buffer in RAM to e-Paper and displays
+  parameter:
+******************************************************************************/
+void EPD_Display(UBYTE *Image)
+{
+    UWORD Width, Height;
+    Width = (EPD_WIDTH % 8 == 0) ? (EPD_WIDTH / 8 ) : (EPD_WIDTH / 8 + 1);
     Height = EPD_HEIGHT;
 
-    EPD_SendCommand(0x10);
+    EPD_SendCommand(0x24);
     for (UWORD j = 0; j < Height; j++) {
         for (UWORD i = 0; i < Width; i++) {
-            EPD_SendData(0x00);
+            EPD_SendData(Image[i + j * Width]);
         }
     }
-    DEV_Delay_ms(10);
+    EPD_TurnOnDisplay();
+}
 
-    EPD_SendCommand(0x13);
+void EPD_DisplayWindows(UBYTE *Image, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend)
+{
+    UWORD Width, Height;
+    Width = ((Xend - Xstart) % 8 == 0) ? ((Xend - Xstart) / 8 ) : ((Xend - Xstart) / 8 + 1);
+    Height = Yend - Ystart;
+
+    EPD_SetWindows(Xstart, Ystart, Xend, Yend);
+    UWORD i, j;
+    for (j = 0; j < Height; j++) {
+        EPD_SetCursor(Xstart, Ystart + j);
+        EPD_SendCommand(0x24);
+        for (i = 0; i < Width; i++) {
+            EPD_SendData(Image[i + j * Width]);
+        }
+    }
+}
+
+void EPD_DisplayPart(UBYTE *Image)
+{
+    UWORD Width, Height;
+    Width = (EPD_WIDTH % 8 == 0) ? (EPD_WIDTH / 8 ) : (EPD_WIDTH / 8 + 1);
+    Height = EPD_HEIGHT;
+    EPD_SendCommand(0x24);
     for (UWORD j = 0; j < Height; j++) {
         for (UWORD i = 0; i < Width; i++) {
-            EPD_SendData(0xFF);
+            EPD_SendData(Image[i + j * Width]);
         }
     }
-    DEV_Delay_ms(10);
 
-    EPD_SetFullReg();
+    EPD_SendCommand(0x26);   //Write Black and White image to RAM
+    for (UWORD j = 0; j < Height; j++) {
+        for (UWORD i = 0; i < Width; i++) {
+            EPD_SendData(~Image[i + j * Width]);
+        }
+    }
     EPD_TurnOnDisplay();
 }
 
-/******************************************************************************
-function :	Sends the image buffer in RAM to e-Paper and displays
-parameter:
-******************************************************************************/
-void EPD_DisplayFull(void)
+void EPD_DisplayPartWindows(UBYTE *Image, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend)
 {
-    UWORD Byte_Width, Byte_Height;
-    Byte_Width = (EPD_WIDTH % 8 == 0)? (EPD_WIDTH / 8 ): (EPD_WIDTH / 8 + 1);
-    Byte_Height = EPD_HEIGHT;
+    UWORD Width, Height;
+    Width = ((Xend - Xstart) % 8 == 0) ? ((Xend - Xstart) / 8 ) : ((Xend - Xstart) / 8 + 1);
+    Height = Yend - Ystart;
 
-    EPD_SendCommand(0x10);
-    for (UWORD j = 0; j < Byte_Height; j++) {
-        for (UWORD i = 0; i < Byte_Width; i++) {
-            EPD_SendData(0x00);
+    EPD_SetWindows(Xstart, Ystart, Xend, Yend);
+    UWORD i, j;
+    for (j = 0; j < Height; j++) {
+        EPD_SetCursor(Xstart, Ystart + j);
+        EPD_SendCommand(0x24);
+        for (i = 0; i < Width; i++) {
+            EPD_SendData(Image[i + j * Width]);
         }
     }
-    DEV_Delay_ms(10);
 
-    EPD_SendCommand(0x13);
-    for (UWORD j = 0; j < Byte_Height; j++) {
-        for (UWORD i = 0; i < Byte_Width; i++) {
-            EPD_SendData(ImageBuff[i + j * Byte_Width]);
+    for (j = 0; j < Height; j++) {
+        EPD_SetCursor(Xstart, Ystart + j);
+        EPD_SendCommand(0x26);
+        for (i = 0; i < Width; i++) {
+            EPD_SendData(~Image[i + j * Width]);
         }
     }
-    DEV_Delay_ms(10);
-
-    EPD_SetFullReg();
-    EPD_TurnOnDisplay();
 }
 
 /******************************************************************************
-function :	Sends the image buffer in RAM to e-Paper and displays
-parameter:
-******************************************************************************/
-void EPD_DisplayPartial(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend)
-{
-    /* Set partial Windows */
-    UWORD X0, Y0, X1, Y1;
-    X0 = 0;
-    Y0 = 0;
-    X1 = 0;
-    Y1 = 0;
-    switch(GUI_Image.Image_Rotate) {
-    case IMAGE_ROTATE_0:
-        X0 = Xstart;
-        Y0 = Ystart;
-        X1 = Xend - 1;
-        Y1 = Yend - 1;
-        break;
-    case IMAGE_ROTATE_180:
-        X0 = GUI_Image.Image_Width - Xend;
-        Y0 = GUI_Image.Image_Height - Yend;
-        X1 = GUI_Image.Image_Width - Xstart - 1;
-        Y1 = GUI_Image.Image_Height - Ystart - 1;
-        break;
-    }
-
-    UWORD Dx0 = X0 / 8;
-    UWORD Dx1 = X1 / 8;
-
-    EPD_SetPartReg();
-    EPD_SendCommand(0x91);		//This command makes the display enter partial mode
-    EPD_SendCommand(0x90);		//resolution setting
-    EPD_SendData(X0);           //x-start
-    EPD_SendData(X1 - 1);       //x-end
-
-    EPD_SendData(Y0 / 256);
-    EPD_SendData(Y0 % 256);     //y-start
-    EPD_SendData(Y1 / 256);
-    EPD_SendData(Y1 % 256 - 1);  //y-end
-    EPD_SendData(0x28);
-
-    UWORD Width;
-    Width = (EPD_WIDTH % 8 == 0)? (EPD_WIDTH / 8 ): (EPD_WIDTH / 8 + 1);
-
-    /* Send data */
-    EPD_SendCommand(0x10);
-    for (UWORD j = Y0; j < Y1 + 1; j++) {
-        for (UWORD i = Dx0; i < Dx1 + 1; i++) {
-            EPD_SendData(ImageBuff[i + j * Width]);
-        }
-    }
-
-    EPD_SendCommand(0x13);
-    for (UWORD j = Y0; j < Y1 + 1; j++) {
-        for (UWORD i = Dx0; i < Dx1 + 1; i++) {
-            EPD_SendData(~ImageBuff[i + j * Width]);
-        }
-    }
-
-    /* Set partial refresh */
-    EPD_TurnOnDisplay();
-}
-
-
-/******************************************************************************
-function :	Enter sleep mode
-parameter:
+  function :	Enter sleep mode
+  parameter:
 ******************************************************************************/
 void EPD_Sleep(void)
 {
-    EPD_SendCommand(0X50);
-    EPD_SendData(0xf7);
-    EPD_SendCommand(0X02);  	//power off
-    EPD_SendCommand(0X07);  	//deep sleep
-    EPD_SendData(0xA5);
+    EPD_SendCommand(0x22); //POWER OFF
+    EPD_SendData(0xC3);
+    EPD_SendCommand(0x20);
+
+    EPD_SendCommand(0x10); //enter deep sleep
+    EPD_SendData(0x01);
+    DEV_Delay_ms(100);
 }
