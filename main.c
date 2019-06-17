@@ -67,10 +67,13 @@ int main(void){
     DEV_ModuleInit();
     EPD_Init(FULL_UPDATE);
 
+    // ------------------------- Display test ----------------------------------
+
     EPD_Clear();
+    EPD_TurnOnDisplay();
     nrf_delay_ms(1000);
 
-    Paint_NewImage(ImageBuff, EPD_WIDTH, EPD_HEIGHT, ROTATE_0, WHITE);
+    /*Paint_NewImage(ImageBuff, EPD_WIDTH, EPD_HEIGHT, ROTATE_0, WHITE);
 
     Paint_Clear(0xff);
 
@@ -101,10 +104,52 @@ int main(void){
     Paint_DrawString_EN(0, 0, "waveshare", &Font12, BLACK, WHITE);
     Paint_DrawNum(0, 20, 1234567, &Font24, WHITE, BLACK);
 
-    EPD_DisplayWindows(ImageBuff, 0, 110, 122, 160);
+    EPD_DisplayWindows(ImageBuff, 0, 110, EPD_WIDTH, EPD_HEIGHT);
+
+    EPD_TurnOnDisplay();
+    nrf_delay_ms(1000);*/
+
+    // DISPLAY GRID
+    Paint_NewImage(ImageBuff, EPD_WIDTH, EPD_HEIGHT, ROTATE_90, WHITE);
+    Paint_Clear(0xff);
+
+    Paint_DrawLine(1, 20, 250, 20, BLACK, LINE_STYLE_DOTTED, DOT_PIXEL_1X1);
+
+    Paint_DrawRectangle(1, 24, 82, 122, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
+    Paint_DrawRectangle(1+82+4, 24, 82+82+4, 122, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
+    Paint_DrawRectangle(1+82+4+82+4, 24, 82+82+4+82, 122, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
+
+    EPD_DisplayWindows(ImageBuff, 0, 0, EPD_WIDTH, EPD_HEIGHT);
+
+    // TOPSULIN NAME
+    Paint_NewImage(ImageBuff, 16, 10*16, ROTATE_90, WHITE);
+    Paint_Clear(0xff);
+    Paint_DrawString_EN(0, 0, "Glucosee", &Font16, WHITE, BLACK);
+    EPD_DisplayWindows(ImageBuff, 122-16-2, 0, 122-16-2+16, 10*16);
+
+    // BLUETOOTH ON ICON
+    Paint_NewImage(ImageBuff, 16, 16, ROTATE_90, WHITE);
+    Paint_DrawBitMap(gImage_icon_dev_16);
+    EPD_DisplayWindows(ImageBuff, 122-16, 250-16, 122-16+16, 250-16+16);
+
+    // BLUETOOTH CONNECTED ICON
+    Paint_NewImage(ImageBuff, 16, 16, ROTATE_90, WHITE);
+    Paint_DrawBitMap(gImage_icon_bt_16);
+    EPD_DisplayWindows(ImageBuff, 122-16, 250-32, 122-16+16, 250-32+16);
 
     EPD_TurnOnDisplay();
     nrf_delay_ms(1000);
+
+    /*EPD_Clear();
+
+    Paint_NewImage(ImageBuff, 104, 212, ROTATE_0, WHITE);
+    Paint_DrawBitMap(gImage_IMAGE_0);
+    EPD_DisplayWindows(ImageBuff, 9, 19, 9+104, 19+212);
+
+    EPD_TurnOnDisplay();
+    nrf_delay_ms(1000);*/
+
+    // ------------------------- Display test ----------------------------------
 
     /*if(config_manager_get_flags() & CONFIG_COLOR_FLAG){
       if (config_manager_get_flags() & CONFIG_FLIP_FLAG){
@@ -162,7 +207,7 @@ int main(void){
                 NRF_LOG_INFO("Wake up!\r\n");
                 NRF_LOG_FLUSH();
                 clock_print();
-                EPD_Init(FULL_UPDATE);
+                //EPD_Init(FULL_UPDATE);
                 advertising_start();
                 encoder_enable();
                 wake_up = 1;

@@ -502,7 +502,7 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
 
         case BLE_ADV_EVT_IDLE:
             NRF_LOG_INFO("Idle advertising\n");
-            //state_on_event(ble_off);
+            state_on_event(ble_off);
             state_set_bt_state(0);
             break; // BLE_ADV_EVT_IDLE
 

@@ -18,8 +18,6 @@
 #include "GUI_Cache.h"
 #include "Debug.h"
 
-#include "../gpio.h"
-
 const unsigned char lut_full_update[] = {
     0x80, 0x60, 0x40, 0x00, 0x00, 0x00, 0x00,       //LUT0: BB:     VS 0 ~7
     0x10, 0x60, 0x20, 0x00, 0x00, 0x00, 0x00,       //LUT1: BW:     VS 0 ~7
@@ -105,7 +103,7 @@ void EPD_WaitUntilIdle(void)
 {
     DEBUG("e-Paper busy\r\n");
     while (EPD_BUSY_RD == 1) {     //LOW: idle, HIGH: busy
-        DEV_Delay_ms(100);
+        DEV_Delay_ms(10);
     }
     DEBUG("e-Paper busy release\r\n");
 }
@@ -264,7 +262,7 @@ void EPD_Clear(void)
             EPD_SendData(0XFF);
         }
     }
-    EPD_TurnOnDisplay();
+    //EPD_TurnOnDisplay();
 }
 
 /******************************************************************************

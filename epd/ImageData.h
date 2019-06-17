@@ -26,22 +26,18 @@
 #ifndef _IMAGEDATA_H_
 #define _IMAGEDATA_H_
 
-extern const unsigned char gImage_IMAGE_0[];    // Topsulin
-extern const unsigned char gImage_IMAGE_1[];    // Connect
-extern const unsigned char gImage_IMAGE_2[];    // Memory full
-extern const unsigned char gImage_IMAGE_3[];    // Low battery
-extern const unsigned char gImage_IMAGE_4[];    // Memory full flip
-extern const unsigned char gImage_IMAGE_5[];    // Low battery flip
+extern const unsigned char gImage_icon_bt_16[];
+extern const unsigned char gImage_icon_dev_16[];
 
-extern const unsigned char gImage_icon_lock[];
+extern const unsigned char gImage_icon_bt_24[];
 
-extern const unsigned char gImage_icon_glu[];
-extern const unsigned char gImage_icon_cho[];
-extern const unsigned char gImage_icon_ins[];
+extern const unsigned char gImage_icon_glu_24[];
+extern const unsigned char gImage_icon_cho_24[];
+extern const unsigned char gImage_icon_ins_24[];
 
-extern const unsigned char gImage_icon_glu_flip[];
-extern const unsigned char gImage_icon_cho_flip[];
-extern const unsigned char gImage_icon_ins_flip[];
+extern const unsigned char gImage_icon_glu_flip_24[];
+extern const unsigned char gImage_icon_cho_flip_24[];
+extern const unsigned char gImage_icon_ins_flip_24[];
 
 #endif
 /* FILE END */

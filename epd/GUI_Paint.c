@@ -103,11 +103,10 @@ parameter:
 void Paint_SetRotate(UWORD Rotate)
 {
     if(Rotate == ROTATE_0 || Rotate == ROTATE_90 || Rotate == ROTATE_180 || Rotate == ROTATE_270) {
-        //DEBUG("Set image Rotate");
-        //DEBUG(Rotate);
+        DEBUG("Set image Rotate\r\n");
         Paint.Rotate = Rotate;
     } else {
-        //DEBUG("rotate = 0, 90, 180, 270\r\n");
+        DEBUG("rotate = 0, 90, 180, 270\r\n");
         exit(0);
     }
 }
@@ -123,7 +122,7 @@ void Paint_SetMirroring(UBYTE mirror)
         mirror == MIRROR_VERTICAL || mirror == MIRROR_ORIGIN) {
         Paint.Mirror = mirror;
     } else {
-        //DEBUG("mirror should be MIRROR_NONE, MIRROR_HORIZONTAL, MIRROR_VERTICAL or MIRROR_ORIGIN\r\n");
+        DEBUG("mirror should be MIRROR_NONE, MIRROR_HORIZONTAL, MIRROR_VERTICAL or MIRROR_ORIGIN\r\n");
         exit(0);
     }
 }
@@ -138,7 +137,7 @@ parameter:
 void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
 {
     if(Xpoint > Paint.Width || Ypoint > Paint.Height){
-        //DEBUG("Exceeding display boundaries\r\n");
+        DEBUG("Exceeding display boundaries\r\n");
         return;
     }
     UWORD X, Y;
@@ -184,7 +183,7 @@ void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
 
     // printf("x = %d, y = %d\r\n", X, Y);
     if(X > Paint.WidthMemory || Y > Paint.HeightMemory){
-        //DEBUG("Exceeding display boundaries\r\n");
+        DEBUG("Exceeding display boundaries\r\n");
         return;
     }
 
@@ -205,11 +204,11 @@ void Paint_Clear(UWORD Color)
 {
     //DEBUG("Width = ");
     //DEBUG(Paint.HeightByte);
- //DEBUG("Height = ");
- //DEBUG(Paint.HeightByte);
+    //DEBUG("Height = ");
+    //DEBUG(Paint.HeightByte);
     for (UWORD Y = 0; Y < Paint.HeightByte; Y++) {
         for (UWORD X = 0; X < Paint.WidthByte; X++ ) {//8 pixel =  1 byte
-            UDOUBLE Addr = X + Y*Paint.WidthByte;
+            UDOUBLE Addr = X + Y * Paint.WidthByte;
             Paint.Image[Addr] = Color;
         }
     }
@@ -227,7 +226,7 @@ void Paint_ClearWindows(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, UWOR
 {
     UWORD X, Y;
     for (Y = Ystart; Y < Yend; Y++) {
-        for (X = Xstart; X < Xend; X++) {//8 pixel =  1 byte
+        for (X = Xstart; X < Xend; X++) { //8 pixel =  1 byte
             Paint_SetPixel(X, Y, Color);
         }
     }
@@ -245,7 +244,7 @@ void Paint_DrawPoint(UWORD Xpoint, UWORD Ypoint, UWORD Color,
                      DOT_PIXEL Dot_Pixel, DOT_STYLE DOT_STYLE)
 {
     if (Xpoint > Paint.Width || Ypoint > Paint.Height) {
-        //DEBUG("Paint_DrawPoint Input exceeds the normal display range\r\n");
+        DEBUG("Paint_DrawPoint Input exceeds the normal display range\r\n");
         return;
     }
 
@@ -282,7 +281,7 @@ void Paint_DrawLine(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend,
 {
     if (Xstart > Paint.Width || Ystart > Paint.Height ||
         Xend > Paint.Width || Yend > Paint.Height) {
-        //DEBUG("Paint_DrawLine Input exceeds the normal display range\r\n");
+        DEBUG("Paint_DrawLine Input exceeds the normal display range\r\n");
         return;
     }
 
@@ -303,7 +302,7 @@ void Paint_DrawLine(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend,
         Dotted_Len++;
         //Painted dotted line, 2 point is really virtual
         if (Line_Style == LINE_STYLE_DOTTED && Dotted_Len % 3 == 0) {
-            ////DEBUG("LINE_DOTTED\r\n");
+            DEBUG("LINE_DOTTED\r\n");
             Paint_DrawPoint(Xpoint, Ypoint, IMAGE_BACKGROUND, Dot_Pixel, DOT_STYLE_DFT);
             Dotted_Len = 0;
         } else {
@@ -339,7 +338,7 @@ void Paint_DrawRectangle(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend,
 {
     if (Xstart > Paint.Width || Ystart > Paint.Height ||
         Xend > Paint.Width || Yend > Paint.Height) {
-        //DEBUG("Input exceeds the normal display range\r\n");
+        DEBUG("Input exceeds the normal display range\r\n");
         return;
     }
 
@@ -370,7 +369,7 @@ void Paint_DrawCircle(UWORD X_Center, UWORD Y_Center, UWORD Radius,
                       UWORD Color, DRAW_FILL  Draw_Fill , DOT_PIXEL Dot_Pixel)
 {
     if (X_Center > Paint.Width || Y_Center >= Paint.Height) {
-        //DEBUG("Paint_DrawCircle Input exceeds the normal display range\r\n");
+        DEBUG("Paint_DrawCircle Input exceeds the normal display range\r\n");
         return;
     }
 
@@ -441,7 +440,7 @@ void Paint_DrawChar(UWORD Xpoint, UWORD Ypoint, const char Acsii_Char,
     UWORD Page, Column;
 
     if (Xpoint > Paint.Width || Ypoint > Paint.Height) {
-        //DEBUG("Paint_DrawChar Input exceeds the normal display range\r\n");
+        DEBUG("Paint_DrawChar Input exceeds the normal display range\r\n");
         return;
     }
 
@@ -465,10 +464,10 @@ void Paint_DrawChar(UWORD Xpoint, UWORD Ypoint, const char Acsii_Char,
             //One pixel is 8 bits
             if (Column % 8 == 7)
                 ptr++;
-        }// Write a line
+        } // Write a line
         if (Font->Width % 8 != 0)
             ptr++;
-    }// Write all
+    } // Write all
 }
 
 /******************************************************************************
@@ -488,7 +487,7 @@ void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
     UWORD Ypoint = Ystart;
 
     if (Xstart > Paint.Width || Ystart > Paint.Height) {
-        //DEBUG("Paint_DrawString_EN Input exceeds the normal display range\r\n");
+        DEBUG("Paint_DrawString_EN Input exceeds the normal display range\r\n");
         return;
     }
 
@@ -534,7 +533,7 @@ void Paint_DrawNum(UWORD Xpoint, UWORD Ypoint, int32_t Nummber,
     uint8_t *pStr = Str_Array;
 
     if (Xpoint > Paint.Width || Ypoint > Paint.Height) {
-        //DEBUG("Paint_DisNum Input exceeds the normal display range\r\n");
+        DEBUG("Paint_DisNum Input exceeds the normal display range\r\n");
         return;
     }
 
@@ -597,9 +596,13 @@ void Paint_DrawBitMap(const unsigned char* image_buffer)
     UDOUBLE Addr = 0;
 
     for (y = 0; y < Paint.HeightByte; y++) {
-        for (x = 0; x < Paint.WidthByte; x++) {//8 pixel =  1 byte
+        for (x = 0; x < Paint.WidthByte; x++) { //8 pixel =  1 byte
             Addr = x + y * Paint.WidthByte;
-            Paint.Image[Addr] = (unsigned char)image_buffer[Addr];
+            if(Paint.Color == BLACK){
+              Paint.Image[Addr] = ~(unsigned char)image_buffer[Addr];
+            } else {
+              Paint.Image[Addr] = (unsigned char)image_buffer[Addr];
+            }
         }
     }
 }

@@ -25,8 +25,7 @@ typedef enum {
     sleep,
     input_cho,
     input_glu,
-    input_ins,
-    warning
+    input_ins
 } internal_state_t;
 
 typedef struct {
@@ -55,8 +54,6 @@ static uint8_t                len;
 
 static uint8_t                full_refresh;
 static uint8_t                quick_refresh;
-
-static uint8_t                warning_time;
 
 static uint32_t               voltage;
 static uint8_t                bt_state;
@@ -203,33 +200,30 @@ void state_set_bt_state(uint8_t state){
     return;
   }
   bt_state = state;
-  if ((m_state != initial)&&(m_state != warning)){
-    if (m_state == sleep){
-      EPD_Init(FULL_UPDATE);
-      full_refresh = 1;
-    } else {
-      quick_refresh = 1;
-    }
+  if (m_state != initial){
+    quick_refresh = 1;
     state_process_display();
   }
 }
 
 void state_update_mem(void){
-  if ((m_state != initial)&&(m_state != warning)){
-    if (m_state == sleep){
-      EPD_Init(FULL_UPDATE);
-      full_refresh = 1;
-    } else {
-      quick_refresh = 1;
-    }
+  if (m_state != initial){
+    quick_refresh = 1;
     state_process_display();
   }
 }
 
-
-
 void state_process_display(void){
-  if ((m_state != initial)&&((m_state != warning))&&(quick_refresh|full_refresh)){
+
+  if (full_refresh){
+    EPD_Init(FULL_UPDATE);
+  }
+
+  if (quick_refresh){
+    EPD_Init(PART_UPDATE);
+  }
+
+  if ((m_state != initial)&&(quick_refresh|full_refresh)){
     //GUI_Clear(WHITE);
 
     len = config_manager_get_name(buffer);
@@ -381,15 +375,12 @@ void state_process_display(void){
 
   }
 
-  if (full_refresh){
-    EPD_Init(FULL_UPDATE);
-    full_refresh = 0;
+  if ((m_state == initial)&&(quick_refresh|full_refresh)){
+    // Show initial screen
   }
 
-  if (quick_refresh){
-    EPD_Init(PART_UPDATE);
-    quick_refresh = 0;
-  }
+  quick_refresh = 0;
+  full_refresh = 0;
 
 }
 
@@ -402,44 +393,29 @@ void state_on_event(event_t event){
         //GUI_DrawString_EN(32, 8, buffer, &Font16, WHITE, BLACK);
         full_refresh = 1;
       }
+      if (event == ble_off){
+        state_sleep();
+      }
       break;
     case sleep:
       if (event == button_pressed){
-        bool memory_full;
-        memory_full = ble_gls_db_num_records_get() == BLE_GLS_DB_MAX_RECORDS;
-        bool low_batt;
-        voltage = batt_get();
-        NRF_LOG_INFO("VCC = %d.%d V\n", voltage / 1000, voltage % 1000);
-        NRF_LOG_FLUSH();
-        low_batt = voltage <= LOW_VOLT;
-        if (memory_full | low_batt){
-            if (low_batt){
-                if (config_manager_get_flags() & CONFIG_FLIP_FLAG){
-                    //GUI_DrawBitMap(gImage_IMAGE_5);
-                } else {
-                    //GUI_DrawBitMap(gImage_IMAGE_3);
-                }
-            } else {
-                if (config_manager_get_flags() & CONFIG_FLIP_FLAG){
-                    //GUI_DrawBitMap(gImage_IMAGE_4);
-                } else {
-                    //GUI_DrawBitMap(gImage_IMAGE_2);
-                }
-            }
-            warning_time = 0;
-            m_state = warning;
-            full_refresh = 1;
-        } else {
-            new_glu = false;
-            new_cho = false;
-            new_ins = false;
-            glu_correction = 0;
-            cho_correction = 0;
-            m_prev_topsulin_meas = m_topsulin_meas;
-            encoder_set_position(m_topsulin_meas.glu);
-            m_state = input_glu;
-            quick_refresh = 1;
-        }
+        //bool memory_full;
+        //memory_full = ble_gls_db_num_records_get() == BLE_GLS_DB_MAX_RECORDS;
+
+        //bool low_batt;
+        //voltage = batt_get();
+        //low_batt = voltage <= LOW_VOLT;
+
+        new_glu = false;
+        new_cho = false;
+        new_ins = false;
+        glu_correction = 0;
+        cho_correction = 0;
+        m_prev_topsulin_meas = m_topsulin_meas;
+        encoder_set_position(m_topsulin_meas.glu);
+
+        m_state = input_glu;
+        quick_refresh = 1;
       }
       break;
     case input_glu:
@@ -619,14 +595,6 @@ void state_on_event(event_t event){
         quick_refresh = 1;
       }
       break;
-    case warning:
-      if (event == time_update){
-          warning_time++;
-          if (warning_time >= 5){
-              state_sleep();
-          }
-      }
-      break;
     default:
       break;
   }
@@ -645,7 +613,6 @@ void state_show_pin(char* pin){
   //GUI_ClearWindows(1, 1, 104, 212, WHITE);
   //GUI_DrawIcon(5, 23, gImage_icon_lock, WHITE);
   //GUI_DrawString_EN(79, 36, pin, &Font24, WHITE, BLACK);
-  EPD_Init(FULL_UPDATE);
 }
 
 void state_show_pin_error(void){
@@ -653,7 +620,6 @@ void state_show_pin_error(void){
   //GUI_ClearWindows(1, 1, 104, 212, WHITE);
   //GUI_DrawIcon(5, 23, gImage_icon_lock, WHITE);
   //GUI_DrawString_EN(79, 36, "ERROR", &Font24, WHITE, BLACK);
-  EPD_Init(FULL_UPDATE);
 }
 
 void state_show_pin_ok(void){
@@ -661,12 +627,11 @@ void state_show_pin_ok(void){
   //GUI_ClearWindows(1, 1, 104, 212, WHITE);
   //GUI_DrawIcon(5, 23, gImage_icon_lock, WHITE);
   //GUI_DrawString_EN(79, 36, "OK", &Font24, WHITE, BLACK);
-  EPD_Init(FULL_UPDATE);
 }
 
 void state_begin(){
   if (m_state == initial){
-    NRF_LOG_INFO("state_begin\n");
+    NRF_LOG_INFO("Begin operation\n");
     NRF_LOG_FLUSH();
     m_state = sleep;
     full_refresh = 1;
@@ -678,11 +643,11 @@ void state_sleep(){
   if (m_state == initial){
     NRF_LOG_INFO("Going to sleep in initial state\n");
     NRF_LOG_FLUSH();
-    //GUI_DrawBitMap(gImage_IMAGE_0);
-    EPD_Init(FULL_UPDATE);
+    full_refresh = 1;
+    state_process_display();
   } else {
     if (m_state != sleep){
-      NRF_LOG_INFO("Going to sleep: m_state != sleep\n");
+      NRF_LOG_INFO("Going to sleep\n");
       NRF_LOG_FLUSH();
       m_topsulin_meas.glu = m_prev_topsulin_meas.glu;
       m_topsulin_meas.cho = m_prev_topsulin_meas.cho;
@@ -691,7 +656,7 @@ void state_sleep(){
       full_refresh = 1;
       state_process_display();
     } else {
-      NRF_LOG_INFO("Going to sleep: m_state == sleep\n");
+      NRF_LOG_INFO("Already sleeping\n");
       NRF_LOG_FLUSH();
     }
   }

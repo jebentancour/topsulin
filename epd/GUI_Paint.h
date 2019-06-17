@@ -175,5 +175,4 @@ void Paint_DrawTime(UWORD Xstart, UWORD Ystart, PAINT_TIME *pTime, sFONT* Font, 
 //pic
 void Paint_DrawBitMap(const unsigned char* image_buffer);
 
-
 #endif

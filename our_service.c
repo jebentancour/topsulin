@@ -172,7 +172,7 @@ static void on_time_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p_ev
         // Update
         time_char_update(p_our_service);
 
-        // Init operation
+        // Begin operation
         state_begin();
     }
 }
@@ -269,6 +269,8 @@ static void on_write(ble_os_t * p_our_service, ble_evt_t * p_ble_evt)
     if (print){
         config_manager_print();
     }
+
+    // Update display?
 
 }
 
