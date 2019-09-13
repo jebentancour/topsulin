@@ -42,7 +42,7 @@ U 1 1 5C0AD0DD
 P 10500 1800
 F 0 "J3" H 10580 1792 50  0000 L CNN
 F 1 "Conn_01x24" H 10580 1701 50  0000 L CNN
-F 2 "kicad_libs:e-paper-2in13-flex-2" H 10500 1800 50  0001 C CNN
+F 2 "topsulin:e-paper-2in13-flex" H 10500 1800 50  0001 C CNN
 F 3 "~" H 10500 1800 50  0001 C CNN
 	1    10500 1800
 	1    0    0    -1  
@@ -576,7 +576,7 @@ U 1 1 5C21F127
 P 9050 4500
 F 0 "BT1" H 9168 4596 50  0000 L CNN
 F 1 "Battery_Cell" H 9168 4505 50  0000 L CNN
-F 2 "Battery:BatteryHolder_MPD_BC2003_1x2032" V 9050 4560 50  0001 C CNN
+F 2 "Battery:BatteryHolder_Keystone_1058_1x2032" V 9050 4560 50  0001 C CNN
 F 3 "~" V 9050 4560 50  0001 C CNN
 	1    9050 4500
 	1    0    0    -1  
@@ -903,12 +903,12 @@ Connection ~ 1650 5200
 Wire Wire Line
 	1650 5200 1850 5200
 $Comp
-L topsulin:topsulin_topsulin_topsulin_topsulin_library_nRF51822_module_waveshare U1
+L topsulin:topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_library_nRF51822_module_waveshare U1
 U 1 1 5CD142A6
 P 2050 1800
 F 0 "U1" H 2050 2915 50  0000 C CNN
 F 1 "topsulin_topsulin_library_nRF51822_module_waveshare" H 2050 2824 50  0000 C CNN
-F 2 "" H 2050 1800 50  0001 C CNN
+F 2 "topsulin:nRF51822_module_waveshare_footprint" H 2050 1800 50  0001 C CNN
 F 3 "" H 2050 1800 50  0001 C CNN
 	1    2050 1800
 	1    0    0    -1  

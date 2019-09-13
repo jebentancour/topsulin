@@ -12,6 +12,7 @@
 #include "encoder.h"
 #include "FEPD_2in13.h"
 #include "GUI_Paint.h"
+#include "GUI_Cache.h"
 #include "ImageData.h"
 #include "ble_services.h"
 #include "clock.h"
@@ -85,16 +86,6 @@ void state_init(){
   full_refresh = 0;
   quick_refresh = 0;
 }
-
-#define ICON_V_POS            8       // 9
-#define LEFT_ICON_H_POS       11      // 23
-#define CENTER_ICON_H_POS     82      // 94
-#define RIGHT_ICON_H_POS      153     // 165
-#define NUMBER_V_POS          28      // 36
-#define TIME_V_POS            6       // 10
-#define LEFT_TIME_H_POS       8
-#define CENTER_TIME_H_POS     79
-#define RIGHT_TIME_H_POS      151
 
 static void state_save_meas(void){
   if (new_glu || new_cho || new_ins){
@@ -304,6 +295,7 @@ void state_process_display(void){
     }
 
     if (m_state == sleep){
+
       len = sprintf(buffer, "%ld", m_topsulin_meas.glu);
       //GUI_DrawString_EN(glu_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
       len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.glu_time);
@@ -322,7 +314,9 @@ void state_process_display(void){
       //GUI_DrawString_EN(ins_h_pos, NUMBER_V_POS, buffer, &Font24, WHITE, BLACK);
       len = strftime(buffer, sizeof(buffer), "%H:%M", &m_topsulin_meas.ins_time);
       //GUI_DrawString_EN(RIGHT_TIME_H_POS, TIME_V_POS, buffer, &Font16, WHITE, BLACK);
+
     } else {
+
       if (m_state == input_glu){
         //GUI_DrawRectangle(2, 4, 93, 70, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
       }
@@ -377,6 +371,31 @@ void state_process_display(void){
 
   if ((m_state == initial)&&(quick_refresh|full_refresh)){
     // Show initial screen
+    Paint_NewImage(ImageBuff, EPD_WIDTH, EPD_HEIGHT, ROTATE_90, WHITE);
+    Paint_DrawBitMap(gImage_initial);
+    EPD_DisplayWindows(ImageBuff, 0, 0, EPD_WIDTH, EPD_HEIGHT);
+
+    if (bt_state == 1 || bt_state == 2){
+      //BT NAME
+      Paint_NewImage(ImageBuff, 16, 10*16, ROTATE_90, WHITE);
+      Paint_Clear(0xff);
+      len = sprintf(buffer, "Topsulin-%04X", (uint16_t) NRF_FICR->DEVICEADDR[0] & 0xFFFF);
+      Paint_DrawString_EN(0, 0, buffer, &Font16, WHITE, BLACK);
+      EPD_DisplayWindows(ImageBuff, 122-16-2, 0, 122-16-2+16, len*11);
+      // BLUETOOTH ON ICON
+      Paint_NewImage(ImageBuff, 16, 16, ROTATE_90, WHITE);
+      Paint_DrawBitMap(gImage_icon_bt_16);
+      EPD_DisplayWindows(ImageBuff, 122-16, 250-32, 122-16+16, 250-32+16);
+    }
+
+    if (bt_state == 2){
+      // BLUETOOTH CONNECTED ICON
+      Paint_NewImage(ImageBuff, 16, 16, ROTATE_90, WHITE);
+      Paint_DrawBitMap(gImage_icon_dev_16);
+      EPD_DisplayWindows(ImageBuff, 122-16, 250-16, 122-16+16, 250-16+16);
+    }
+
+    EPD_TurnOnDisplay();
   }
 
   quick_refresh = 0;
@@ -388,9 +407,7 @@ void state_on_event(event_t event){
   switch(m_state){
     case initial:
       if (event == ble_on){
-        //GUI_DrawBitMap(gImage_IMAGE_1);
-        sprintf(buffer, "Topsulin-%04X", (uint16_t) NRF_FICR->DEVICEADDR[0] & 0xFFFF);
-        //GUI_DrawString_EN(32, 8, buffer, &Font16, WHITE, BLACK);
+        state_set_bt_state(1);
         full_refresh = 1;
       }
       if (event == ble_off){
@@ -609,24 +626,57 @@ void state_on_event(event_t event){
 }
 
 void state_show_pin(char* pin){
-  // TODO: dar vuelta el icono con la flag flip
-  //GUI_ClearWindows(1, 1, 104, 212, WHITE);
-  //GUI_DrawIcon(5, 23, gImage_icon_lock, WHITE);
-  //GUI_DrawString_EN(79, 36, pin, &Font24, WHITE, BLACK);
+  EPD_Init(FULL_UPDATE);
+
+  Paint_NewImage(ImageBuff, 16, 16, ROTATE_90, WHITE);
+  Paint_DrawBitMap(gImage_icon_dev_16);
+  EPD_DisplayWindows(ImageBuff, 122-16, 250-16, 122-16+16, 250-16+16);
+
+  Paint_NewImage(ImageBuff, 24, 6*17, ROTATE_90, WHITE);
+  Paint_Clear(0xff);
+  EPD_DisplayWindows(ImageBuff, 10, 74, 10+24, 74+6*17);
+
+  Paint_NewImage(ImageBuff, 24, 6*17, ROTATE_90, WHITE);
+  Paint_DrawString_EN(0, 0, pin, &Font24, WHITE, BLACK);
+  EPD_DisplayWindows(ImageBuff, 10, 74, 10+24, 74+6*17);
+
+  EPD_TurnOnDisplay();
 }
 
 void state_show_pin_error(void){
-  // TODO: dar vuelta el icono con la flag flip
-  //GUI_ClearWindows(1, 1, 104, 212, WHITE);
-  //GUI_DrawIcon(5, 23, gImage_icon_lock, WHITE);
-  //GUI_DrawString_EN(79, 36, "ERROR", &Font24, WHITE, BLACK);
+  EPD_Init(FULL_UPDATE);
+
+  Paint_NewImage(ImageBuff, 16, 16, ROTATE_90, WHITE);
+  Paint_DrawBitMap(gImage_icon_dev_16);
+  EPD_DisplayWindows(ImageBuff, 122-16, 250-16, 122-16+16, 250-16+16);
+
+  Paint_NewImage(ImageBuff, 24, 6*17, ROTATE_90, WHITE);
+  Paint_Clear(0xff);
+  EPD_DisplayWindows(ImageBuff, 10, 74, 10+24, 74+6*17);
+
+  Paint_NewImage(ImageBuff, 24, 5*17, ROTATE_90, WHITE);
+  Paint_DrawString_EN(0, 0, "ERROR", &Font24, WHITE, BLACK);
+  EPD_DisplayWindows(ImageBuff, 10, 82, 10+24, 82+5*17);
+
+  EPD_TurnOnDisplay();
 }
 
 void state_show_pin_ok(void){
-  // TODO: dar vuelta el icono con la flag flip
-  //GUI_ClearWindows(1, 1, 104, 212, WHITE);
-  //GUI_DrawIcon(5, 23, gImage_icon_lock, WHITE);
-  //GUI_DrawString_EN(79, 36, "OK", &Font24, WHITE, BLACK);
+  EPD_Init(FULL_UPDATE);
+
+  Paint_NewImage(ImageBuff, 16, 16, ROTATE_90, WHITE);
+  Paint_DrawBitMap(gImage_icon_dev_16);
+  EPD_DisplayWindows(ImageBuff, 122-16, 250-16, 122-16+16, 250-16+16);
+
+  Paint_NewImage(ImageBuff, 24, 6*17, ROTATE_90, WHITE);
+  Paint_Clear(0xff);
+  EPD_DisplayWindows(ImageBuff, 10, 74, 10+24, 74+6*17);
+
+  Paint_NewImage(ImageBuff, 24, 2*17, ROTATE_90, WHITE);
+  Paint_DrawString_EN(0, 0, "OK", &Font24, WHITE, BLACK);
+  EPD_DisplayWindows(ImageBuff, 10, 108, 10+24, 108+2*17);
+
+  EPD_TurnOnDisplay();
 }
 
 void state_begin(){

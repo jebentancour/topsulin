@@ -101,11 +101,11 @@ static void EPD_SendData(UBYTE Data)
 ******************************************************************************/
 void EPD_WaitUntilIdle(void)
 {
-    DEBUG("e-Paper busy\r\n");
+    //DEBUG("e-Paper busy\r\n");
     while (EPD_BUSY_RD == 1) {     //LOW: idle, HIGH: busy
         DEV_Delay_ms(10);
     }
-    DEBUG("e-Paper busy release\r\n");
+    //DEBUG("e-Paper busy release\r\n");
 }
 
 /******************************************************************************

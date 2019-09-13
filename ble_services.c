@@ -758,7 +758,6 @@ void peer_manager_erase_bonds(void)
     NRF_LOG_FLUSH();
 }
 
-
 /**@brief Function for initializing the Advertising functionality.
  *
  * @details Encodes the required advertising data and passes it to the stack.
@@ -837,6 +836,7 @@ void ble_services_init(void)
     timers_init();
     ble_stack_init();
     peer_manager_init();
+    peer_manager_erase_bonds();
     services_init();
     sd_ble_gap_tx_power_set(-20);
     gap_params_init();

@@ -55,7 +55,6 @@ int main(void){
 
     sd_power_mode_set(NRF_POWER_MODE_LOWPWR);
     ble_services_init();
-    //peer_manager_erase_bonds();
 
     clock_tick_flag = 0;
     clock_tick_set_flag(&clock_tick_flag);
@@ -73,81 +72,92 @@ int main(void){
     EPD_TurnOnDisplay();
     nrf_delay_ms(1000);
 
-    /*Paint_NewImage(ImageBuff, EPD_WIDTH, EPD_HEIGHT, ROTATE_0, WHITE);
-
-    Paint_Clear(0xff);
-
-    Paint_DrawPoint(5, 10, BLACK, DOT_PIXEL_1X1, DOT_STYLE_DFT);
-    Paint_DrawPoint(5, 20, BLACK, DOT_PIXEL_2X2, DOT_STYLE_DFT);
-    Paint_DrawPoint(5, 30, BLACK, DOT_PIXEL_3X3, DOT_STYLE_DFT);
-    Paint_DrawPoint(5, 40, BLACK, DOT_PIXEL_4X4, DOT_STYLE_DFT);
-
-    Paint_DrawLine(20, 10, 60, 50, BLACK, LINE_STYLE_SOLID, DOT_PIXEL_1X1);
-    Paint_DrawLine(60, 10, 20, 50, BLACK, LINE_STYLE_SOLID, DOT_PIXEL_1X1);
-    Paint_DrawRectangle(20, 10, 60, 50, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
-    Paint_DrawRectangle(80, 10, 120, 50, BLACK, DRAW_FILL_FULL, DOT_PIXEL_1X1);
-
-    EPD_DisplayWindows(ImageBuff, 0, 0, EPD_WIDTH, EPD_HEIGHT);
-
-    Paint_Clear(0xff);
-
-    Paint_DrawLine(30, 10, 30, 50, BLACK, LINE_STYLE_DOTTED, DOT_PIXEL_1X1);
-    Paint_DrawLine(10, 30, 50, 30, BLACK, LINE_STYLE_DOTTED, DOT_PIXEL_1X1);
-    Paint_DrawCircle(30, 30, 20, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
-    Paint_DrawRectangle(60, 10, 100, 50, BLACK, DRAW_FILL_FULL, DOT_PIXEL_1X1);
-    Paint_DrawCircle(80, 30, 20, WHITE, DRAW_FILL_FULL, DOT_PIXEL_1X1);
-
-    EPD_DisplayWindows(ImageBuff, 0, 50, EPD_WIDTH, EPD_HEIGHT);
-
-    Paint_Clear(0xff);
-
-    Paint_DrawString_EN(0, 0, "waveshare", &Font12, BLACK, WHITE);
-    Paint_DrawNum(0, 20, 1234567, &Font24, WHITE, BLACK);
-
-    EPD_DisplayWindows(ImageBuff, 0, 110, EPD_WIDTH, EPD_HEIGHT);
-
-    EPD_TurnOnDisplay();
-    nrf_delay_ms(1000);*/
-
     // DISPLAY GRID
-    Paint_NewImage(ImageBuff, EPD_WIDTH, EPD_HEIGHT, ROTATE_90, WHITE);
-    Paint_Clear(0xff);
+    //Paint_NewImage(ImageBuff, EPD_WIDTH, EPD_HEIGHT, ROTATE_90, WHITE);
+    //Paint_Clear(0xff);
 
-    Paint_DrawLine(1, 20, 250, 20, BLACK, LINE_STYLE_DOTTED, DOT_PIXEL_1X1);
+    //Paint_DrawLine(1, 20, 250, 20, BLACK, LINE_STYLE_DOTTED, DOT_PIXEL_1X1);
 
-    Paint_DrawRectangle(1, 24, 82, 122, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
-    Paint_DrawRectangle(1+82+4, 24, 82+82+4, 122, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
-    Paint_DrawRectangle(1+82+4+82+4, 24, 82+82+4+82, 122, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
+    //Paint_DrawRectangle(1, 24, 82, 122, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
+    //Paint_DrawRectangle(1+82+4, 24, 82+82+4, 122, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
+    //Paint_DrawRectangle(1+82+4+82+4, 24, 82+82+4+82, 122, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
 
-    EPD_DisplayWindows(ImageBuff, 0, 0, EPD_WIDTH, EPD_HEIGHT);
+    //EPD_DisplayWindows(ImageBuff, 0, 0, EPD_WIDTH, EPD_HEIGHT);
+
+    // GLU ICON
+    //Paint_NewImage(ImageBuff, 24, 24, ROTATE_90, BLACK);
+    //Paint_DrawBitMap(gImage_icon_glu_24);
+    //EPD_DisplayWindows(ImageBuff, 122-24-24-1, 1+1, 122-24-24+24-1, 1+24+1);
+
+    // CHO ICON
+    //Paint_NewImage(ImageBuff, 24, 24, ROTATE_90, BLACK);
+    //Paint_DrawBitMap(gImage_icon_cho_24);
+    //EPD_DisplayWindows(ImageBuff, 122-24-24-1, 1+82+4+1, 122-24-24+24-1, 1+82+4+24+1);
+
+    // INS ICON
+    //Paint_NewImage(ImageBuff, 24, 24, ROTATE_90, BLACK);
+    //Paint_DrawBitMap(gImage_icon_ins_24);
+    //EPD_DisplayWindows(ImageBuff, 122-24-24-1, 1+82+4+82+4+1, 122-24-24+24-1, 1+82+4+82+4+24+1);
 
     // TOPSULIN NAME
-    Paint_NewImage(ImageBuff, 16, 10*16, ROTATE_90, WHITE);
-    Paint_Clear(0xff);
-    Paint_DrawString_EN(0, 0, "Glucosee", &Font16, WHITE, BLACK);
-    EPD_DisplayWindows(ImageBuff, 122-16-2, 0, 122-16-2+16, 10*16);
+    //Paint_NewImage(ImageBuff, 16, 10*16, ROTATE_90, WHITE);
+    //Paint_Clear(0xff);
+    //Paint_DrawString_EN(0, 0, "Glucosee", &Font16, WHITE, BLACK);
+    //EPD_DisplayWindows(ImageBuff, 122-16-2, 0, 122-16-2+16, 10*16);
+
+    // MEMORY ICON
+    //Paint_NewImage(ImageBuff, 16, 16, ROTATE_90, WHITE);
+    //Paint_DrawBitMap(gImage_icon_mem_16);
+    //EPD_DisplayWindows(ImageBuff, 122-16, 250-16-16-16-8, 122-16+16, 250-16+16-16-16-8);
 
     // BLUETOOTH ON ICON
-    Paint_NewImage(ImageBuff, 16, 16, ROTATE_90, WHITE);
-    Paint_DrawBitMap(gImage_icon_dev_16);
-    EPD_DisplayWindows(ImageBuff, 122-16, 250-16, 122-16+16, 250-16+16);
+    //Paint_NewImage(ImageBuff, 16, 16, ROTATE_90, WHITE);
+    //Paint_DrawBitMap(gImage_icon_dev_16);
+    //EPD_DisplayWindows(ImageBuff, 122-16, 250-16, 122-16+16, 250-16+16);
 
     // BLUETOOTH CONNECTED ICON
-    Paint_NewImage(ImageBuff, 16, 16, ROTATE_90, WHITE);
-    Paint_DrawBitMap(gImage_icon_bt_16);
-    EPD_DisplayWindows(ImageBuff, 122-16, 250-32, 122-16+16, 250-32+16);
+    //Paint_NewImage(ImageBuff, 16, 16, ROTATE_90, WHITE);
+    //Paint_DrawBitMap(gImage_icon_bt_16);
+    //EPD_DisplayWindows(ImageBuff, 122-16, 250-32, 122-16+16, 250-32+16);
 
-    EPD_TurnOnDisplay();
-    nrf_delay_ms(1000);
+    // GLU NUMBER
+    //Paint_NewImage(ImageBuff, 24, 3*17, ROTATE_90, WHITE);
+    //Paint_Clear(0xff);
+    //Paint_DrawString_EN(0, 0, "105", &Font24, WHITE, BLACK);
+    //EPD_DisplayWindows(ImageBuff, 35, 15, 35+24, 15+3*17);
 
-    /*EPD_Clear();
+    // GLU TIME
+    //Paint_NewImage(ImageBuff, 16, 5*11, ROTATE_90, WHITE);
+    //Paint_Clear(0xff);
+    //Paint_DrawString_EN(0, 0, "12:00", &Font16, WHITE, BLACK);
+    //EPD_DisplayWindows(ImageBuff, 10, 13, 10+16, 13+5*11);
 
-    Paint_NewImage(ImageBuff, 104, 212, ROTATE_0, WHITE);
-    Paint_DrawBitMap(gImage_IMAGE_0);
-    EPD_DisplayWindows(ImageBuff, 9, 19, 9+104, 19+212);
+    // CHO NUMBER
+    //Paint_NewImage(ImageBuff, 24, 3*17, ROTATE_90, WHITE);
+    //Paint_Clear(0xff);
+    //Paint_DrawString_EN(0, 0, "15", &Font24, WHITE, BLACK);
+    //EPD_DisplayWindows(ImageBuff, 35, 82+4+15+8, 35+24, 82+4+5+8+3*17);
 
-    EPD_TurnOnDisplay();
-    nrf_delay_ms(1000);*/
+    // CHO TIME
+    //Paint_NewImage(ImageBuff, 16, 5*11, ROTATE_90, WHITE);
+    //Paint_Clear(0xff);
+    //Paint_DrawString_EN(0, 0, "12:00", &Font16, WHITE, BLACK);
+    //EPD_DisplayWindows(ImageBuff, 10, 82+4+13, 10+16, 82+4+13+5*11);
+
+    // INS NUMBER
+    //Paint_NewImage(ImageBuff, 24, 3*17, ROTATE_90, WHITE);
+    //Paint_Clear(0xff);
+    //Paint_DrawString_EN(0, 0, "1.5", &Font24, WHITE, BLACK);
+    //EPD_DisplayWindows(ImageBuff, 35, 82+4+82+4+15, 35+24, 82+4+82+4+15+3*17);
+
+    // INS TIME
+    //Paint_NewImage(ImageBuff, 16, 5*11, ROTATE_90, WHITE);
+    //Paint_Clear(0xff);
+    //Paint_DrawString_EN(0, 0, "12:00", &Font16, WHITE, BLACK);
+    //EPD_DisplayWindows(ImageBuff, 10, 82+4+82+4+13, 10+16, 82+4+82+4+13+5*11);
+
+    //EPD_TurnOnDisplay();
+    //nrf_delay_ms(1000);
 
     // ------------------------- Display test ----------------------------------
 
@@ -207,7 +217,7 @@ int main(void){
                 NRF_LOG_INFO("Wake up!\r\n");
                 NRF_LOG_FLUSH();
                 clock_print();
-                //EPD_Init(FULL_UPDATE);
+                EPD_Init(FULL_UPDATE);
                 advertising_start();
                 encoder_enable();
                 wake_up = 1;
@@ -260,8 +270,8 @@ int main(void){
         if(idle_timer >= IDLE_TICKS){
             // prepare to sleep
             if (wake_up){
-              state_sleep();
               advertising_stop();
+              state_sleep();
               EPD_Sleep();
               encoder_disable();
             }

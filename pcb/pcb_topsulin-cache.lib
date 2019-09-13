@@ -279,11 +279,11 @@ X GND 1 0 0 0 D 50 50 1 1 W N
 ENDDRAW
 ENDDEF
 #
-# topsulin_topsulin_topsulin_topsulin_topsulin_library_nRF51822_module_waveshare
+# topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_library_nRF51822_module_waveshare
 #
-DEF topsulin_topsulin_topsulin_topsulin_topsulin_library_nRF51822_module_waveshare U 0 40 Y Y 1 F N
+DEF topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_library_nRF51822_module_waveshare U 0 40 Y Y 1 F N
 F0 "U" 0 0 50 H V C CNN
-F1 "topsulin_topsulin_topsulin_topsulin_topsulin_library_nRF51822_module_waveshare" 0 1000 50 H V C CNN
+F1 "topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_topsulin_library_nRF51822_module_waveshare" 0 1000 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 DRAW
