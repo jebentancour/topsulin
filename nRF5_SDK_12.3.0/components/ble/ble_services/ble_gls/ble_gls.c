@@ -1271,6 +1271,8 @@ static void on_racp_value_write(ble_gls_t * p_gls, ble_gatts_evt_write_t * p_evt
 
         return;
     }
+    
+    state_gls_write();
 
     // Decode request.
     NRF_LOG_INFO("Decode request.\r\n");

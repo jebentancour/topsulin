@@ -679,6 +679,27 @@ void state_show_pin_ok(void){
   EPD_TurnOnDisplay();
 }
 
+static bool clock_set = false;
+static bool gls_write = false;
+
+void state_clock_set(){
+  if(!clock_set){
+    clock_set = true;
+    if(gls_write){
+      state_begin();
+    }
+  }
+}
+
+void state_gls_write(){
+  if(!gls_write){
+    gls_write = true;
+    if(clock_set){
+      state_begin();
+    }
+  }
+}
+
 void state_begin(){
   if (m_state == initial){
     NRF_LOG_INFO("Begin operation\n");

@@ -828,7 +828,7 @@ void advertising_stop(void)
 }
 
 
-/**@brief Function for application main entry.
+/**@brief Services initialization.
  */
 void ble_services_init(void)
 {

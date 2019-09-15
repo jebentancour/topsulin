@@ -173,7 +173,7 @@ static void on_time_write(ble_os_t * p_our_service, ble_gatts_evt_write_t * p_ev
         time_char_update(p_our_service);
 
         // Begin operation
-        state_begin();
+        state_clock_set();
     }
 }
 
