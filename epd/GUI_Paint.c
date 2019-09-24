@@ -64,7 +64,7 @@ parameter:
 ******************************************************************************/
 void Paint_NewImage(UBYTE *image, UWORD Width, UWORD Height, UWORD Rotate, UWORD Color)
 {
-    Paint.Image = NULL;
+    //Paint.Image = NULL;
     Paint.Image = image;
 
     Paint.WidthMemory = Width;
@@ -605,4 +605,25 @@ void Paint_DrawBitMap(const unsigned char* image_buffer)
             }
         }
     }
+}
+
+void Paint_DrawBitMapIcon(const unsigned char* image_buffer, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend)
+{
+  UWORD x, y, Width;
+  UDOUBLE Addr = 0;
+
+  Xstart = (Xstart % 8 == 0) ? (Xstart / 8 ) : (Xstart / 8 + 1);
+  Xend = (Xend % 8 == 0) ? (Xend / 8 ) : (Xend / 8 + 1);
+  Width = Xend - Xstart;
+
+  for (y = Ystart; y < Yend; y++) {
+      for (x = Xstart; x < Xend; x++) { //8 pixel =  1 byte
+          Addr = x + y * Paint.WidthByte;
+          if(Paint.Color == BLACK){
+            Paint.Image[Addr] = (unsigned char)image_buffer[(x - Xstart) + (y - Ystart) * Width];
+          } else {
+            Paint.Image[Addr] = ~(unsigned char)image_buffer[(x - Xstart) + (y - Ystart) * Width];
+          }
+      }
+  }
 }

@@ -17,6 +17,7 @@
 #include "GUI_Paint.h"
 #include "GUI_Cache.h"
 #include "Debug.h"
+#include "../gpio.h"
 
 const unsigned char lut_full_update[] = {
     0x80, 0x60, 0x40, 0x00, 0x00, 0x00, 0x00,       //LUT0: BB:     VS 0 ~7
@@ -103,7 +104,8 @@ void EPD_WaitUntilIdle(void)
 {
     //DEBUG("e-Paper busy\r\n");
     while (EPD_BUSY_RD == 1) {     //LOW: idle, HIGH: busy
-        DEV_Delay_ms(10);
+        DEV_Delay_ms(5);
+        gpio_process(); // GPIO polling
     }
     //DEBUG("e-Paper busy release\r\n");
 }
@@ -161,7 +163,7 @@ UBYTE EPD_Init(UBYTE update)
         EPD_SendCommand(0x3C); //BorderWavefrom
         EPD_SendData(0x03);
 
-        EPD_SendCommand(0x2C);     //VCOM Voltage
+        EPD_SendCommand(0x2C); //VCOM Voltage
         EPD_SendData(0x55);    //
 
         EPD_SendCommand(0x03);
@@ -262,7 +264,6 @@ void EPD_Clear(void)
             EPD_SendData(0XFF);
         }
     }
-    //EPD_TurnOnDisplay();
 }
 
 /******************************************************************************
@@ -281,7 +282,6 @@ void EPD_Display(UBYTE *Image)
             EPD_SendData(Image[i + j * Width]);
         }
     }
-    EPD_TurnOnDisplay();
 }
 
 void EPD_DisplayWindows(UBYTE *Image, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend)
@@ -319,7 +319,6 @@ void EPD_DisplayPart(UBYTE *Image)
             EPD_SendData(~Image[i + j * Width]);
         }
     }
-    EPD_TurnOnDisplay();
 }
 
 void EPD_DisplayPartWindows(UBYTE *Image, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend)

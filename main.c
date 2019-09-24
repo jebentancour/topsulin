@@ -65,24 +65,23 @@ int main(void){
 
     DEV_ModuleInit();
     EPD_Init(FULL_UPDATE);
+    Paint_NewImage(ImageBuff, EPD_WIDTH, EPD_HEIGHT, ROTATE_90, WHITE);
+    Paint_DrawBitMap(gImage_initial);
+    EPD_DisplayWindows(ImageBuff, 0, 0, EPD_WIDTH, EPD_HEIGHT);
+    EPD_TurnOnDisplay();
 
     // ------------------------- Display test ----------------------------------
 
-    EPD_Clear();
-    EPD_TurnOnDisplay();
-    nrf_delay_ms(1000);
+    //EPD_Init(PART_UPDATE);
 
-    // DISPLAY GRID
-    //Paint_NewImage(ImageBuff, EPD_WIDTH, EPD_HEIGHT, ROTATE_90, WHITE);
-    //Paint_Clear(0xff);
-
-    //Paint_DrawLine(1, 20, 250, 20, BLACK, LINE_STYLE_DOTTED, DOT_PIXEL_1X1);
-
-    //Paint_DrawRectangle(1, 24, 82, 122, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
-    //Paint_DrawRectangle(1+82+4, 24, 82+82+4, 122, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
-    //Paint_DrawRectangle(1+82+4+82+4, 24, 82+82+4+82, 122, BLACK, DRAW_FILL_EMPTY, DOT_PIXEL_1X1);
-
-    //EPD_DisplayWindows(ImageBuff, 0, 0, EPD_WIDTH, EPD_HEIGHT);
+    // ROTATE_270
+    // (  1,122) --- (250,122)
+    //
+    //
+    // (  1,  1) --- (250,  1)
+    // (X,Y)
+    // X ancho 1 - 250
+    // Y alto  1 - 122
 
     // GLU ICON
     //Paint_NewImage(ImageBuff, 24, 24, ROTATE_90, BLACK);
@@ -156,8 +155,7 @@ int main(void){
     //Paint_DrawString_EN(0, 0, "12:00", &Font16, WHITE, BLACK);
     //EPD_DisplayWindows(ImageBuff, 10, 82+4+82+4+13, 10+16, 82+4+82+4+13+5*11);
 
-    //EPD_TurnOnDisplay();
-    //nrf_delay_ms(1000);
+    //nrf_delay_ms(5000);
 
     // ------------------------- Display test ----------------------------------
 
@@ -217,7 +215,6 @@ int main(void){
                 NRF_LOG_INFO("Wake up!\r\n");
                 NRF_LOG_FLUSH();
                 clock_print();
-                EPD_Init(FULL_UPDATE);
                 advertising_start();
                 encoder_enable();
                 wake_up = 1;

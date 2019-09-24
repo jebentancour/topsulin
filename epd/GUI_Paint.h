@@ -172,7 +172,8 @@ void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString, sFONT
 void Paint_DrawNum(UWORD Xpoint, UWORD Ypoint, int32_t Nummber, sFONT* Font, UWORD Color_Background, UWORD Color_Foreground);
 void Paint_DrawTime(UWORD Xstart, UWORD Ystart, PAINT_TIME *pTime, sFONT* Font, UWORD Color_Background, UWORD Color_Foreground);
 
-//pic
+//Bitmap
 void Paint_DrawBitMap(const unsigned char* image_buffer);
+void Paint_DrawBitMapIcon(const unsigned char* image_buffer, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend);
 
 #endif

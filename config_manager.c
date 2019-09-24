@@ -31,7 +31,7 @@ void config_manager_init(void)
   m_global_conf.cho_interval = 5;
   m_global_conf.ins_interval = 10;
   // Name
-  const char* tmp = "Glucosee";
+  const char* tmp = "Topsulin";
   strcpy(m_global_conf.name, tmp);
   name_len = 8;
   // Calc
