@@ -836,7 +836,7 @@ void ble_services_init(void)
     timers_init();
     ble_stack_init();
     peer_manager_init();
-    peer_manager_erase_bonds();
+    //peer_manager_erase_bonds();
     services_init();
     sd_ble_gap_tx_power_set(-20);
     gap_params_init();
