@@ -11,7 +11,7 @@
 #include "encoder.h"
 
 #define LONG_CLICK_MS 1250
-#define DOUBLE_CLICK_MS 300
+#define DOUBLE_CLICK_MS 500
 
 static volatile uint8_t* m_gpio_button_flag;
 static volatile uint8_t* m_gpio_long_button_flag;
