@@ -33,6 +33,7 @@ extern const unsigned char gImage_icon_low_16[];
 
 extern const unsigned char gImage_icon_bt_24[];
 extern const unsigned char gImage_icon_calc_24[];
+
 extern const unsigned char gImage_icon_glu_24[];
 extern const unsigned char gImage_icon_cho_24[];
 extern const unsigned char gImage_icon_ins_24[];

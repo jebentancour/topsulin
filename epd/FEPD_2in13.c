@@ -313,7 +313,7 @@ void EPD_DisplayPart(UBYTE *Image)
         }
     }
 
-    EPD_SendCommand(0x26);   //Write Black and White image to RAM
+    EPD_SendCommand(0x26);
     for (UWORD j = 0; j < Height; j++) {
         for (UWORD i = 0; i < Width; i++) {
             EPD_SendData(~Image[i + j * Width]);

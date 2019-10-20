@@ -63,9 +63,16 @@ int main(void){
     uint32_t last = 0;
     uint32_t now = 0;
 
+    UWORD color;
+    if(config_manager_get_flags() & CONFIG_COLOR_FLAG){
+      color = WHITE;
+    } else {
+      color = BLACK;
+    }
+
     DEV_ModuleInit();
     EPD_Init(FULL_UPDATE);
-    Paint_NewImage(ImageBuff, EPD_WIDTH, EPD_HEIGHT, ROTATE_90, WHITE);
+    Paint_NewImage(ImageBuff, EPD_WIDTH, EPD_HEIGHT, ROTATE_90, color);
     Paint_DrawBitMap(gImage_initial);
     EPD_DisplayWindows(ImageBuff, 0, 0, EPD_WIDTH, EPD_HEIGHT);
     EPD_TurnOnDisplay();

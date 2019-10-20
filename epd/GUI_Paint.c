@@ -620,9 +620,9 @@ void Paint_DrawBitMapIcon(const unsigned char* image_buffer, UWORD Xstart, UWORD
       for (x = Xstart; x < Xend; x++) { //8 pixel =  1 byte
           Addr = x + y * Paint.WidthByte;
           if(Paint.Color == BLACK){
-            Paint.Image[Addr] = (unsigned char)image_buffer[(x - Xstart) + (y - Ystart) * Width];
-          } else {
             Paint.Image[Addr] = ~(unsigned char)image_buffer[(x - Xstart) + (y - Ystart) * Width];
+          } else {
+            Paint.Image[Addr] = (unsigned char)image_buffer[(x - Xstart) + (y - Ystart) * Width];
           }
       }
   }
