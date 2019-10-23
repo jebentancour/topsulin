@@ -64,11 +64,7 @@ int main(void){
     uint32_t now = 0;
 
     UWORD color;
-    if(config_manager_get_flags() & CONFIG_COLOR_FLAG){
-      color = WHITE;
-    } else {
-      color = BLACK;
-    }
+    color = WHITE;
 
     DEV_ModuleInit();
     EPD_Init(FULL_UPDATE);

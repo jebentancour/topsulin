@@ -347,6 +347,25 @@ void state_process_display(void){
       }
       EPD_DisplayPartWindows(ImageBuff, 0, 0, EPD_WIDTH, EPD_HEIGHT);
 
+      // GLU
+      len = sprintf(buffer, " mg/dL");
+      Paint_NewImage(ImageBuff, 12, len*7, ROTATE_90, color);
+      Paint_Clear(color);
+      Paint_DrawString_EN(0, 0, buffer, &Font12, color, !color);
+      EPD_DisplayPartWindows(ImageBuff, ALTO-MARGEN-24-24, MARGEN+24+2, ALTO-MARGEN-24-24+12, MARGEN+24+2+len*7);
+
+      len = sprintf(buffer, "%d mg/dL", config_manager_get_calc_corr().mantissa);
+      Paint_NewImage(ImageBuff, 12, len*7, ROTATE_90, color);
+      Paint_Clear(color);
+      Paint_DrawString_EN(0, 0, buffer, &Font12, color, !color);
+      EPD_DisplayPartWindows(ImageBuff, 10, 46-(len*7)/2, 10+12, 46+(len*7)/2);
+
+      //len = sprintf(buffer, "%d - %d", config_manager_get_calc_low().mantissa, config_manager_get_calc_high().mantissa);
+      //Paint_NewImage(ImageBuff, 12, len*7, ROTATE_90, color);
+      //Paint_Clear(color);
+      //Paint_DrawString_EN(0, 0, buffer, &Font12, color, !color);
+      //EPD_DisplayPartWindows(ImageBuff, 10+7, 46-(len*7)/2, 10+7+12, 46+(len*7)/2);
+
       if (new_glu){
         len = sprintf(buffer, "%ld", m_topsulin_meas.glu);
       } else {
@@ -357,17 +376,18 @@ void state_process_display(void){
       Paint_DrawString_EN(0, 0, buffer, &Font24, color, !color);
       EPD_DisplayPartWindows(ImageBuff, 35, 46-(len*17)/2, 35+24, 46+(len*17)/2);
 
-      len = sprintf(buffer, "%d mg/dL", config_manager_get_calc_corr().mantissa);
+      // CHO
+      len = sprintf(buffer, " %d g", config_manager_get_cho_interval());
       Paint_NewImage(ImageBuff, 12, len*7, ROTATE_90, color);
       Paint_Clear(color);
       Paint_DrawString_EN(0, 0, buffer, &Font12, color, !color);
-      EPD_DisplayPartWindows(ImageBuff, 10, 46-(len*7)/2, 10+12, 46+(len*7)/2);
+      EPD_DisplayPartWindows(ImageBuff, ALTO-MARGEN-24-24, (ANCHO-2*MARGEN)/3+MARGEN+24+2, ALTO-MARGEN-24-24+12, (ANCHO-2*MARGEN)/3+MARGEN+24+2+len*7);
 
-      //len = sprintf(buffer, "%d-%d", config_manager_get_calc_low().mantissa, config_manager_get_calc_high().mantissa);
-      //Paint_NewImage(ImageBuff, 12, len*7, ROTATE_90, color);
-      //Paint_Clear(color);
-      //Paint_DrawString_EN(0, 0, buffer, &Font12, color, !color);
-      //EPD_DisplayPartWindows(ImageBuff, 10+13, 46-(len*7)/2, 10+13+12, 46+(len*7)/2);
+      len = sprintf(buffer, "%d g", config_manager_get_calc_sens());
+      Paint_NewImage(ImageBuff, 12, len*7, ROTATE_90, color);
+      Paint_Clear(color);
+      Paint_DrawString_EN(0, 0, buffer, &Font12, color, !color);
+      EPD_DisplayPartWindows(ImageBuff, 10, 125-(len*7)/2, 10+12, 125+(len*7)/2);
 
       if (new_cho){
         len = sprintf(buffer, "%ld", m_topsulin_meas.cho);
@@ -379,11 +399,18 @@ void state_process_display(void){
       Paint_DrawString_EN(0, 0, buffer, &Font24, color, !color);
       EPD_DisplayPartWindows(ImageBuff, 35, 125-(len*17)/2, 35+24, 125+(len*17)/2);
 
-      len = sprintf(buffer, "%d g", config_manager_get_calc_sens());
+      // INS
+      len = sprintf(buffer, " %d.%d U", config_manager_get_ins_interval() / 10, config_manager_get_ins_interval() % 10);
       Paint_NewImage(ImageBuff, 12, len*7, ROTATE_90, color);
       Paint_Clear(color);
       Paint_DrawString_EN(0, 0, buffer, &Font12, color, !color);
-      EPD_DisplayPartWindows(ImageBuff, 10, 125-(len*7)/2, 10+12, 125+(len*7)/2);
+      EPD_DisplayPartWindows(ImageBuff, ALTO-MARGEN-24-24, 2*(ANCHO-2*MARGEN)/3+MARGEN+24+2, ALTO-MARGEN-24-24+12, 2*(ANCHO-2*MARGEN)/3+MARGEN+24+2+len*7);
+
+      if (config_manager_get_flags() & CONFIG_BOLO_FLAG){
+        Paint_NewImage(ImageBuff, 24, 24, ROTATE_90, !color);
+        Paint_DrawBitMap(gImage_icon_calc_24);
+        EPD_DisplayPartWindows(ImageBuff, ALTO-MARGEN-24-24-48-12, 204-12, ALTO-MARGEN-24-48-12, 204+12);
+      }
 
       if (new_ins){
         if (config_manager_get_ins_interval() >= 10){
@@ -399,11 +426,6 @@ void state_process_display(void){
       Paint_DrawString_EN(0, 0, buffer, &Font24, color, !color);
       EPD_DisplayPartWindows(ImageBuff, 35, 204-(len*17)/2, 35+24, 204+(len*17)/2);
 
-      if (config_manager_get_flags() & CONFIG_BOLO_FLAG){
-        Paint_NewImage(ImageBuff, 24, 24, ROTATE_90, !color);
-        Paint_DrawBitMap(gImage_icon_calc_24);
-        EPD_DisplayPartWindows(ImageBuff, ALTO-MARGEN-24-24-48-12, 204-12, ALTO-MARGEN-24-48-12, 204+12);
-      }
     }
 
     // NAME
@@ -473,12 +495,6 @@ void state_process_display(void){
       EPD_DisplayPartWindows(ImageBuff, ALTO-MARGEN-24-24, MARGEN+2, ALTO-MARGEN-24, MARGEN+24+2);
     }
 
-    len = sprintf(buffer, " mg/dL");
-    Paint_NewImage(ImageBuff, 12, len*7, ROTATE_90, color);
-    Paint_Clear(color);
-    Paint_DrawString_EN(0, 0, buffer, &Font12, color, !color);
-    EPD_DisplayPartWindows(ImageBuff, ALTO-MARGEN-24-24, MARGEN+24+2, ALTO-MARGEN-24-24+12, MARGEN+24+2+len*7);
-
     // CHO ICON
     Paint_NewImage(ImageBuff, 24, 24, ROTATE_90, !color);
     Paint_DrawBitMap(gImage_icon_cho_24);
@@ -487,12 +503,6 @@ void state_process_display(void){
     } else {
       EPD_DisplayPartWindows(ImageBuff, ALTO-MARGEN-24-24, (ANCHO-2*MARGEN)/3+MARGEN+2, ALTO-MARGEN-24, (ANCHO-2*MARGEN)/3+MARGEN+24+2);
     }
-
-    len = sprintf(buffer, " %d g", config_manager_get_cho_interval());
-    Paint_NewImage(ImageBuff, 12, len*7, ROTATE_90, color);
-    Paint_Clear(color);
-    Paint_DrawString_EN(0, 0, buffer, &Font12, color, !color);
-    EPD_DisplayPartWindows(ImageBuff, ALTO-MARGEN-24-24, (ANCHO-2*MARGEN)/3+MARGEN+24+2, ALTO-MARGEN-24-24+12, (ANCHO-2*MARGEN)/3+MARGEN+24+2+len*7);
 
     // INS ICON
     Paint_NewImage(ImageBuff, 24, 24, ROTATE_90, !color);
@@ -503,14 +513,11 @@ void state_process_display(void){
       EPD_DisplayPartWindows(ImageBuff, ALTO-MARGEN-24-24, 2*(ANCHO-2*MARGEN)/3+MARGEN+2, ALTO-MARGEN-24, 2*(ANCHO-2*MARGEN)/3+MARGEN+24+2);
     }
 
-    len = sprintf(buffer, " %d.%d U", config_manager_get_ins_interval() / 10, config_manager_get_ins_interval() % 10);
-    Paint_NewImage(ImageBuff, 12, len*7, ROTATE_90, color);
-    Paint_Clear(color);
-    Paint_DrawString_EN(0, 0, buffer, &Font12, color, !color);
-    EPD_DisplayPartWindows(ImageBuff, ALTO-MARGEN-24-24, 2*(ANCHO-2*MARGEN)/3+MARGEN+24+2, ALTO-MARGEN-24-24+12, 2*(ANCHO-2*MARGEN)/3+MARGEN+24+2+len*7);
   }
 
   if ((m_state == initial)&&(quick_refresh|full_refresh)){
+
+    color = WHITE;
 
     if (bt_state == 0){
       Paint_NewImage(ImageBuff, ALTO, ANCHO, ROTATE_90, color);
@@ -804,11 +811,7 @@ void state_show_pin(char* pin){
   }
 
   UWORD color;
-  if(config_manager_get_flags() & CONFIG_COLOR_FLAG){
-    color = WHITE;
-  } else {
-    color = BLACK;
-  }
+  color = WHITE;
 
   Paint_NewImage(ImageBuff, 24, 6*17, ROTATE_90, color);
   Paint_Clear(color);
@@ -829,11 +832,7 @@ void state_show_pin_error(void){
   }
 
   UWORD color;
-  if(config_manager_get_flags() & CONFIG_COLOR_FLAG){
-    color = WHITE;
-  } else {
-    color = BLACK;
-  }
+  color = WHITE;
 
   Paint_NewImage(ImageBuff, 24, 6*17, ROTATE_90, color);
   Paint_Clear(color);
@@ -854,11 +853,7 @@ void state_show_pin_ok(void){
   }
 
   UWORD color;
-  if(config_manager_get_flags() & CONFIG_COLOR_FLAG){
-    color = WHITE;
-  } else {
-    color = BLACK;
-  }
+  color = WHITE;
 
   Paint_NewImage(ImageBuff, 24, 6*17, ROTATE_90, color);
   Paint_Clear(color);
