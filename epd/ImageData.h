@@ -30,6 +30,7 @@ extern const unsigned char gImage_icon_bt_16[];
 extern const unsigned char gImage_icon_dev_16[];
 extern const unsigned char gImage_icon_mem_16[];
 extern const unsigned char gImage_icon_low_16[];
+extern const unsigned char gImage_icon_calc_16[];
 
 extern const unsigned char gImage_icon_bt_24[];
 extern const unsigned char gImage_icon_calc_24[];

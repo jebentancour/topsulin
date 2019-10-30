@@ -22,6 +22,8 @@ void state_show_pin_error(void);
 
 void state_show_pin_ok(void);
 
+void state_update_config(void);
+
 void state_begin(void);
 
 void state_clock_set(void);

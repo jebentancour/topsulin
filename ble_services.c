@@ -66,6 +66,7 @@
 
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
+#include "nrf_delay.h"
 
 #include "our_service.h"
 #include "state.h"
@@ -127,23 +128,6 @@ static ble_uuid_t m_more_adv_uuids[] = {{BLE_UUID_TOPSULIN_SERVICE, BLE_UUID_TYP
 pm_peer_id_t m_peer_to_be_deleted = PM_PEER_ID_INVALID;
 
 
-/**@brief Callback function for asserts in the SoftDevice.
- *
- * @details This function will be called in case of an assert in the SoftDevice.
- *
- * @warning This handler is an example only and does not fit a final product. You need to analyze
- *          how your product is supposed to react in case of Assert.
- * @warning On assert from the SoftDevice, the system can only recover on reset.
- *
- * @param[in] line_num   Line number of the failing ASSERT call.
- * @param[in] file_name  File name of the failing ASSERT call.
- */
-void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
-{
-    app_error_handler(DEAD_BEEF, line_num, p_file_name);
-}
-
-
 /**@brief Function for handling Peer Manager events.
  *
  * @param[in] p_evt  Peer Manager event.
@@ -159,9 +143,7 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
             NRF_LOG_INFO("Connected to a previously bonded device.\n");
             // Start Security Request timer.
             err_code = app_timer_start(m_sec_req_timer_id, SECURITY_REQUEST_DELAY, NULL);
-            APP_ERROR_CHECK(err_code);
-
-            //state_begin();
+            //APP_ERROR_CHECK(err_code);
         } break;
 
         case PM_EVT_CONN_SEC_SUCCEEDED:
@@ -170,7 +152,7 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
 
             // Check if the link is authenticated (meaning at least MITM).
             err_code = pm_conn_sec_status_get(p_evt->conn_handle, &conn_sec_status);
-            APP_ERROR_CHECK(err_code);
+            //APP_ERROR_CHECK(err_code);
 
             if (conn_sec_status.mitm_protected)
             {
@@ -190,10 +172,10 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
                 // The peer did not use MITM, disconnect.
                 NRF_LOG_INFO("Collector did not use MITM, disconnecting\n");
                 err_code = pm_peer_id_get(m_conn_handle, &m_peer_to_be_deleted);
-                APP_ERROR_CHECK(err_code);
+                //APP_ERROR_CHECK(err_code);
                 err_code = sd_ble_gap_disconnect(m_conn_handle,
                                                  BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-                APP_ERROR_CHECK(err_code);
+                //APP_ERROR_CHECK(err_code);
             }
         } break;
 
@@ -224,7 +206,7 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
             }
             else
             {
-                APP_ERROR_CHECK(err_code);
+                //APP_ERROR_CHECK(err_code);
             }
         } break;
 
@@ -242,25 +224,25 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
         case PM_EVT_PEER_DATA_UPDATE_FAILED:
         {
             // Assert.
-            APP_ERROR_CHECK(p_evt->params.peer_data_update_failed.error);
+            //APP_ERROR_CHECK(p_evt->params.peer_data_update_failed.error);
         } break;
 
         case PM_EVT_PEER_DELETE_FAILED:
         {
             // Assert.
-            APP_ERROR_CHECK(p_evt->params.peer_delete_failed.error);
+            //APP_ERROR_CHECK(p_evt->params.peer_delete_failed.error);
         } break;
 
         case PM_EVT_PEERS_DELETE_FAILED:
         {
             // Assert.
-            APP_ERROR_CHECK(p_evt->params.peers_delete_failed_evt.error);
+            //APP_ERROR_CHECK(p_evt->params.peers_delete_failed_evt.error);
         } break;
 
         case PM_EVT_ERROR_UNEXPECTED:
         {
             // Assert.
-            APP_ERROR_CHECK(p_evt->params.error_unexpected.error);
+            //APP_ERROR_CHECK(p_evt->params.error_unexpected.error);
         } break;
 
         case PM_EVT_CONN_SEC_START:
@@ -285,8 +267,11 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
  */
 static void service_error_handler(uint32_t nrf_error)
 {
-    //APP_ERROR_HANDLER(nrf_error);
-    NRF_LOG_INFO("service_error_handler %d\n", nrf_error);
+    NRF_LOG_INFO("service_error_handler code = %d\n", nrf_error);
+    NRF_LOG_FLUSH();
+
+    //nrf_delay_ms(5000);
+    //NVIC_SystemReset();
 }
 
 
@@ -299,19 +284,13 @@ static void service_error_handler(uint32_t nrf_error)
  */
 static void sec_req_timeout_handler(void * p_context)
 {
-    uint32_t err_code;
-
     if (m_conn_handle != BLE_CONN_HANDLE_INVALID)
     {
         // Initiate bonding.
+        pm_conn_secure(m_conn_handle, false);
         NRF_LOG_DEBUG("Start encryption\n");
-        err_code = pm_conn_secure(m_conn_handle, false);
-        if (err_code != NRF_ERROR_INVALID_STATE)
-        {
-            APP_ERROR_CHECK(err_code);
-        }
+        NRF_LOG_FLUSH();
     }
-    NRF_LOG_FLUSH();
 }
 
 
@@ -319,13 +298,7 @@ static void sec_req_timeout_handler(void * p_context)
  */
 void add_glucose_measurement(ble_gls_rec_t rec)
 {
-    uint32_t      err_code;
-
-    err_code = ble_gls_glucose_new_meas(&m_gls, &rec);
-    if (err_code != NRF_SUCCESS)
-    {
-        // Do nothing.
-    }
+    ble_gls_glucose_new_meas(&m_gls, &rec);
 }
 
 void time_ble_update(void)
@@ -344,16 +317,13 @@ void batt_ble_update(uint16_t v)
  */
 static void timers_init(void)
 {
-    uint32_t err_code;
-
     // Initialize timer module.
     APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_OP_QUEUE_SIZE, false);
 
     // Create Security Request timer.
-    err_code = app_timer_create(&m_sec_req_timer_id,
+    app_timer_create(&m_sec_req_timer_id,
                                 APP_TIMER_MODE_SINGLE_SHOT,
                                 sec_req_timeout_handler);
-    APP_ERROR_CHECK(err_code);
 }
 
 
@@ -364,7 +334,6 @@ static void timers_init(void)
  */
 static void gap_params_init(void)
 {
-    uint32_t                err_code;
     ble_gap_conn_params_t   gap_conn_params;
     ble_gap_conn_sec_mode_t sec_mode;
 
@@ -377,15 +346,13 @@ static void gap_params_init(void)
     int l;
     l = sprintf(b, "Topsulin-%04X", (uint16_t) NRF_FICR->DEVICEADDR[0] & 0xFFFF);
 
-    err_code = sd_ble_gap_device_name_set(&sec_mode, (const uint8_t *)b, l);
+    sd_ble_gap_device_name_set(&sec_mode, (const uint8_t *)b, l);
 
-    /*err_code = sd_ble_gap_device_name_set(&sec_mode,
-                                          (const uint8_t *)DEVICE_NAME,
-                                          strlen(DEVICE_NAME));*/
-    APP_ERROR_CHECK(err_code);
+    /*sd_ble_gap_device_name_set(&sec_mode,
+                                    (const uint8_t *)DEVICE_NAME,
+                                    strlen(DEVICE_NAME));*/
 
-    err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_GENERIC_GLUCOSE_METER);
-    APP_ERROR_CHECK(err_code);
+    sd_ble_gap_appearance_set(BLE_APPEARANCE_GENERIC_GLUCOSE_METER);
 
     memset(&gap_conn_params, 0, sizeof(gap_conn_params));
 
@@ -394,8 +361,7 @@ static void gap_params_init(void)
     gap_conn_params.slave_latency     = SLAVE_LATENCY;
     gap_conn_params.conn_sup_timeout  = CONN_SUP_TIMEOUT;
 
-    err_code = sd_ble_gap_ppcp_set(&gap_conn_params);
-    APP_ERROR_CHECK(err_code);
+    sd_ble_gap_ppcp_set(&gap_conn_params);
 }
 
 
@@ -405,7 +371,6 @@ static void gap_params_init(void)
  */
 static void services_init(void)
 {
-    uint32_t       err_code;
     ble_gls_init_t gls_init;
 
     // Initialize Glucose Service - sample selection of feature bits.
@@ -419,12 +384,10 @@ static void services_init(void)
     gls_init.feature             |= BLE_GLS_FEATURE_GENERAL_FAULT;
     gls_init.is_context_supported = true;
 
-    err_code = ble_gls_init(&m_gls, &gls_init);
-    APP_ERROR_CHECK(err_code);
+    ble_gls_init(&m_gls, &gls_init);
 
     // Initialize Our Service.
     our_service_init(&m_our_service);
-
 }
 
 
@@ -440,12 +403,9 @@ static void services_init(void)
  */
 static void on_conn_params_evt(ble_conn_params_evt_t * p_evt)
 {
-    uint32_t err_code;
-
     if (p_evt->evt_type == BLE_CONN_PARAMS_EVT_FAILED)
     {
-        err_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_CONN_INTERVAL_UNACCEPTABLE);
-        APP_ERROR_CHECK(err_code);
+        sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_CONN_INTERVAL_UNACCEPTABLE);
     }
 }
 
@@ -456,8 +416,8 @@ static void on_conn_params_evt(ble_conn_params_evt_t * p_evt)
  */
 static void conn_params_error_handler(uint32_t nrf_error)
 {
-    //APP_ERROR_HANDLER(nrf_error);
     NRF_LOG_INFO("conn_params_error_handler %d\n", nrf_error);
+    NRF_LOG_FLUSH();
 }
 
 
@@ -465,7 +425,6 @@ static void conn_params_error_handler(uint32_t nrf_error)
  */
 static void conn_params_init(void)
 {
-    uint32_t               err_code;
     ble_conn_params_init_t cp_init;
 
     memset(&cp_init, 0, sizeof(cp_init));
@@ -479,8 +438,7 @@ static void conn_params_init(void)
     cp_init.evt_handler                    = on_conn_params_evt;
     cp_init.error_handler                  = conn_params_error_handler;
 
-    err_code = ble_conn_params_init(&cp_init);
-    APP_ERROR_CHECK(err_code);
+    ble_conn_params_init(&cp_init);
 }
 
 
@@ -496,13 +454,13 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
     {
         case BLE_ADV_EVT_FAST:
             NRF_LOG_INFO("Fast advertising\n");
-            state_on_event(ble_on);
+            //state_on_event(ble_on);
             state_set_bt_state(1);
             break; // BLE_ADV_EVT_FAST
 
         case BLE_ADV_EVT_IDLE:
             NRF_LOG_INFO("Idle advertising\n");
-            state_on_event(ble_off);
+            //state_on_event(ble_off);
             state_set_bt_state(0);
             break; // BLE_ADV_EVT_IDLE
 
@@ -519,20 +477,16 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
  */
 static void on_ble_evt(ble_evt_t * p_ble_evt)
 {
-    uint32_t err_code = NRF_SUCCESS; // lint -save -e438 // Last value assigned to variable 'err_code' not used
-
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_DISCONNECTED:
         {
             NRF_LOG_INFO("Disconnected\n");
-            state_set_bt_state(1);
             m_conn_handle = BLE_CONN_HANDLE_INVALID;
             /*check if the last connected peer had not used MITM, if so, delete its bond information*/
             if (m_peer_to_be_deleted != PM_PEER_ID_INVALID)
             {
-                ret_code_t ret_val = pm_peer_delete(m_peer_to_be_deleted);
-                APP_ERROR_CHECK(ret_val);
+                pm_peer_delete(m_peer_to_be_deleted);
                 NRF_LOG_DEBUG("Collector's bond deleted\n");
                 m_peer_to_be_deleted = PM_PEER_ID_INVALID;
             }
@@ -543,28 +497,23 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             m_peer_to_be_deleted = PM_PEER_ID_INVALID;
             NRF_LOG_INFO("Connected\n");
             state_set_bt_state(2);
-            //err_code           = bsp_indication_set(BSP_INDICATE_CONNECTED);
-            //APP_ERROR_CHECK(err_code);
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
             // Start Security Request timer.
-            err_code = app_timer_start(m_sec_req_timer_id, SECURITY_REQUEST_DELAY, NULL);
-            APP_ERROR_CHECK(err_code);
+            app_timer_start(m_sec_req_timer_id, SECURITY_REQUEST_DELAY, NULL);
         } break; // BLE_GAP_EVT_CONNECTED
 
         case BLE_GATTC_EVT_TIMEOUT:
             // Disconnect on GATT Client timeout event.
             NRF_LOG_DEBUG("GATT Client Timeout.\n");
-            err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gattc_evt.conn_handle,
+            sd_ble_gap_disconnect(p_ble_evt->evt.gattc_evt.conn_handle,
                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-            APP_ERROR_CHECK(err_code);
             break; // BLE_GATTC_EVT_TIMEOUT
 
         case BLE_GATTS_EVT_TIMEOUT:
             // Disconnect on GATT Server timeout event.
             NRF_LOG_DEBUG("GATT Server Timeout.\n");
-            err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle,
+            sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle,
                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-            APP_ERROR_CHECK(err_code);
             break; // BLE_GATTS_EVT_TIMEOUT
 
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
@@ -577,16 +526,14 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             memcpy(passkey, p_ble_evt->evt.gap_evt.params.passkey_display.passkey, PASSKEY_LENGTH);
             passkey[PASSKEY_LENGTH] = 0;
             // Don't send delayed Security Request if security procedure is already in progress.
-            err_code = app_timer_stop(m_sec_req_timer_id);
-            APP_ERROR_CHECK(err_code);
+            app_timer_stop(m_sec_req_timer_id);
 
             NRF_LOG_INFO("Passkey: %s\n", nrf_log_push(passkey));
             state_show_pin(passkey);
         } break; // BLE_GAP_EVT_PASSKEY_DISPLAY
 
         case BLE_EVT_USER_MEM_REQUEST:
-            err_code = sd_ble_user_mem_reply(m_conn_handle, NULL);
-            APP_ERROR_CHECK(err_code);
+            sd_ble_user_mem_reply(m_conn_handle, NULL);
             break; // BLE_EVT_USER_MEM_REQUEST
 
         case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST:
@@ -611,18 +558,16 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
                         auth_reply.type = BLE_GATTS_AUTHORIZE_TYPE_READ;
                     }
                     auth_reply.params.write.gatt_status = APP_FEATURE_NOT_SUPPORTED;
-                    err_code = sd_ble_gatts_rw_authorize_reply(p_ble_evt->evt.gatts_evt.conn_handle,
+                    sd_ble_gatts_rw_authorize_reply(p_ble_evt->evt.gatts_evt.conn_handle,
                                                                &auth_reply);
-                    APP_ERROR_CHECK(err_code);
                 }
             }
         } break; // BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST
 
 #if (NRF_SD_BLE_API_VERSION == 3)
         case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST:
-            err_code = sd_ble_gatts_exchange_mtu_reply(p_ble_evt->evt.gatts_evt.conn_handle,
+            sd_ble_gatts_exchange_mtu_reply(p_ble_evt->evt.gatts_evt.conn_handle,
                                                        NRF_BLE_MAX_MTU_SIZE);
-            APP_ERROR_CHECK(err_code);
             break; // BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST
 #endif
 
@@ -679,36 +624,25 @@ static void sys_evt_dispatch(uint32_t sys_evt)
  */
 static void ble_stack_init(void)
 {
-    uint32_t err_code;
-
     nrf_clock_lf_cfg_t clock_lf_cfg = NRF_CLOCK_LFCLKSRC;
 
     // Initialize the SoftDevice handler module.
     SOFTDEVICE_HANDLER_INIT(&clock_lf_cfg, NULL);
-
     ble_enable_params_t ble_enable_params;
-    err_code = softdevice_enable_get_default_config(CENTRAL_LINK_COUNT,
+    softdevice_enable_get_default_config(CENTRAL_LINK_COUNT,
                                                     PERIPHERAL_LINK_COUNT,
                                                     &ble_enable_params);
-    APP_ERROR_CHECK(err_code);
-
     // Check the ram settings against the used number of links
     CHECK_RAM_START_ADDR(CENTRAL_LINK_COUNT, PERIPHERAL_LINK_COUNT);
-
     // Enable BLE stack.
 #if (NRF_SD_BLE_API_VERSION == 3)
     ble_enable_params.gatt_enable_params.att_mtu = NRF_BLE_MAX_MTU_SIZE;
 #endif
-    err_code = softdevice_enable(&ble_enable_params);
-    APP_ERROR_CHECK(err_code);
-
+    softdevice_enable(&ble_enable_params);
     // Register with the SoftDevice handler module for BLE events.
-    err_code = softdevice_ble_evt_handler_set(ble_evt_dispatch);
-    APP_ERROR_CHECK(err_code);
-
+    softdevice_ble_evt_handler_set(ble_evt_dispatch);
     // Register with the SoftDevice handler module for BLE events.
-    err_code = softdevice_sys_evt_handler_set(sys_evt_dispatch);
-    APP_ERROR_CHECK(err_code);
+    softdevice_sys_evt_handler_set(sys_evt_dispatch);
 }
 
 
@@ -717,10 +651,8 @@ static void ble_stack_init(void)
 static void peer_manager_init(void)
 {
     ble_gap_sec_params_t sec_param;
-    ret_code_t           err_code;
 
-    err_code = pm_init();
-    APP_ERROR_CHECK(err_code);
+    pm_init();
 
     memset(&sec_param, 0, sizeof(ble_gap_sec_params_t));
 
@@ -738,22 +670,15 @@ static void peer_manager_init(void)
     sec_param.kdist_peer.enc = 1;
     sec_param.kdist_peer.id  = 1;
 
-    err_code = pm_sec_params_set(&sec_param);
-    APP_ERROR_CHECK(err_code);
-
-    err_code = pm_register(pm_evt_handler);
-    APP_ERROR_CHECK(err_code);
+    pm_sec_params_set(&sec_param);
+    pm_register(pm_evt_handler);
 }
 
 /**@brief Function for erase Peer Manager bonds.
  */
 void peer_manager_erase_bonds(void)
 {
-    uint32_t err_code;
-
-    err_code = pm_peers_delete();
-    APP_ERROR_CHECK(err_code);
-
+    pm_peers_delete();
     NRF_LOG_INFO("Bonds erased!\n");
     NRF_LOG_FLUSH();
 }
@@ -765,7 +690,6 @@ void peer_manager_erase_bonds(void)
  */
 static void advertising_init(void)
 {
-    uint32_t               err_code;
     ble_advdata_t          advdata;
     ble_advdata_t          scanrsp;
     ble_adv_modes_config_t options;
@@ -788,8 +712,7 @@ static void advertising_init(void)
     options.ble_adv_fast_interval = APP_ADV_INTERVAL;
     options.ble_adv_fast_timeout  = APP_ADV_TIMEOUT_IN_SECONDS;
 
-    err_code = ble_advertising_init(&advdata, &scanrsp, &options, on_adv_evt, NULL);
-    APP_ERROR_CHECK(err_code);
+    ble_advertising_init(&advdata, &scanrsp, &options, on_adv_evt, NULL);
 }
 
 
@@ -812,14 +735,14 @@ void advertising_stop(void)
         err_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
         if (err_code != NRF_ERROR_INVALID_STATE)
         {
-            APP_ERROR_CHECK(err_code);
+            //APP_ERROR_CHECK(err_code);
         }
     }
 
     err_code = sd_ble_gap_adv_stop();
     if (err_code != NRF_ERROR_INVALID_STATE)
     {
-        APP_ERROR_CHECK(err_code);
+        //APP_ERROR_CHECK(err_code);
     }
 
     state_set_bt_state(0);

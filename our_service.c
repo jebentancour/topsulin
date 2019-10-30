@@ -239,38 +239,37 @@ static void on_write(ble_os_t * p_our_service, ble_evt_t * p_ble_evt)
     if (p_evt_write->handle == p_our_service->config_char_handles.value_handle)
     {
         on_config_write(p_our_service, p_evt_write);
-        //print = 1;
+        print = 1;
     }
 
     if (p_evt_write->handle == p_our_service->name_char_handles.value_handle)
     {
         on_name_write(p_our_service, p_evt_write);
-        //print = 1;
+        print = 1;
     }
 
     if (p_evt_write->handle == p_our_service->time_char_handles.value_handle)
     {
         on_time_write(p_our_service, p_evt_write);
-        //print = 1;
+        print = 1;
     }
 
     if (p_evt_write->handle == p_our_service->calc_char_handles.value_handle)
     {
         on_calc_write(p_our_service, p_evt_write);
-        //print = 1;
+        print = 1;
     }
 
     if (p_evt_write->handle == p_our_service->ins_char_handles.value_handle)
     {
         on_insulin_write(p_our_service, p_evt_write);
-        //print = 1;
+        print = 1;
     }
 
     if (print){
         config_manager_print();
+        state_update_config();
     }
-
-    // Update display?
 
 }
 
@@ -304,14 +303,14 @@ void ble_our_service_on_ble_evt(ble_evt_t * p_ble_evt, void * p_context)
 static uint32_t config_char_add(ble_os_t * p_our_service)
 {
     // Add a custom characteristic UUID
-    uint32_t            err_code;
+    //uint32_t            err_code;
     ble_uuid_t          char_uuid;
     ble_uuid128_t       base_uuid = BLE_UUID_TOPSULIN_BASE_UUID;
 
     char_uuid.uuid      = BLE_UUID_TOPSULIN_CONFIG_CHARACTERISTIC;
 
-    err_code = sd_ble_uuid_vs_add(&base_uuid, &char_uuid.type);
-    APP_ERROR_CHECK(err_code);
+    sd_ble_uuid_vs_add(&base_uuid, &char_uuid.type);
+    //APP_ERROR_CHECK(err_code);
 
     // Add read/write properties to our characteristic
     ble_gatts_char_md_t char_md;
@@ -355,11 +354,11 @@ static uint32_t config_char_add(ble_os_t * p_our_service)
     attr_char_value.p_value     = value;
 
     // Add our new characteristic to the service
-    err_code = sd_ble_gatts_characteristic_add(p_our_service->service_handle,
+    sd_ble_gatts_characteristic_add(p_our_service->service_handle,
                                    &char_md,
                                    &attr_char_value,
                                    &p_our_service->config_char_handles);
-    APP_ERROR_CHECK(err_code);
+    //APP_ERROR_CHECK(err_code);
 
     return NRF_SUCCESS;
 }
@@ -367,14 +366,14 @@ static uint32_t config_char_add(ble_os_t * p_our_service)
 static uint32_t name_char_add(ble_os_t * p_our_service)
 {
     // Add a custom characteristic UUID
-    uint32_t            err_code;
+    //uint32_t            err_code;
     ble_uuid_t          char_uuid;
     ble_uuid128_t       base_uuid = BLE_UUID_TOPSULIN_BASE_UUID;
 
     char_uuid.uuid      = BLE_UUID_TOPSULIN_NAME_CHARACTERISTIC;
 
-    err_code = sd_ble_uuid_vs_add(&base_uuid, &char_uuid.type);
-    APP_ERROR_CHECK(err_code);
+    sd_ble_uuid_vs_add(&base_uuid, &char_uuid.type);
+    //APP_ERROR_CHECK(err_code);
 
     // Add read/write properties to our characteristic
     ble_gatts_char_md_t char_md;
@@ -414,11 +413,11 @@ static uint32_t name_char_add(ble_os_t * p_our_service)
     attr_char_value.p_value     = value;
 
     // Add our new characteristic to the service
-    err_code = sd_ble_gatts_characteristic_add(p_our_service->service_handle,
+    sd_ble_gatts_characteristic_add(p_our_service->service_handle,
                                    &char_md,
                                    &attr_char_value,
                                    &p_our_service->name_char_handles);
-    APP_ERROR_CHECK(err_code);
+    //APP_ERROR_CHECK(err_code);
 
     return NRF_SUCCESS;
 }
@@ -426,14 +425,14 @@ static uint32_t name_char_add(ble_os_t * p_our_service)
 static uint32_t time_char_add(ble_os_t * p_our_service)
 {
     // Add a custom characteristic UUID
-    uint32_t            err_code;
+    //uint32_t            err_code;
     ble_uuid_t          char_uuid;
     ble_uuid128_t       base_uuid = BLE_UUID_TOPSULIN_BASE_UUID;
 
     char_uuid.uuid      = BLE_UUID_TOPSULIN_TIME_CHARACTERISTIC;
 
-    err_code = sd_ble_uuid_vs_add(&base_uuid, &char_uuid.type);
-    APP_ERROR_CHECK(err_code);
+    sd_ble_uuid_vs_add(&base_uuid, &char_uuid.type);
+    //APP_ERROR_CHECK(err_code);
 
     // Add read/write properties to our characteristic
     ble_gatts_char_md_t char_md;
@@ -485,11 +484,11 @@ static uint32_t time_char_add(ble_os_t * p_our_service)
     attr_char_value.p_value     = value;
 
     // Add our new characteristic to the service
-    err_code = sd_ble_gatts_characteristic_add(p_our_service->service_handle,
+    sd_ble_gatts_characteristic_add(p_our_service->service_handle,
                                    &char_md,
                                    &attr_char_value,
                                    &p_our_service->time_char_handles);
-    APP_ERROR_CHECK(err_code);
+    //APP_ERROR_CHECK(err_code);
 
     return NRF_SUCCESS;
 }
@@ -497,14 +496,14 @@ static uint32_t time_char_add(ble_os_t * p_our_service)
 static uint32_t calc_char_add(ble_os_t * p_our_service)
 {
     // Add a custom characteristic UUID
-    uint32_t            err_code;
+    //uint32_t            err_code;
     ble_uuid_t          char_uuid;
     ble_uuid128_t       base_uuid = BLE_UUID_TOPSULIN_BASE_UUID;
 
     char_uuid.uuid      = BLE_UUID_TOPSULIN_CALC_CHARACTERISTIC;
 
-    err_code = sd_ble_uuid_vs_add(&base_uuid, &char_uuid.type);
-    APP_ERROR_CHECK(err_code);
+    sd_ble_uuid_vs_add(&base_uuid, &char_uuid.type);
+    //APP_ERROR_CHECK(err_code);
 
     // Add read/write properties to our characteristic
     ble_gatts_char_md_t char_md;
@@ -548,11 +547,11 @@ static uint32_t calc_char_add(ble_os_t * p_our_service)
     attr_char_value.p_value     = value;
 
     // Add our new characteristic to the service
-    err_code = sd_ble_gatts_characteristic_add(p_our_service->service_handle,
+    sd_ble_gatts_characteristic_add(p_our_service->service_handle,
                                    &char_md,
                                    &attr_char_value,
                                    &p_our_service->calc_char_handles);
-    APP_ERROR_CHECK(err_code);
+    //APP_ERROR_CHECK(err_code);
 
     return NRF_SUCCESS;
 }
@@ -560,14 +559,14 @@ static uint32_t calc_char_add(ble_os_t * p_our_service)
 static uint32_t insulin_char_add(ble_os_t * p_our_service)
 {
     // Add a custom characteristic UUID
-    uint32_t            err_code;
+    //uint32_t            err_code;
     ble_uuid_t          char_uuid;
     ble_uuid128_t       base_uuid = BLE_UUID_TOPSULIN_BASE_UUID;
 
     char_uuid.uuid      = BLE_UUID_TOPSULIN_INS_CHARACTERISTIC;
 
-    err_code = sd_ble_uuid_vs_add(&base_uuid, &char_uuid.type);
-    APP_ERROR_CHECK(err_code);
+    sd_ble_uuid_vs_add(&base_uuid, &char_uuid.type);
+    //APP_ERROR_CHECK(err_code);
 
     // Add read/write properties to our characteristic
     ble_gatts_char_md_t char_md;
@@ -613,11 +612,11 @@ static uint32_t insulin_char_add(ble_os_t * p_our_service)
     attr_char_value.p_value     = value;
 
     // Add our new characteristic to the service
-    err_code = sd_ble_gatts_characteristic_add(p_our_service->service_handle,
+    sd_ble_gatts_characteristic_add(p_our_service->service_handle,
                                    &char_md,
                                    &attr_char_value,
                                    &p_our_service->ins_char_handles);
-    APP_ERROR_CHECK(err_code);
+    //APP_ERROR_CHECK(err_code);
 
     return NRF_SUCCESS;
 }
@@ -625,14 +624,14 @@ static uint32_t insulin_char_add(ble_os_t * p_our_service)
 static uint32_t device_char_add(ble_os_t * p_our_service)
 {
     // Add a custom characteristic UUID
-    uint32_t            err_code;
+    //uint32_t            err_code;
     ble_uuid_t          char_uuid;
     ble_uuid128_t       base_uuid = BLE_UUID_TOPSULIN_BASE_UUID;
 
     char_uuid.uuid      = BLE_UUID_TOPSULIN_DEV_CHARACTERISTIC;
 
-    err_code = sd_ble_uuid_vs_add(&base_uuid, &char_uuid.type);
-    APP_ERROR_CHECK(err_code);
+    sd_ble_uuid_vs_add(&base_uuid, &char_uuid.type);
+    //APP_ERROR_CHECK(err_code);
 
     // Add read/write properties to our characteristic
     ble_gatts_char_md_t char_md;
@@ -675,11 +674,11 @@ static uint32_t device_char_add(ble_os_t * p_our_service)
     attr_char_value.p_value     = value;
 
     // Add our new characteristic to the service
-    err_code = sd_ble_gatts_characteristic_add(p_our_service->service_handle,
+    sd_ble_gatts_characteristic_add(p_our_service->service_handle,
                                    &char_md,
                                    &attr_char_value,
                                    &p_our_service->dev_char_handles);
-    APP_ERROR_CHECK(err_code);
+    //APP_ERROR_CHECK(err_code);
 
     return NRF_SUCCESS;
 }
@@ -692,22 +691,22 @@ static uint32_t device_char_add(ble_os_t * p_our_service)
 void our_service_init(ble_os_t * p_our_service)
 {
     // Add UUIDs to BLE stack table
-    uint32_t          err_code;
+    //uint32_t          err_code;
     ble_uuid128_t     base_uuid = BLE_UUID_TOPSULIN_BASE_UUID;
     ble_uuid_t        service_uuid;
 
     service_uuid.uuid =  BLE_UUID_TOPSULIN_SERVICE;
 
-    err_code = sd_ble_uuid_vs_add(&base_uuid, &service_uuid.type);
-    APP_ERROR_CHECK(err_code);
+    sd_ble_uuid_vs_add(&base_uuid, &service_uuid.type);
+    //APP_ERROR_CHECK(err_code);
 
     p_our_service->conn_handle = BLE_CONN_HANDLE_INVALID;
 
     // Add our service
-    err_code = sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY,
+    sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY,
                                     &service_uuid,
                                     &p_our_service->service_handle);
-    APP_ERROR_CHECK(err_code);
+    //APP_ERROR_CHECK(err_code);
 
     config_char_add(p_our_service);
     name_char_add(p_our_service);

@@ -10,8 +10,8 @@
 #include "clock.h"
 #include "encoder.h"
 
-#define LONG_CLICK_MS 1250
-#define DOUBLE_CLICK_MS 500
+#define LONG_CLICK_MS 2000
+#define DOUBLE_CLICK_MS 300
 
 static volatile uint8_t* m_gpio_button_flag;
 static volatile uint8_t* m_gpio_long_button_flag;
@@ -22,9 +22,10 @@ static uint32_t pulse_start = 0;
 static uint32_t pulse_stop = 0;
 static uint32_t now = 0;
 static uint32_t pulse_len = 0;
-static uint8_t  long_timeout = 0;
-static uint8_t  old_in = 1;
-static uint8_t  new_in = 1;
+static uint8_t  long_timeout = 1;
+static uint8_t  click_timeout = 1;
+static uint8_t  old_in = 0;
+static uint8_t  new_in = 0;
 
 void gpio_init() {
     nrf_gpio_cfg_input(SW_PIN,NRF_GPIO_PIN_PULLUP);
@@ -64,6 +65,7 @@ void gpio_process(void) {
     if (old_in != new_in){
       if (!new_in){
         pulse_start = now;
+        click_timeout = 0;
         long_timeout = 0;
       } else {
         pulse_stop = now;
@@ -71,8 +73,8 @@ void gpio_process(void) {
         if (pulse_len < LONG_CLICK_MS){
           if ((now - last_click) <= DOUBLE_CLICK_MS){
             *m_gpio_double_button_flag = 1;
-          } else {
-            *m_gpio_button_flag = 1;
+            NRF_LOG_INFO("double_button!\r\n");
+            click_timeout = 1;
           }
           last_click = now;
         }
@@ -80,13 +82,23 @@ void gpio_process(void) {
       }
     }
 
+    if (new_in && (now >= (last_click + DOUBLE_CLICK_MS)) && !click_timeout){
+      *m_gpio_button_flag = 1;
+      NRF_LOG_INFO("simple_button!\r\n");
+      click_timeout = 1;
+      long_timeout = 1;
+    }
+
     if (!new_in && !long_timeout){
       pulse_len = now - pulse_start;
       if (pulse_len > LONG_CLICK_MS){
         *m_gpio_long_button_flag = 1;
+        NRF_LOG_INFO("long_button!\r\n");
         long_timeout = 1;
+        click_timeout = 1;
       }
     }
 
     old_in = new_in;
+    NRF_LOG_FLUSH();
 };
