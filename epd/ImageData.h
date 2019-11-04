@@ -32,8 +32,11 @@ extern const unsigned char gImage_icon_mem_16[];
 extern const unsigned char gImage_icon_low_16[];
 extern const unsigned char gImage_icon_calc_16[];
 
-extern const unsigned char gImage_icon_bt_24[];
-extern const unsigned char gImage_icon_calc_24[];
+extern const unsigned char gImage_icon_bt_flip_16[];
+extern const unsigned char gImage_icon_dev_flip_16[];
+extern const unsigned char gImage_icon_mem_flip_16[];
+extern const unsigned char gImage_icon_low_flip_16[];
+extern const unsigned char gImage_icon_calc_flip_16[];
 
 extern const unsigned char gImage_icon_glu_24[];
 extern const unsigned char gImage_icon_cho_24[];
