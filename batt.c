@@ -29,11 +29,13 @@ static void adc_event_handler(nrf_drv_adc_evt_t const * p_event)
 
 void batt_init(void)
 {
-  voltage = 0;
-  ret_code_t ret_code;
   nrf_drv_adc_config_t config = NRF_DRV_ADC_DEFAULT_CONFIG;
-  ret_code = nrf_drv_adc_init(&config, adc_event_handler);
-  APP_ERROR_CHECK(ret_code);
+  nrf_drv_adc_init(&config, adc_event_handler);
+}
+
+void batt_disable(void)
+{
+  nrf_adc_disable();
 }
 
 void batt_sample(void)

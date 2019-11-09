@@ -26,6 +26,7 @@
 volatile uint8_t clock_tick_flag;
 volatile uint8_t button_flag;
 volatile uint8_t long_button_flag;
+volatile uint8_t long_long_button_flag;
 volatile uint8_t double_button_flag;
 volatile uint8_t encoder_flag;
 volatile uint8_t batt_flag;
@@ -72,20 +73,8 @@ int main(void){
     Paint_DrawBitMap(gImage_initial);
     EPD_DisplayWindows(ImageBuff, 0, 0, EPD_WIDTH, EPD_HEIGHT);
     EPD_TurnOnDisplay();
-
-    /*if(config_manager_get_flags() & CONFIG_COLOR_FLAG){
-      if (config_manager_get_flags() & CONFIG_FLIP_FLAG){
-        GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_180, IMAGE_COLOR_POSITIVE);
-      } else {
-        GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_POSITIVE);
-      }
-    } else {
-      if (config_manager_get_flags() & CONFIG_FLIP_FLAG){
-        GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_180, IMAGE_COLOR_INVERTED);
-      } else {
-        GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_INVERTED);
-      }
-    }*/
+    EPD_Sleep();
+    DEV_ModuleUninit();
 
     batt_flag = 0;
     batt_set_flag(&batt_flag);
@@ -104,6 +93,8 @@ int main(void){
     gpio_button_set_flag(&button_flag);
     long_button_flag = 0;
     gpio_long_button_set_flag(&long_button_flag);
+    long_long_button_flag = 0;
+    gpio_long_long_button_set_flag(&long_long_button_flag);
     double_button_flag = 0;
     gpio_double_button_set_flag(&double_button_flag);
     gpio_init();
@@ -126,14 +117,19 @@ int main(void){
         if(button_flag){
             button_flag = 0;
             if (!wake_up) {
-                NRF_LOG_INFO("Wake up!\r\n");
+                NRF_LOG_INFO("Wake up from click!\r\n");
                 NRF_LOG_FLUSH();
-                clock_print();
-                advertising_start();
                 encoder_enable();
-                wake_up = 1;
+                batt_init();
             }
+            wake_up = 1;
             state_on_event(button_pressed);
+            idle_timer = 0;
+        }
+
+        if(double_button_flag){
+            double_button_flag = 0;
+            if (wake_up) state_on_event(double_button_pressed);
             idle_timer = 0;
         }
 
@@ -143,9 +139,16 @@ int main(void){
             idle_timer = 0;
         }
 
-        if(double_button_flag){
-            double_button_flag = 0;
-            if (wake_up) state_on_event(double_button_pressed);
+        if(long_long_button_flag){
+            long_long_button_flag = 0;
+            if (!wake_up) {
+                NRF_LOG_INFO("Wake up from long long button!\r\n");
+                NRF_LOG_FLUSH();
+                encoder_enable();
+                batt_init();
+            }
+            wake_up = 1;
+            advertising_start();
             idle_timer = 0;
         }
 
@@ -162,7 +165,6 @@ int main(void){
               now = clock_get_timestamp();
               if (now - last >= 1000){
                 last = now;
-                state_on_event(time_update);
                 time_ble_update();
                 if(!batt_flag){
                   batt_sample();
@@ -181,10 +183,12 @@ int main(void){
         if(idle_timer >= IDLE_TICKS){
             // prepare to sleep
             if (wake_up){
+              NRF_LOG_INFO("Going to sleep\r\n");
+              NRF_LOG_FLUSH();
               advertising_stop();
               state_sleep();
-              EPD_Sleep();
               encoder_disable();
+              batt_disable();
             }
             wake_up = 0;
 

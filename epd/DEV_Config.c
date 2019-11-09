@@ -1,53 +1,55 @@
-/*****************************************************************************
-* | File      	:	DEV_Config.cpp
-* | Author      : Waveshare team
-* | Function    :
-* | Info        :
-*   Image scanning
-*      Please use progressive scanning to generate images or fonts
-*----------------
-* |	This version:   V1.0
-* | Date        :   2018-01-11
-* | Info        :   Basic version
-*
-******************************************************************************/
 #include "DEV_Config.h"
+#include "Debug.h"
 
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
 
-/******************************************************************************
-function:	Initialize Pins and SPI
-******************************************************************************/
-
 #define SPI_INSTANCE  0 /**< SPI instance index. */
 static const nrf_drv_spi_t spi = NRF_DRV_SPI_INSTANCE(SPI_INSTANCE);  /**< SPI instance. */
 
-UBYTE DEV_ModuleInit(void)
+static bool init = false;
+
+bool DEV_ModuleInit(void)
 {
-    // GPIO INIT
-    nrf_gpio_cfg_output(CS_PIN);
-    nrf_gpio_cfg_output(DC_PIN);
-    nrf_gpio_cfg_output(RST_PIN);
-    nrf_gpio_cfg_input(BUSY_PIN,NRF_GPIO_PIN_PULLUP);
+    if (!init){
+      DEBUG("SPI init\r\n");
 
-    // SPI INIT
-    nrf_drv_spi_config_t spi_config = NRF_DRV_SPI_DEFAULT_CONFIG;
-    spi_config.ss_pin   = NRF_DRV_SPI_PIN_NOT_USED;
-    spi_config.miso_pin = NRF_DRV_SPI_PIN_NOT_USED;
-    spi_config.mosi_pin = MOSI_PIN;
-    spi_config.sck_pin  = CLK_PIN;
-    nrf_drv_spi_init(&spi, &spi_config, NULL);
+      // GPIO INIT
+      nrf_gpio_cfg_output(CS_PIN);
+      nrf_gpio_cfg_output(DC_PIN);
+      nrf_gpio_cfg_output(RST_PIN);
+      nrf_gpio_cfg_input(BUSY_PIN,NRF_GPIO_PIN_NOPULL);
 
-    EPD_CS_1;
+      // SPI INIT
+      nrf_drv_spi_config_t spi_config = NRF_DRV_SPI_DEFAULT_CONFIG;
+      spi_config.ss_pin   = NRF_DRV_SPI_PIN_NOT_USED;
+      spi_config.miso_pin = NRF_DRV_SPI_PIN_NOT_USED;
+      spi_config.mosi_pin = MOSI_PIN;
+      spi_config.sck_pin  = CLK_PIN;
+      nrf_drv_spi_init(&spi, &spi_config, NULL);
 
-    return 0;
+      EPD_CS_1;
+
+      init = true;
+      return true;
+    }
+    return false;
 }
 
-/*********************************************
-function:	Hardware interface
-*********************************************/
+void DEV_ModuleUninit(void)
+{
+    if (init){
+      DEBUG("SPI uninit\r\n");
+
+      // SPI UNINIT
+      nrf_drv_spi_uninit(&spi);
+
+      init = false;
+    }
+}
+
+
 UBYTE DEV_SPI_WriteByte(UBYTE value)
 {
     return nrf_drv_spi_transfer(&spi, &value, sizeof(value), NULL, 0);
@@ -55,12 +57,9 @@ UBYTE DEV_SPI_WriteByte(UBYTE value)
 
 UBYTE DEV_SPI_ReadByte(UBYTE value)
 {
-	return DEV_SPI_WriteByte(value);
+    return DEV_SPI_WriteByte(value);
 }
 
-/******************************************************************************
-function:	Millisecond delay
-******************************************************************************/
 void DEV_Delay_ms(UWORD xms)
 {
     nrf_delay_ms(xms);

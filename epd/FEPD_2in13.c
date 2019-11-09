@@ -1,14 +1,3 @@
-/*****************************************************************************
-* | File      	:	EPD_2in13.c
-* | Author      :   Waveshare team
-* | Function    :
-* | Info        :
-*----------------
-* |	This version:   V1.0
-* | Date        :   2018-06-07
-* | Info        :   Basic version
-*
-******************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdlib.h>
@@ -55,26 +44,16 @@ const unsigned char lut_partial_update[] = { //20 bytes
     0x15, 0x41, 0xA8, 0x32, 0x30, 0x0A,
 };
 
-
-/******************************************************************************
-  function :	Software reset
-  parameter:
-******************************************************************************/
 static void EPD_Reset(void)
 {
     EPD_RST_1;
-    DEV_Delay_ms(200);
+    DEV_Delay_ms(10);
     EPD_RST_0;
-    DEV_Delay_ms(200);
+    DEV_Delay_ms(10);
     EPD_RST_1;
-    DEV_Delay_ms(200);
+    DEV_Delay_ms(10);
 }
 
-/******************************************************************************
-  function :	send command
-  parameter:
-     Reg : Command register
-******************************************************************************/
 static void EPD_SendCommand(UBYTE Reg)
 {
     EPD_DC_0;
@@ -83,11 +62,6 @@ static void EPD_SendCommand(UBYTE Reg)
     EPD_CS_1;
 }
 
-/******************************************************************************
-  function :	send data
-  parameter:
-    Data : Write data
-******************************************************************************/
 static void EPD_SendData(UBYTE Data)
 {
     EPD_DC_1;
@@ -96,37 +70,21 @@ static void EPD_SendData(UBYTE Data)
     EPD_CS_1;
 }
 
-/******************************************************************************
-  function :	Wait until the busy_pin goes LOW
-  parameter:
-******************************************************************************/
 void EPD_WaitUntilIdle(void)
 {
-    //DEBUG("e-Paper busy\r\n");
-    while (EPD_BUSY_RD == 1) {     //LOW: idle, HIGH: busy
-        DEV_Delay_ms(5);
-        gpio_process(); // GPIO polling
+    while (EPD_BUSY_RD == 1) {      //LOW: idle, HIGH: busy
+        gpio_process();             // GPIO polling
     }
-    //DEBUG("e-Paper busy release\r\n");
 }
 
-/******************************************************************************
-  function :	Turn On Display
-  parameter:
-******************************************************************************/
 void EPD_TurnOnDisplay(void)
 {
     EPD_SendCommand(0x22);
     EPD_SendData(0xC7);
-    //EPD_SendData(0x0c);
     EPD_SendCommand(0x20);
     EPD_WaitUntilIdle();
 }
 
-/******************************************************************************
-  function :	Initialize the e-Paper register
-  parameter:
-******************************************************************************/
 UBYTE EPD_Init(UBYTE update)
 {
     UBYTE count;
@@ -219,9 +177,6 @@ UBYTE EPD_Init(UBYTE update)
     return 0;
 }
 
-/**
-    @brief: private function to specify the memory area for data R/W
-*/
 static void EPD_SetWindows(int x_start, int y_start, int x_end, int y_end)
 {
     EPD_SendCommand(0x44);
@@ -235,9 +190,6 @@ static void EPD_SetWindows(int x_start, int y_start, int x_end, int y_end)
     EPD_SendData((y_end >> 8) & 0xFF);
 }
 
-/**
-    @brief: private function to specify the start point for data R/W
-*/
 static void EPD_SetCursor(int x, int y)
 {
     EPD_SendCommand(0x4E);
@@ -249,10 +201,6 @@ static void EPD_SetCursor(int x, int y)
     EPD_WaitUntilIdle();
 }
 
-/******************************************************************************
-  function :	Clear screen
-  parameter:
-******************************************************************************/
 void EPD_Clear(void)
 {
     UWORD Width, Height;
@@ -266,10 +214,6 @@ void EPD_Clear(void)
     }
 }
 
-/******************************************************************************
-  function :	Sends the image buffer in RAM to e-Paper and displays
-  parameter:
-******************************************************************************/
 void EPD_Display(UBYTE *Image)
 {
     UWORD Width, Height;
@@ -346,17 +290,8 @@ void EPD_DisplayPartWindows(UBYTE *Image, UWORD Xstart, UWORD Ystart, UWORD Xend
     }
 }
 
-/******************************************************************************
-  function :	Enter sleep mode
-  parameter:
-******************************************************************************/
 void EPD_Sleep(void)
 {
-    EPD_SendCommand(0x22); //POWER OFF
-    EPD_SendData(0xC3);
-    EPD_SendCommand(0x20);
-
     EPD_SendCommand(0x10); //enter deep sleep
     EPD_SendData(0x01);
-    DEV_Delay_ms(100);
 }

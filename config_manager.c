@@ -12,7 +12,7 @@
 #include "FEPD_2in13.h"
 #include "GUI_Paint.h"
 
-#define VERSION 1
+#define VERSION 2
 #define SN      1
 
 static global_conf_t m_global_conf;
@@ -31,9 +31,9 @@ void config_manager_init(void)
   m_global_conf.cho_interval = 5;
   m_global_conf.ins_interval = 10;
   // Name
-  const char* tmp = "Topsulin";
+  const char* tmp = "Topsulin v2";
   strcpy(m_global_conf.name, tmp);
-  name_len = 8;
+  name_len = 11;
   // Calc
   m_global_conf.calc_low.mantissa = 90;
   m_global_conf.calc_low.exponent = -5;

@@ -82,8 +82,6 @@
 
 #define IS_SRVC_CHANGED_CHARACT_PRESENT 0                                           /**< Include or not the service_changed characteristic. if not enabled, the server's database cannot be changed for the lifetime of the device*/
 
-//#define DEVICE_NAME                     "Topsulin"                                  /**< Name of device. Will be included in the advertising data. */
-
 #define APP_ADV_INTERVAL                80                                          /**< The advertising interval (in units of 0.625 ms. This value corresponds to 50 ms). */
 #define APP_ADV_TIMEOUT_IN_SECONDS      120                                         /**< The advertising timeout in units of seconds. */
 
@@ -134,16 +132,13 @@ pm_peer_id_t m_peer_to_be_deleted = PM_PEER_ID_INVALID;
  */
 static void pm_evt_handler(pm_evt_t const * p_evt)
 {
-    ret_code_t err_code;
-
     switch (p_evt->evt_id)
     {
         case PM_EVT_BONDED_PEER_CONNECTED:
         {
             NRF_LOG_INFO("Connected to a previously bonded device.\n");
             // Start Security Request timer.
-            err_code = app_timer_start(m_sec_req_timer_id, SECURITY_REQUEST_DELAY, NULL);
-            //APP_ERROR_CHECK(err_code);
+            app_timer_start(m_sec_req_timer_id, SECURITY_REQUEST_DELAY, NULL);
         } break;
 
         case PM_EVT_CONN_SEC_SUCCEEDED:
@@ -151,8 +146,7 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
             pm_conn_sec_status_t conn_sec_status;
 
             // Check if the link is authenticated (meaning at least MITM).
-            err_code = pm_conn_sec_status_get(p_evt->conn_handle, &conn_sec_status);
-            //APP_ERROR_CHECK(err_code);
+            pm_conn_sec_status_get(p_evt->conn_handle, &conn_sec_status);
 
             if (conn_sec_status.mitm_protected)
             {
@@ -165,17 +159,14 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
                 {
                   state_show_pin_ok();
                 }
-                //state_begin();
             }
             else
             {
                 // The peer did not use MITM, disconnect.
                 NRF_LOG_INFO("Collector did not use MITM, disconnecting\n");
-                err_code = pm_peer_id_get(m_conn_handle, &m_peer_to_be_deleted);
-                //APP_ERROR_CHECK(err_code);
-                err_code = sd_ble_gap_disconnect(m_conn_handle,
+                pm_peer_id_get(m_conn_handle, &m_peer_to_be_deleted);
+                sd_ble_gap_disconnect(m_conn_handle,
                                                  BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-                //APP_ERROR_CHECK(err_code);
             }
         } break;
 
@@ -183,36 +174,27 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
         {
             NRF_LOG_INFO("Failed to secure connection. Disconnecting.\n");
             m_conn_handle = BLE_CONN_HANDLE_INVALID;
-            err_code = sd_ble_gap_disconnect(m_conn_handle,
+            sd_ble_gap_disconnect(m_conn_handle,
                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
             state_show_pin_error();
-            //APP_ERROR_CHECK(err_code);
         } break;
 
         case PM_EVT_CONN_SEC_CONFIG_REQ:
         {
             // Reject pairing request from an already bonded peer.
-            pm_conn_sec_config_t conn_sec_config = {.allow_repairing = false};
+            pm_conn_sec_config_t conn_sec_config = {.allow_repairing = true};
             pm_conn_sec_config_reply(p_evt->conn_handle, &conn_sec_config);
         } break;
 
         case PM_EVT_STORAGE_FULL:
         {
             // Run garbage collection on the flash.
-            err_code = fds_gc();
-            if (err_code == FDS_ERR_BUSY || err_code == FDS_ERR_NO_SPACE_IN_QUEUES)
-            {
-                // Retry.
-            }
-            else
-            {
-                //APP_ERROR_CHECK(err_code);
-            }
+            fds_gc();
         } break;
 
         case PM_EVT_PEERS_DELETE_SUCCEEDED:
         {
-            advertising_start();
+            //advertising_start();
         } break;
 
         case PM_EVT_LOCAL_DB_CACHE_APPLY_FAILED:
@@ -222,29 +204,9 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
         } break;
 
         case PM_EVT_PEER_DATA_UPDATE_FAILED:
-        {
-            // Assert.
-            //APP_ERROR_CHECK(p_evt->params.peer_data_update_failed.error);
-        } break;
-
         case PM_EVT_PEER_DELETE_FAILED:
-        {
-            // Assert.
-            //APP_ERROR_CHECK(p_evt->params.peer_delete_failed.error);
-        } break;
-
         case PM_EVT_PEERS_DELETE_FAILED:
-        {
-            // Assert.
-            //APP_ERROR_CHECK(p_evt->params.peers_delete_failed_evt.error);
-        } break;
-
         case PM_EVT_ERROR_UNEXPECTED:
-        {
-            // Assert.
-            //APP_ERROR_CHECK(p_evt->params.error_unexpected.error);
-        } break;
-
         case PM_EVT_CONN_SEC_START:
         case PM_EVT_PEER_DATA_UPDATE_SUCCEEDED:
         case PM_EVT_PEER_DELETE_SUCCEEDED:
@@ -269,7 +231,6 @@ static void service_error_handler(uint32_t nrf_error)
 {
     NRF_LOG_INFO("service_error_handler code = %d\n", nrf_error);
     NRF_LOG_FLUSH();
-
     //nrf_delay_ms(5000);
     //NVIC_SystemReset();
 }
@@ -347,10 +308,6 @@ static void gap_params_init(void)
     l = sprintf(b, "Topsulin-%04X", (uint16_t) NRF_FICR->DEVICEADDR[0] & 0xFFFF);
 
     sd_ble_gap_device_name_set(&sec_mode, (const uint8_t *)b, l);
-
-    /*sd_ble_gap_device_name_set(&sec_mode,
-                                    (const uint8_t *)DEVICE_NAME,
-                                    strlen(DEVICE_NAME));*/
 
     sd_ble_gap_appearance_set(BLE_APPEARANCE_GENERIC_GLUCOSE_METER);
 
@@ -454,13 +411,11 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
     {
         case BLE_ADV_EVT_FAST:
             NRF_LOG_INFO("Fast advertising\n");
-            //state_on_event(ble_on);
             state_set_bt_state(1);
             break; // BLE_ADV_EVT_FAST
 
         case BLE_ADV_EVT_IDLE:
             NRF_LOG_INFO("Idle advertising\n");
-            //state_on_event(ble_off);
             state_set_bt_state(0);
             break; // BLE_ADV_EVT_IDLE
 
@@ -727,23 +682,13 @@ void advertising_start(void)
  */
 void advertising_stop(void)
 {
-    uint32_t err_code;
-
     if (m_conn_handle != BLE_CONN_HANDLE_INVALID)
     {
         ble_advertising_set_manually_disconnected();
-        err_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-        if (err_code != NRF_ERROR_INVALID_STATE)
-        {
-            //APP_ERROR_CHECK(err_code);
-        }
+        sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
     }
 
-    err_code = sd_ble_gap_adv_stop();
-    if (err_code != NRF_ERROR_INVALID_STATE)
-    {
-        //APP_ERROR_CHECK(err_code);
-    }
+    sd_ble_gap_adv_stop();
 
     state_set_bt_state(0);
     NRF_LOG_INFO("Advertising stop\n");
@@ -755,17 +700,15 @@ void advertising_stop(void)
  */
 void ble_services_init(void)
 {
-    //NRF_LOG_INFO("GLS init\n");
     timers_init();
     ble_stack_init();
     peer_manager_init();
     peer_manager_erase_bonds();
     services_init();
-    sd_ble_gap_tx_power_set(-20);
+    sd_ble_gap_tx_power_set(-30);
     gap_params_init();
     advertising_init();
     conn_params_init();
-    //advertising_start();
 }
 
 /**

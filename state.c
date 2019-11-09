@@ -230,6 +230,11 @@ void state_update_config(void){
 
 void state_process_display(void){
 
+  if (DEV_ModuleInit()){
+    was_full = false;
+    was_partial = false;
+  }
+
   UWORD color;
   if (config_manager_get_flags() & CONFIG_COLOR_FLAG){
     color = WHITE;
@@ -757,7 +762,7 @@ void state_process_display(void){
 
     if (bt_state == 1 || bt_state == 2){
       //BT NAME
-      len = sprintf(buffer, "Topsulin-%04X", (uint16_t) NRF_FICR->DEVICEADDR[0] & 0xFFFF);
+      len = sprintf(buffer, "Topsulin-%04X v2", (uint16_t) NRF_FICR->DEVICEADDR[0] & 0xFFFF);
       Paint_NewImage(ImageBuff, 16, len*11, rotate, color);
       Paint_Clear(color);
       Paint_DrawString_EN(0, 0, buffer, &Font16, color, !color);
@@ -814,18 +819,15 @@ void state_process_display(void){
   quick_refresh = 0;
   full_refresh = 0;
 
+  if ((m_state == sleep)||((m_state == initial)&&(bt_state == 0))){
+    EPD_Sleep();
+    DEV_ModuleUninit();
+  }
+
 }
 
 void state_on_event(event_t event){
   switch(m_state){
-    case initial:
-      if (event == ble_on){
-        state_set_bt_state(1);
-      }
-      if (event == ble_off){
-        state_set_bt_state(0);
-      }
-      break;
     case sleep:
       if (event == button_pressed){
         new_glu = false;

@@ -2,6 +2,8 @@
 
 void batt_init(void);
 
+void batt_disable(void);
+
 void batt_sample(void);
 
 uint32_t batt_get(void);

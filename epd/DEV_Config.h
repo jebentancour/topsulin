@@ -1,16 +1,3 @@
-/*****************************************************************************
-* | File      	: DEV_Config.h
-* | Author      : Waveshare team
-* | Function    :	debug with prntf
-* | Info        :
-*   Image scanning
-*      Please use progressive scanning to generate images or fonts
-*----------------
-* |	This version:   V1.0
-* | Date        :   2018-01-11
-* | Info        :   Basic version
-*
-******************************************************************************/
 #ifndef _DEV_CONFIG_H_
 #define _DEV_CONFIG_H_
 
@@ -48,7 +35,8 @@
 
 #define EPD_BUSY_RD		nrf_gpio_pin_read(BUSY_PIN)
 
-UBYTE DEV_ModuleInit(void);
+bool DEV_ModuleInit(void);
+void DEV_ModuleUninit(void);
 
 UBYTE DEV_SPI_WriteByte(UBYTE value);
 UBYTE DEV_SPI_ReadByte(UBYTE value);

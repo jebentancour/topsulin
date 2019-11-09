@@ -267,7 +267,7 @@ static void on_write(ble_os_t * p_our_service, ble_evt_t * p_ble_evt)
     }
 
     if (print){
-        config_manager_print();
+        //config_manager_print();
         state_update_config();
     }
 
