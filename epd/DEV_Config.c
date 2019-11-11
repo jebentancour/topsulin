@@ -8,45 +8,29 @@
 #define SPI_INSTANCE  0 /**< SPI instance index. */
 static const nrf_drv_spi_t spi = NRF_DRV_SPI_INSTANCE(SPI_INSTANCE);  /**< SPI instance. */
 
-static bool init = false;
-
-bool DEV_ModuleInit(void)
+void DEV_ModuleInit(void)
 {
-    if (!init){
-      DEBUG("SPI init\r\n");
+    // GPIO INIT
+    nrf_gpio_cfg_output(CS_PIN);
+    nrf_gpio_cfg_output(DC_PIN);
+    nrf_gpio_cfg_output(RST_PIN);
+    nrf_gpio_cfg_input(BUSY_PIN,NRF_GPIO_PIN_NOPULL);
 
-      // GPIO INIT
-      nrf_gpio_cfg_output(CS_PIN);
-      nrf_gpio_cfg_output(DC_PIN);
-      nrf_gpio_cfg_output(RST_PIN);
-      nrf_gpio_cfg_input(BUSY_PIN,NRF_GPIO_PIN_NOPULL);
+    // SPI INIT
+    nrf_drv_spi_config_t spi_config = NRF_DRV_SPI_DEFAULT_CONFIG;
+    spi_config.ss_pin   = NRF_DRV_SPI_PIN_NOT_USED;
+    spi_config.miso_pin = NRF_DRV_SPI_PIN_NOT_USED;
+    spi_config.mosi_pin = MOSI_PIN;
+    spi_config.sck_pin  = CLK_PIN;
+    nrf_drv_spi_init(&spi, &spi_config, NULL);
 
-      // SPI INIT
-      nrf_drv_spi_config_t spi_config = NRF_DRV_SPI_DEFAULT_CONFIG;
-      spi_config.ss_pin   = NRF_DRV_SPI_PIN_NOT_USED;
-      spi_config.miso_pin = NRF_DRV_SPI_PIN_NOT_USED;
-      spi_config.mosi_pin = MOSI_PIN;
-      spi_config.sck_pin  = CLK_PIN;
-      nrf_drv_spi_init(&spi, &spi_config, NULL);
-
-      EPD_CS_1;
-
-      init = true;
-      return true;
-    }
-    return false;
+    EPD_CS_1;
 }
 
 void DEV_ModuleUninit(void)
 {
-    if (init){
-      DEBUG("SPI uninit\r\n");
-
-      // SPI UNINIT
-      nrf_drv_spi_uninit(&spi);
-
-      init = false;
-    }
+    // SPI UNINIT
+    nrf_drv_spi_uninit(&spi);
 }
 
 

@@ -63,8 +63,16 @@ static uint8_t                quick_refresh;
 static uint32_t               voltage;
 static uint8_t                bt_state;
 
-static bool                   was_full;
-static bool                   was_partial;
+static bool                   clock_set;
+static bool                   gls_write;
+
+static char                   pin_buffer[6];
+static bool                   show_pin;
+static bool                   pin_ok;
+static bool                   pin_error;
+
+static volatile uint8_t*      m_idle_flag;
+static volatile uint8_t*      m_display_flag;
 
 void state_init(){
   m_state = initial;
@@ -90,8 +98,11 @@ void state_init(){
   voltage = 0;
   bt_state = 0;
 
-  full_refresh = 0;
-  quick_refresh = 0;
+  full_refresh = false;
+  quick_refresh = false;
+
+  clock_set = false;
+  gls_write = false;
 }
 
 static void state_save_meas(void){
@@ -214,25 +225,38 @@ void state_set_bt_state(uint8_t state){
   } else {
     quick_refresh = 1;
   }
-  state_process_display();
+  *m_display_flag = 1;
 }
 
 void state_update_mem(void){
   quick_refresh = 1;
-  state_process_display();
+  *m_display_flag = 1;
 }
 
 void state_update_config(void){
   if (m_state == initial) return;
   quick_refresh = 1;
-  state_process_display();
+  *m_display_flag = 1;
+}
+
+void state_idle_set_flag(volatile uint8_t* main_idle_flag){
+  m_idle_flag = main_idle_flag;
+}
+
+void state_display_set_flag(volatile uint8_t* main_display_flag){
+  m_display_flag = main_display_flag;
 }
 
 void state_process_display(void){
 
-  if (DEV_ModuleInit()){
-    was_full = false;
-    was_partial = false;
+  DEV_ModuleInit();
+
+  if (full_refresh){
+    EPD_Init(FULL_UPDATE);
+  }
+
+  if (quick_refresh){
+    EPD_Init(PART_UPDATE);
   }
 
   UWORD color;
@@ -248,22 +272,6 @@ void state_process_display(void){
     rotate = ROTATE_270;
   } else {
     rotate = ROTATE_90;
-  }
-
-  if (full_refresh){
-    if (!was_full){
-      EPD_Init(FULL_UPDATE);
-      was_full = true;
-      was_partial = false;
-    }
-  }
-
-  if (quick_refresh){
-    if (!was_partial){
-      EPD_Init(PART_UPDATE);
-      was_partial = true;
-      was_full = false;
-    }
   }
 
   if ((m_state != initial)&&(quick_refresh|full_refresh)){
@@ -812,18 +820,68 @@ void state_process_display(void){
 
   }
 
+  if (pin_error){
+    pin_error = false;
+
+    UWORD color;
+    color = WHITE;
+
+    UWORD rotate;
+    rotate = ROTATE_90;
+
+    Paint_NewImage(ImageBuff, 24, 6*17, rotate, color);
+    Paint_Clear(color);
+    EPD_DisplayPartWindows(ImageBuff, 10, 74, 10+24, 74+6*17);
+
+    Paint_NewImage(ImageBuff, 24, 5*17, rotate, color);
+    Paint_DrawString_EN(0, 0, "ERROR", &Font24, color, !color);
+    EPD_DisplayPartWindows(ImageBuff, 10, 82, 10+24, 82+5*17);
+  }
+
+  if (pin_ok){
+    pin_ok = false;
+
+    UWORD color;
+    color = WHITE;
+
+    UWORD rotate;
+    rotate = ROTATE_90;
+
+    Paint_NewImage(ImageBuff, 24, 6*17, rotate, color);
+    Paint_Clear(color);
+    EPD_DisplayPartWindows(ImageBuff, 10, 74, 10+24, 74+6*17);
+
+    Paint_NewImage(ImageBuff, 24, 2*17, rotate, color);
+    Paint_DrawString_EN(0, 0, "OK", &Font24, color, !color);
+    EPD_DisplayPartWindows(ImageBuff, 10, 108, 10+24, 108+2*17);
+  }
+
+  if (show_pin){
+    show_pin = false;
+    UWORD color;
+    color = WHITE;
+
+    UWORD rotate;
+    rotate = ROTATE_90;
+
+    Paint_NewImage(ImageBuff, 24, 6*17, rotate, color);
+    Paint_Clear(color);
+    EPD_DisplayPartWindows(ImageBuff, 10, 74, 10+24, 74+6*17);
+
+    Paint_NewImage(ImageBuff, 24, 6*17, rotate, color);
+    Paint_DrawString_EN(0, 0, pin_buffer, &Font24, color, !color);
+    EPD_DisplayPartWindows(ImageBuff, 10, 74, 10+24, 74+6*17);
+  }
+
   if (quick_refresh|full_refresh){
     EPD_TurnOnDisplay();
+    EPD_Sleep();
   }
 
   quick_refresh = 0;
   full_refresh = 0;
 
-  if ((m_state == sleep)||((m_state == initial)&&(bt_state == 0))){
-    EPD_Sleep();
-    DEV_ModuleUninit();
-  }
-
+  DEV_ModuleUninit();
 }
 
 void state_on_event(event_t event){
@@ -902,7 +960,7 @@ void state_on_event(event_t event){
       if (event == long_button_pressed){
         m_topsulin_meas.glu = m_prev_topsulin_meas.glu;
         if (!new_glu){
-            state_sleep();
+            *m_idle_flag = 1;
             break;
         }
         new_glu = false;
@@ -969,7 +1027,7 @@ void state_on_event(event_t event){
       if (event == long_button_pressed){
         m_topsulin_meas.cho = m_prev_topsulin_meas.cho;
         if (!new_cho){
-            state_sleep();
+            *m_idle_flag = 1;
             break;
         }
         new_cho = false;
@@ -1011,7 +1069,7 @@ void state_on_event(event_t event){
       if (event == long_button_pressed){
         m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
         if (!new_ins){
-            state_sleep();
+            *m_idle_flag = 1;
             break;
         }
         new_ins = false;
@@ -1026,85 +1084,30 @@ void state_on_event(event_t event){
     state_save_meas();
     m_state = sleep;
     full_refresh = 1;
+    *m_idle_flag = 1;
   }
 
-  state_process_display();
+  *m_display_flag = 1;
 }
 
 void state_show_pin(char* pin){
-  if (!was_partial){
-    EPD_Init(PART_UPDATE);
-    was_partial = true;
-    was_full = false;
-  }
-
-  UWORD color;
-  color = WHITE;
-
-  UWORD rotate;
-  rotate = ROTATE_90;
-
-  Paint_NewImage(ImageBuff, 24, 6*17, rotate, color);
-  Paint_Clear(color);
-  EPD_DisplayPartWindows(ImageBuff, 10, 74, 10+24, 74+6*17);
-
-  Paint_NewImage(ImageBuff, 24, 6*17, rotate, color);
-  Paint_DrawString_EN(0, 0, pin, &Font24, color, !color);
-  EPD_DisplayPartWindows(ImageBuff, 10, 74, 10+24, 74+6*17);
-
-  EPD_TurnOnDisplay();
+  show_pin = true;
+  quick_refresh = 1;
+  strncpy(pin_buffer, pin, 6);
+  *m_display_flag = 1;
 }
 
 void state_show_pin_error(void){
-  if (!was_partial){
-    EPD_Init(PART_UPDATE);
-    was_partial = true;
-    was_full = false;
-  }
-
-  UWORD color;
-  color = WHITE;
-
-  UWORD rotate;
-  rotate = ROTATE_90;
-
-  Paint_NewImage(ImageBuff, 24, 6*17, rotate, color);
-  Paint_Clear(color);
-  EPD_DisplayPartWindows(ImageBuff, 10, 74, 10+24, 74+6*17);
-
-  Paint_NewImage(ImageBuff, 24, 5*17, rotate, color);
-  Paint_DrawString_EN(0, 0, "ERROR", &Font24, color, !color);
-  EPD_DisplayPartWindows(ImageBuff, 10, 82, 10+24, 82+5*17);
-
-  EPD_TurnOnDisplay();
+  pin_error = true;
+  quick_refresh = 1;
+  *m_display_flag = 1;
 }
 
 void state_show_pin_ok(void){
-  if (!was_partial){
-    EPD_Init(PART_UPDATE);
-    was_partial = true;
-    was_full = false;
-  }
-
-  UWORD color;
-  color = WHITE;
-
-  UWORD rotate;
-  rotate = ROTATE_90;
-
-  Paint_NewImage(ImageBuff, 24, 6*17, rotate, color);
-  Paint_Clear(color);
-  EPD_DisplayPartWindows(ImageBuff, 10, 74, 10+24, 74+6*17);
-
-  Paint_NewImage(ImageBuff, 24, 2*17, rotate, color);
-  Paint_DrawString_EN(0, 0, "OK", &Font24, color, !color);
-  EPD_DisplayPartWindows(ImageBuff, 10, 108, 10+24, 108+2*17);
-
-  EPD_TurnOnDisplay();
+  pin_ok = true;
+  quick_refresh = 1;
+  *m_display_flag = 1;
 }
-
-static bool clock_set = false;
-static bool gls_write = false;
 
 void state_clock_set(){
   if(!clock_set){
@@ -1130,7 +1133,7 @@ void state_begin(){
     NRF_LOG_FLUSH();
     m_state = sleep;
     full_refresh = 1;
-    state_process_display();
+    *m_display_flag = 1;
   }
 }
 
@@ -1147,7 +1150,7 @@ void state_sleep(){
       m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
       m_state = sleep;
       full_refresh = 1;
-      state_process_display();
+      *m_display_flag = 1;
     } else {
       NRF_LOG_INFO("Already sleeping\n");
       NRF_LOG_FLUSH();

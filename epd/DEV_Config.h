@@ -35,7 +35,7 @@
 
 #define EPD_BUSY_RD		nrf_gpio_pin_read(BUSY_PIN)
 
-bool DEV_ModuleInit(void);
+void DEV_ModuleInit(void);
 void DEV_ModuleUninit(void);
 
 UBYTE DEV_SPI_WriteByte(UBYTE value);

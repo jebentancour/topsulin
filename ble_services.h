@@ -15,3 +15,5 @@ void peer_manager_erase_bonds(void);
 void advertising_start(void);
 
 void advertising_stop(void);
+
+void advertising_toggle(void);

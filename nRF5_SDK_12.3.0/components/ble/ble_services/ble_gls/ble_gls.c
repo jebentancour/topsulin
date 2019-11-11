@@ -1188,8 +1188,13 @@ uint32_t ble_gls_are_cccd_configured(ble_gls_t * p_gls, bool * p_are_cccd_config
                                       &gatts_value);
     if (err_code != NRF_SUCCESS)
     {
-        NRF_LOG_INFO("sd_ble_gatts_value_get (glm_handles.cccd_handle) != NRF_SUCCESS\r\n");
+        NRF_LOG_DEBUG("ERROR gatts get glm\n");
+        if (err_code == NRF_ERROR_INVALID_ADDR) NRF_LOG_DEBUG("NRF_ERROR_INVALID_ADDR\n");
+        if (err_code == NRF_ERROR_NOT_FOUND) NRF_LOG_DEBUG("NRF_ERROR_NOT_FOUND\n");
+        if (err_code == BLE_ERROR_INVALID_CONN_HANDLE) NRF_LOG_DEBUG("BLE_ERROR_INVALID_CONN_HANDLE\n");
+        if (err_code == BLE_ERROR_GATTS_INVALID_ATTR_TYPE) NRF_LOG_DEBUG("BLE_ERROR_GATTS_INVALID_ATTR_TYPE\n");
         NRF_LOG_FLUSH();
+
         return err_code;
     }
     is_glm_notif_enabled = ble_srv_is_notification_enabled(cccd_value_buf);
@@ -1199,11 +1204,17 @@ uint32_t ble_gls_are_cccd_configured(ble_gls_t * p_gls, bool * p_are_cccd_config
                                       &gatts_value);
     if (err_code != NRF_SUCCESS)
     {
-        NRF_LOG_INFO("sd_ble_gatts_value_get (racp_handles.cccd_handle) != NRF_SUCCESS\r\n");
+        NRF_LOG_DEBUG("ERROR gatts get rcap\n");
+        if (err_code == NRF_ERROR_INVALID_ADDR) NRF_LOG_DEBUG("NRF_ERROR_INVALID_ADDR\n");
+        if (err_code == NRF_ERROR_NOT_FOUND) NRF_LOG_DEBUG("NRF_ERROR_NOT_FOUND\n");
+        if (err_code == BLE_ERROR_INVALID_CONN_HANDLE) NRF_LOG_DEBUG("BLE_ERROR_INVALID_CONN_HANDLE\n");
+        if (err_code == BLE_ERROR_GATTS_INVALID_ATTR_TYPE) NRF_LOG_DEBUG("BLE_ERROR_GATTS_INVALID_ATTR_TYPE\n");
         NRF_LOG_FLUSH();
+
         return err_code;
     }
     is_racp_indic_enabled = ble_srv_is_indication_enabled(cccd_value_buf);
+
     if (is_racp_indic_enabled & is_glm_notif_enabled)
     {
         *p_are_cccd_configured = true;
@@ -1223,10 +1234,6 @@ uint32_t ble_gls_are_cccd_configured(ble_gls_t * p_gls, bool * p_are_cccd_config
  */
 static void on_racp_value_write(ble_gls_t * p_gls, ble_gatts_evt_write_t * p_evt_write)
 {
-    NRF_LOG_INFO("on_racp_value_write\r\n");
-    NRF_LOG_HEXDUMP_INFO(p_evt_write->data, p_evt_write->len);
-    NRF_LOG_FLUSH();
-
     ble_racp_value_t                      racp_request;
     uint8_t                               response_code;
     ble_gatts_rw_authorize_reply_params_t auth_reply;
@@ -1241,8 +1248,6 @@ static void on_racp_value_write(ble_gls_t * p_gls, ble_gatts_evt_write_t * p_evt
     err_code = ble_gls_are_cccd_configured(p_gls, &are_cccd_configured);
     if (err_code != NRF_SUCCESS)
     {
-        NRF_LOG_INFO("ble_gls_are_cccd_configured != NRF_SUCCESS\r\n");
-        NRF_LOG_FLUSH();
         if (p_gls->error_handler != NULL)
         {
             p_gls->error_handler(err_code);
@@ -1255,28 +1260,22 @@ static void on_racp_value_write(ble_gls_t * p_gls, ble_gatts_evt_write_t * p_evt
         auth_reply.params.write.gatt_status = GLS_NACK_CCCD_IMPROPERLY_CONFIGURED;
         err_code                            = sd_ble_gatts_rw_authorize_reply(p_gls->conn_handle,
                                                                               &auth_reply);
-
         if (err_code != NRF_SUCCESS)
         {
-            NRF_LOG_INFO("sd_ble_gatts_rw_authorize_reply != NRF_SUCCESS\r\n");
-            NRF_LOG_FLUSH();
             if (p_gls->error_handler != NULL)
             {
+                NRF_LOG_INFO("CCCD not configured\n");
+                NRF_LOG_FLUSH();
+
                 p_gls->error_handler(err_code);
             }
         }
-
-        NRF_LOG_INFO("are_cccd_configured false!\r\n");
-        NRF_LOG_FLUSH();
-
         return;
     }
 
     state_gls_write();
 
     // Decode request.
-    NRF_LOG_INFO("Decode request.\r\n");
-    NRF_LOG_FLUSH();
     ble_racp_decode(p_evt_write->len, p_evt_write->data, &racp_request);
 
     // Check if request is to be executed.
@@ -1310,6 +1309,7 @@ static void on_racp_value_write(ble_gls_t * p_gls, ble_gatts_evt_write_t * p_evt
             // Delete request
             NRF_LOG_INFO("RACP_OPCODE_DELETE_RECS\r\n");
             NRF_LOG_FLUSH();
+
             if (racp_request.operator == RACP_OPERATOR_ALL)
             {
                 NRF_LOG_INFO("RACP_OPERATOR_ALL\r\n");
@@ -1476,9 +1476,6 @@ static void on_hvc(ble_gls_t * p_gls, ble_evt_t * p_ble_evt)
 
 static void on_rw_authorize_request(ble_gls_t * p_gls, ble_gatts_evt_t * p_gatts_evt)
 {
-    NRF_LOG_INFO("on_rw_authorize_request\r\n");
-    NRF_LOG_FLUSH();
-
     ble_gatts_evt_rw_authorize_request_t * p_auth_req = &p_gatts_evt->params.authorize_request;
     if (p_auth_req->type == BLE_GATTS_AUTHORIZE_TYPE_WRITE)
     {

@@ -8,6 +8,8 @@
 #include "Debug.h"
 #include "../gpio.h"
 
+#define BUSY_TIMEOUT 5000
+
 const unsigned char lut_full_update[] = {
     0x80, 0x60, 0x40, 0x00, 0x00, 0x00, 0x00,       //LUT0: BB:     VS 0 ~7
     0x10, 0x60, 0x20, 0x00, 0x00, 0x00, 0x00,       //LUT1: BW:     VS 0 ~7
@@ -72,8 +74,15 @@ static void EPD_SendData(UBYTE Data)
 
 void EPD_WaitUntilIdle(void)
 {
-    while (EPD_BUSY_RD == 1) {      //LOW: idle, HIGH: busy
+    uint32_t timeout;
+    timeout = 0;
+    while ((EPD_BUSY_RD == 1)&&(timeout < BUSY_TIMEOUT)) {      //LOW: idle, HIGH: busy
         gpio_process();             // GPIO polling
+        timeout++;
+    }
+    if (timeout >= BUSY_TIMEOUT){
+      NRF_LOG_INFO("BUSY_TIMEOUT\n");
+      NRF_LOG_FLUSH();
     }
 }
 

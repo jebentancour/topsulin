@@ -63,7 +63,7 @@
 extern "C" {
 #endif
 
-#define BLE_GLS_DB_MAX_RECORDS      100
+#define BLE_GLS_DB_MAX_RECORDS      32
 
 /**@brief Function for initializing the glucose record database.
  *

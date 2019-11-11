@@ -251,7 +251,7 @@ static void on_write(ble_os_t * p_our_service, ble_evt_t * p_ble_evt)
     if (p_evt_write->handle == p_our_service->time_char_handles.value_handle)
     {
         on_time_write(p_our_service, p_evt_write);
-        print = 1;
+        print = 0;
     }
 
     if (p_evt_write->handle == p_our_service->calc_char_handles.value_handle)
@@ -263,7 +263,7 @@ static void on_write(ble_os_t * p_our_service, ble_evt_t * p_ble_evt)
     if (p_evt_write->handle == p_our_service->ins_char_handles.value_handle)
     {
         on_insulin_write(p_our_service, p_evt_write);
-        print = 1;
+        print = 0;
     }
 
     if (print){

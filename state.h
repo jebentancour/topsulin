@@ -4,13 +4,14 @@ typedef enum {
     button_pressed,
     long_button_pressed,
     double_button_pressed,
-    encoder_update,
-    time_update,
-    ble_on,
-    ble_off
+    encoder_update
 } event_t;
 
 void state_init(void);
+
+void state_idle_set_flag(volatile uint8_t* main_idle_flag);
+
+void state_display_set_flag(volatile uint8_t* main_display_flag);
 
 void state_process_display(void);
 

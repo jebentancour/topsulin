@@ -30,6 +30,8 @@ volatile uint8_t long_long_button_flag;
 volatile uint8_t double_button_flag;
 volatile uint8_t encoder_flag;
 volatile uint8_t batt_flag;
+volatile uint8_t display_flag;
+volatile uint8_t idle_flag;
 
 uint8_t wake_up;
 uint16_t idle_timer;
@@ -37,8 +39,6 @@ uint16_t idle_timer;
 int main(void){
 
     NRF_LOG_INIT(clock_get_timestamp);
-    NRF_LOG_INFO("-------------------- MAIN --------------------\n");
-    NRF_LOG_FLUSH();
 
     struct tm m_tm;
     m_tm.tm_year = 2019 - 1900;
@@ -49,6 +49,10 @@ int main(void){
     m_tm.tm_sec = 0;
     clock_set_time(&m_tm);
 
+    display_flag = 0;
+    state_display_set_flag(&display_flag);
+    idle_flag = 0;
+    state_idle_set_flag(&idle_flag);
     state_init();
 
     config_manager_init();
@@ -65,7 +69,11 @@ int main(void){
     uint32_t now = 0;
 
     UWORD color;
-    color = WHITE;
+    if (config_manager_get_flags() & CONFIG_COLOR_FLAG){
+      color = WHITE;
+    } else {
+      color = BLACK;
+    }
 
     DEV_ModuleInit();
     EPD_Init(FULL_UPDATE);
@@ -80,7 +88,6 @@ int main(void){
     batt_set_flag(&batt_flag);
     batt_init();
     batt_sample();
-
     while(!batt_flag){
         // wait...
     }
@@ -104,11 +111,11 @@ int main(void){
     encoder_set_direction((config_manager_get_flags() & CONFIG_FLIP_FLAG) == 0);
     encoder_init();
 
-    NRF_LOG_FLUSH();
-
     wake_up = 1;
     idle_timer = IDLE_TICKS;
     last = clock_get_timestamp();
+
+    NRF_LOG_FLUSH();
 
     while (true){
 
@@ -121,8 +128,8 @@ int main(void){
                 NRF_LOG_FLUSH();
                 encoder_enable();
                 batt_init();
+                wake_up = 1;
             }
-            wake_up = 1;
             state_on_event(button_pressed);
             idle_timer = 0;
         }
@@ -141,15 +148,7 @@ int main(void){
 
         if(long_long_button_flag){
             long_long_button_flag = 0;
-            if (!wake_up) {
-                NRF_LOG_INFO("Wake up from long long button!\r\n");
-                NRF_LOG_FLUSH();
-                encoder_enable();
-                batt_init();
-            }
-            wake_up = 1;
-            advertising_start();
-            idle_timer = 0;
+            advertising_toggle();
         }
 
         if(encoder_flag){
@@ -169,34 +168,43 @@ int main(void){
                 if(!batt_flag){
                   batt_sample();
                 }
-                while(!batt_flag){
-                    // wait...
-                }
-                batt_flag = 0;
-                batt_ble_update((uint16_t)batt_get());
               }
               idle_timer++;
             }
         }
 
-        // If it is nothing to do...
+        if(batt_flag){
+          batt_flag = 0;
+          if (wake_up) batt_ble_update((uint16_t)batt_get());
+        }
+
+        if(idle_flag){
+          idle_flag = 0;
+          idle_timer = IDLE_TICKS;
+        }
+
         if(idle_timer >= IDLE_TICKS){
             // prepare to sleep
             if (wake_up){
-              NRF_LOG_INFO("Going to sleep\r\n");
+              NRF_LOG_INFO("Idle timeout\r\n");
               NRF_LOG_FLUSH();
-              advertising_stop();
               state_sleep();
               encoder_disable();
               batt_disable();
+              wake_up = 0;
             }
-            wake_up = 0;
+            idle_timer = IDLE_TICKS;
+        }
 
+        if(display_flag){
+          display_flag = 0;
+          state_process_display();
+        }
+
+        // If it is nothing to do...
+        if(!button_flag && !double_button_flag && !long_button_flag && !long_long_button_flag && !encoder_flag && !clock_tick_flag && !batt_flag && !idle_flag && !display_flag){
             // sleep and wait for event...
             sd_app_evt_wait();
-
-            // wake up!
-            idle_timer = IDLE_TICKS;
         }
     }
 }
