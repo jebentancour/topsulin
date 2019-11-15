@@ -1,6 +1,7 @@
 #include "state.h"
 
 #include <stdio.h>
+#include <stdbool.h>
 
 #define NRF_LOG_MODULE_NAME "STATE"
 
@@ -57,8 +58,8 @@ static internal_state_t       m_state;
 static char                   buffer[16];
 static uint8_t                len;
 
-static uint8_t                full_refresh;
-static uint8_t                quick_refresh;
+static volatile uint8_t       full_refresh;
+static volatile uint8_t       quick_refresh;
 
 static uint32_t               voltage;
 static uint8_t                bt_state;
@@ -66,7 +67,7 @@ static uint8_t                bt_state;
 static bool                   clock_set;
 static bool                   gls_write;
 
-static char                   pin_buffer[6];
+static char                   pin_buffer[8];
 static bool                   show_pin;
 static bool                   pin_ok;
 static bool                   pin_error;
@@ -228,6 +229,31 @@ void state_set_bt_state(uint8_t state){
   *m_display_flag = 1;
 }
 
+void state_show_pin(char* pin){
+  strncpy(pin_buffer, pin, 6);
+  show_pin = true;
+  pin_ok = false;
+  pin_error = false;
+  //quick_refresh = 1;
+  *m_display_flag = 1;
+}
+
+void state_show_pin_error(void){
+  show_pin = false;
+  pin_ok = false;
+  pin_error = true;
+  //quick_refresh = 1;
+  *m_display_flag = 1;
+}
+
+void state_show_pin_ok(void){
+  show_pin = false;
+  pin_ok = true;
+  pin_error = false;
+  //quick_refresh = 1;
+  *m_display_flag = 1;
+}
+
 void state_update_mem(void){
   quick_refresh = 1;
   *m_display_flag = 1;
@@ -248,6 +274,21 @@ void state_display_set_flag(volatile uint8_t* main_display_flag){
 }
 
 void state_process_display(void){
+
+  if (show_pin || pin_ok || pin_error){
+    quick_refresh = 1;
+    NRF_LOG_DEBUG("PIN status\n");
+    NRF_LOG_FLUSH();
+  }
+
+  if (quick_refresh|full_refresh){
+    NRF_LOG_DEBUG("Processing display\n");
+    NRF_LOG_FLUSH();
+  } else {
+    NRF_LOG_DEBUG("No refresh!!\n");
+    NRF_LOG_FLUSH();
+    return;
+  }
 
   DEV_ModuleInit();
 
@@ -629,6 +670,25 @@ void state_process_display(void){
 
     // NAME
     len = config_manager_get_name(buffer);
+
+    if (bt_state == 0){
+      show_pin = false;
+      pin_ok = false;
+      pin_error = false;
+    }
+
+    if (show_pin){
+      len = sprintf(buffer, "PIN %s", pin_buffer);
+    }
+
+    if (pin_ok){
+      len = sprintf(buffer, "PIN OK");
+    }
+
+    if (pin_error){
+      len = sprintf(buffer, "PIN ERROR");
+    }
+
     Paint_NewImage(ImageBuff, 16, len*11, rotate, color);
     Paint_Clear(color);
     Paint_DrawString_EN(0, 0, buffer, &Font16, color, !color);
@@ -649,7 +709,6 @@ void state_process_display(void){
     // BATTERY
     uint16_t voltage;
     voltage = batt_get();
-    //voltage = 0;
     if(voltage <= LOW_VOLT){
       Paint_NewImage(ImageBuff, 16, 16, rotate, color);
       if (flip){
@@ -757,20 +816,37 @@ void state_process_display(void){
     color = WHITE;
     rotate = ROTATE_90;
 
+    Paint_NewImage(ImageBuff, ALTO, ANCHO, rotate, color);
+    Paint_Clear(color);
+    Paint_DrawBitMap(gImage_initial);
+    if(full_refresh){
+      EPD_DisplayWindows(ImageBuff, 0, 0, ALTO, ANCHO);
+    } else {
+      EPD_DisplayPartWindows(ImageBuff, 0, 0, ALTO, ANCHO);
+    }
+
     if (bt_state == 0){
-      Paint_NewImage(ImageBuff, ALTO, ANCHO, rotate, color);
-      Paint_Clear(color);
-      Paint_DrawBitMap(gImage_initial);
-      if(full_refresh){
-        EPD_DisplayWindows(ImageBuff, 0, 0, ALTO, ANCHO);
-      } else {
-        EPD_DisplayPartWindows(ImageBuff, 0, 0, ALTO, ANCHO);
-      }
+      show_pin = false;
+      pin_ok = false;
+      pin_error = false;
     }
 
     if (bt_state == 1 || bt_state == 2){
       //BT NAME
-      len = sprintf(buffer, "Topsulin-%04X v2", (uint16_t) NRF_FICR->DEVICEADDR[0] & 0xFFFF);
+      len = sprintf(buffer, "Topsulin-%04X", (uint16_t) NRF_FICR->DEVICEADDR[0] & 0xFFFF);
+
+      if (show_pin){
+        len = sprintf(buffer, "PIN %s", pin_buffer);
+      }
+
+      if (pin_ok){
+        len = sprintf(buffer, "PIN OK");
+      }
+
+      if (pin_error){
+        len = sprintf(buffer, "PIN ERROR");
+      }
+
       Paint_NewImage(ImageBuff, 16, len*11, rotate, color);
       Paint_Clear(color);
       Paint_DrawString_EN(0, 0, buffer, &Font16, color, !color);
@@ -788,23 +864,6 @@ void state_process_display(void){
       } else {
         EPD_DisplayPartWindows(ImageBuff, ALTO-MARGEN-16, ANCHO-MARGEN-32, ALTO-MARGEN, ANCHO-MARGEN-16);
       }
-
-      // BLANK
-      Paint_NewImage(ImageBuff, 16, 16, rotate, color);
-      Paint_Clear(color);
-      if (full_refresh){
-        EPD_DisplayWindows(ImageBuff, ALTO-MARGEN-16, ANCHO-MARGEN-16, ALTO-MARGEN, ANCHO-MARGEN);
-      } else {
-        EPD_DisplayPartWindows(ImageBuff, ALTO-MARGEN-16, ANCHO-MARGEN-16, ALTO-MARGEN, ANCHO-MARGEN);
-      }
-
-      Paint_NewImage(ImageBuff, 24, 6*17, rotate, color);
-      Paint_Clear(color);
-      if (full_refresh){
-        EPD_DisplayWindows(ImageBuff, 10, 74, 10+24, 74+6*17);
-      } else {
-        EPD_DisplayPartWindows(ImageBuff, 10, 74, 10+24, 74+6*17);
-      }
     }
 
     if (bt_state == 2){
@@ -818,59 +877,6 @@ void state_process_display(void){
       }
     }
 
-  }
-
-  if (pin_error){
-    pin_error = false;
-
-    UWORD color;
-    color = WHITE;
-
-    UWORD rotate;
-    rotate = ROTATE_90;
-
-    Paint_NewImage(ImageBuff, 24, 6*17, rotate, color);
-    Paint_Clear(color);
-    EPD_DisplayPartWindows(ImageBuff, 10, 74, 10+24, 74+6*17);
-
-    Paint_NewImage(ImageBuff, 24, 5*17, rotate, color);
-    Paint_DrawString_EN(0, 0, "ERROR", &Font24, color, !color);
-    EPD_DisplayPartWindows(ImageBuff, 10, 82, 10+24, 82+5*17);
-  }
-
-  if (pin_ok){
-    pin_ok = false;
-
-    UWORD color;
-    color = WHITE;
-
-    UWORD rotate;
-    rotate = ROTATE_90;
-
-    Paint_NewImage(ImageBuff, 24, 6*17, rotate, color);
-    Paint_Clear(color);
-    EPD_DisplayPartWindows(ImageBuff, 10, 74, 10+24, 74+6*17);
-
-    Paint_NewImage(ImageBuff, 24, 2*17, rotate, color);
-    Paint_DrawString_EN(0, 0, "OK", &Font24, color, !color);
-    EPD_DisplayPartWindows(ImageBuff, 10, 108, 10+24, 108+2*17);
-  }
-
-  if (show_pin){
-    show_pin = false;
-    UWORD color;
-    color = WHITE;
-
-    UWORD rotate;
-    rotate = ROTATE_90;
-
-    Paint_NewImage(ImageBuff, 24, 6*17, rotate, color);
-    Paint_Clear(color);
-    EPD_DisplayPartWindows(ImageBuff, 10, 74, 10+24, 74+6*17);
-
-    Paint_NewImage(ImageBuff, 24, 6*17, rotate, color);
-    Paint_DrawString_EN(0, 0, pin_buffer, &Font24, color, !color);
-    EPD_DisplayPartWindows(ImageBuff, 10, 74, 10+24, 74+6*17);
   }
 
   if (quick_refresh|full_refresh){
@@ -908,18 +914,15 @@ void state_on_event(event_t event){
       if (event == encoder_update){
         new_glu = true;
         m_topsulin_meas.glu = encoder_get_position();
-
         if(m_topsulin_meas.glu <= 0){
           new_glu = false;
           m_topsulin_meas.glu = 0;
           encoder_reset_position();
         }
-
         if(m_topsulin_meas.glu >= 1000){
           m_topsulin_meas.glu = 999;
           encoder_set_position(m_topsulin_meas.glu);
         }
-
         if (config_manager_get_flags() & CONFIG_BOLO_FLAG){
             if (m_topsulin_meas.glu >= config_manager_get_calc_high().mantissa){
                 glu_correction = 1 + (m_topsulin_meas.glu - config_manager_get_calc_high().mantissa) / config_manager_get_calc_corr().mantissa;
@@ -935,7 +938,6 @@ void state_on_event(event_t event){
                   m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
                 }
             }
-
             if (glu_correction > 0){
               new_ins = true;
               m_topsulin_meas.ins = 0;
@@ -964,13 +966,15 @@ void state_on_event(event_t event){
             break;
         }
         new_glu = false;
-        glu_correction = 0;
-        m_topsulin_meas.ins = 0;
-        if (new_cho){
-            m_topsulin_meas.ins += cho_correction * config_manager_get_ins_interval();
-        } else {
-          m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
-          new_ins = false;
+        if (config_manager_get_flags() & CONFIG_BOLO_FLAG){
+          glu_correction = 0;
+          m_topsulin_meas.ins = 0;
+          if (new_cho){
+              m_topsulin_meas.ins += cho_correction * config_manager_get_ins_interval();
+          } else {
+            m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
+            new_ins = false;
+          }
         }
         quick_refresh = 1;
       }
@@ -993,10 +997,8 @@ void state_on_event(event_t event){
           m_topsulin_meas.cho = 1000 - config_manager_get_cho_interval();
           encoder_set_position(m_topsulin_meas.cho / config_manager_get_cho_interval());
         }
-
         if (config_manager_get_flags() & CONFIG_BOLO_FLAG){
             cho_correction = m_topsulin_meas.cho / config_manager_get_calc_sens();
-
             if (cho_correction == 0){
               if (new_glu && (glu_correction != 0)){
                 m_topsulin_meas.ins = glu_correction * config_manager_get_ins_interval();
@@ -1005,7 +1007,6 @@ void state_on_event(event_t event){
                 m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
               }
             }
-
             if (cho_correction > 0){
               new_ins = true;
               m_topsulin_meas.ins = 0;
@@ -1021,7 +1022,6 @@ void state_on_event(event_t event){
               }
             }
         }
-
         quick_refresh = 1;
       }
       if (event == long_button_pressed){
@@ -1031,17 +1031,19 @@ void state_on_event(event_t event){
             break;
         }
         new_cho = false;
-        cho_correction = 0;
-        m_topsulin_meas.ins = 0;
-        if (new_glu){
-          m_topsulin_meas.ins += 10 * glu_correction;
-          if (m_topsulin_meas.ins == 0){
-              new_ins = false;
-              m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
+        if (config_manager_get_flags() & CONFIG_BOLO_FLAG){
+          cho_correction = 0;
+          m_topsulin_meas.ins = 0;
+          if (new_glu){
+            m_topsulin_meas.ins += 10 * glu_correction;
+            if (m_topsulin_meas.ins == 0){
+                new_ins = false;
+                m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
+            }
+          } else {
+            m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
+            new_ins = false;
           }
-        } else {
-          m_topsulin_meas.ins = m_prev_topsulin_meas.ins;
-          new_ins = false;
         }
         quick_refresh = 1;
       }
@@ -1087,25 +1089,6 @@ void state_on_event(event_t event){
     *m_idle_flag = 1;
   }
 
-  *m_display_flag = 1;
-}
-
-void state_show_pin(char* pin){
-  show_pin = true;
-  quick_refresh = 1;
-  strncpy(pin_buffer, pin, 6);
-  *m_display_flag = 1;
-}
-
-void state_show_pin_error(void){
-  pin_error = true;
-  quick_refresh = 1;
-  *m_display_flag = 1;
-}
-
-void state_show_pin_ok(void){
-  pin_ok = true;
-  quick_refresh = 1;
   *m_display_flag = 1;
 }
 

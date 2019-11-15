@@ -87,7 +87,7 @@
 #define APP_TIMER_PRESCALER             0                                           /**< Value of the RTC1 PRESCALER register. */
 #define APP_TIMER_OP_QUEUE_SIZE         4                                           /**< Size of timer operation queues. */
 
-#define SECURITY_REQUEST_DELAY          APP_TIMER_TICKS(100, APP_TIMER_PRESCALER)   /**< Delay after connection until Security Request is sent, if necessary (ticks). */
+#define SECURITY_REQUEST_DELAY          APP_TIMER_TICKS(400, APP_TIMER_PRESCALER)   /**< Delay after connection until Security Request is sent, if necessary (ticks). */
 
 #define MIN_CONN_INTERVAL               MSEC_TO_UNITS(10, UNIT_1_25_MS)             /**< Minimum acceptable connection interval (10 ms). */
 #define MAX_CONN_INTERVAL               MSEC_TO_UNITS(400, UNIT_1_25_MS)            /**< Maximum acceptable connection interval (100 ms) */

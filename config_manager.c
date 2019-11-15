@@ -31,9 +31,9 @@ void config_manager_init(void)
   m_global_conf.cho_interval = 5;
   m_global_conf.ins_interval = 10;
   // Name
-  const char* tmp = "Topsulin v2";
+  const char* tmp = "Topsulin";
   strcpy(m_global_conf.name, tmp);
-  name_len = 11;
+  name_len = 8;
   // Calc
   m_global_conf.calc_low.mantissa = 90;
   m_global_conf.calc_low.exponent = -5;
@@ -119,19 +119,6 @@ void config_manager_set_flags(uint8_t flags)
 {
   m_global_conf.flags = flags;
   encoder_set_direction((config_manager_get_flags() & CONFIG_FLIP_FLAG) == 0);
-  if(flags & CONFIG_COLOR_FLAG){
-    if (flags & CONFIG_FLIP_FLAG){
-      //GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_180, IMAGE_COLOR_POSITIVE);
-    } else {
-      //GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_POSITIVE);
-    }
-  } else {
-    if (flags & CONFIG_FLIP_FLAG){
-      //GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_180, IMAGE_COLOR_INVERTED);
-    } else {
-      //GUI_NewImage(EPD_WIDTH, EPD_HEIGHT, IMAGE_ROTATE_0, IMAGE_COLOR_INVERTED);
-    }
-  }
 }
 
 uint8_t config_manager_get_flags(void)
@@ -232,6 +219,7 @@ uint16_t config_manager_get_insulin_duration(void)
 void config_manager_set_name(uint8_t* data, uint8_t data_len)
 {
   uint8_t i;
+  if (data_len > 14) data_len = 14;
   for(i = 0; i < 20; i++){
     if(i < data_len){
       m_global_conf.name[i] = (char)data[i];

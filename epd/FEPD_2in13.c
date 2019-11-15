@@ -83,6 +83,7 @@ void EPD_WaitUntilIdle(void)
     if (timeout >= BUSY_TIMEOUT){
       NRF_LOG_INFO("BUSY_TIMEOUT\n");
       NRF_LOG_FLUSH();
+      EPD_Reset();
     }
 }
 

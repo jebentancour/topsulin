@@ -1,4 +1,6 @@
 #include <stdint.h>
+#include <stdio.h>
+#include <stdbool.h>
 
 typedef enum {
     button_pressed,
