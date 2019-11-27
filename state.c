@@ -275,7 +275,7 @@ void state_display_set_flag(volatile uint8_t* main_display_flag){
 
 void state_process_display(void){
 
-  if (show_pin || pin_ok || pin_error){
+  if ((!full_refresh)&&(show_pin || pin_ok || pin_error)){
     quick_refresh = 1;
     NRF_LOG_DEBUG("PIN status\n");
     NRF_LOG_FLUSH();
@@ -677,6 +677,10 @@ void state_process_display(void){
       pin_error = false;
     }
 
+    if ((bt_state == 1 || bt_state == 2) && !show_pin && !pin_ok && !pin_error){
+      len = sprintf(buffer, "Topsulin-%04X", (uint16_t) NRF_FICR->DEVICEADDR[0] & 0xFFFF);
+    }
+
     if (show_pin){
       len = sprintf(buffer, "PIN %s", pin_buffer);
     }
@@ -908,6 +912,9 @@ void state_on_event(event_t event){
     case input_glu:
       if (event == button_pressed){
         encoder_set_position(m_topsulin_meas.cho / config_manager_get_cho_interval());
+        if (!new_cho){
+          encoder_reset_position();
+        }
         m_state = input_cho;
         quick_refresh = 1;
       }
@@ -982,6 +989,9 @@ void state_on_event(event_t event){
     case input_cho:
       if (event == button_pressed){
         encoder_set_position(m_topsulin_meas.ins / config_manager_get_ins_interval());
+        if (!new_ins){
+          encoder_reset_position();
+        }
         m_state = input_ins;
         quick_refresh = 1;
       }
@@ -1045,6 +1055,7 @@ void state_on_event(event_t event){
             new_ins = false;
           }
         }
+        encoder_reset_position();
         quick_refresh = 1;
       }
       break;
@@ -1075,6 +1086,7 @@ void state_on_event(event_t event){
             break;
         }
         new_ins = false;
+        encoder_reset_position();
         quick_refresh = 1;
       }
       break;

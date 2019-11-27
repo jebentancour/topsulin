@@ -20,7 +20,7 @@
 #include "batt.h"
 #include "config_manager.h"
 
-#define IDLE_S          90
+#define IDLE_S          60
 #define IDLE_TICKS      (IDLE_S * 1000)/CLOCK_TICK_MS
 
 volatile uint8_t clock_tick_flag;
