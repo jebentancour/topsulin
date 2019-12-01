@@ -265,3 +265,7 @@ SoC [nRF51822](https://www.nordicsemi.com/eng/nordic/download_resource/62726/14/
 |NA |0x50000000   |GPIO        |GPIO        |General Purpose Input and Output.            |Gpio              |
 |NA |0x10000000   |FICR        |FICR        |Factory Information Configuration Registers. |SoftDevice        |
 |NA |0x10001000   |UICR        |UICR        |User Information Configuration Registers.    |SoftDevice        |
+
+## EPD
+
+[Image file to embedded C/C++ code](https://digole.com/tools/PicturetoC_Hex_converter.php)
